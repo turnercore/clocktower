@@ -5,8 +5,13 @@ import type { UUID as CryptoUUID } from 'crypto'
 export type Tower = { 
   id: UUID
   name?: string
-  rows: { rowId: string, position: number }[]
+  rows: SortedRowData[]
   users: UUID[]
+}
+
+export interface SortedRowData {
+  rowId: UUID;  // Changed from id to rowId
+  position: number;
 }
 
 export type TowerRow = {
@@ -17,6 +22,11 @@ export type TowerRow = {
   position: number
   clocks: UUID[]
   users: UUID[]
+}
+
+export interface SortedClockData {
+  clockId: UUID
+  position: number
 }
 
 // Define a type for the clock data

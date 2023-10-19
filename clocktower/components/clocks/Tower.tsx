@@ -3,16 +3,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import TowerRow from './TowerRow';
 import { Button, Input, ToastAction, toast } from '@/components/ui';  // Make sure to import Button from your UI library
 import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Tower, UUID } from '@/types';
+import { SortedRowData, Tower, UUID } from '@/types';
 import { generateName } from '@/tools/clocktowerNameGenerator';
 
 interface TowerProps {
   towerId?: UUID;
-}
-
-interface SortedRowData {
-  rowId: UUID;  // Changed from id to rowId
-  position: number;
 }
 
 const Tower: React.FC<TowerProps> = ({ towerId }) => {
@@ -30,6 +25,9 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
   const supabase = createClientComponentClient()
   const [rows, setRows] = useState<SortedRowData[]>([])
   const [towerName, setTowerName] = useState<string>('')
+  // Prevent duplicate row adds
+  const [isAddingRow, setIsAddingRow] = useState(false)
+
 
   // Fetch user and tower data on load
   useEffect(() => {
@@ -114,8 +112,12 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
       // Set tower data and sorted rows
       setTowerData(fetchedTowerData)
       setTowerName(fetchedTowerData.name)
-      const sortedRows = [...fetchedTowerData.rows].sort((a, b) => a.position - b.position)
-      setRows(sortedRows)
+      if (fetchedTowerData.rows) {
+        const sortedRows = [...fetchedTowerData.rows].sort((a, b) => a.position - b.position)
+        setRows(sortedRows)
+      } else {
+        setRows([])
+      }
     }
 
     // Execute the async function
@@ -126,16 +128,64 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
   //--- Functions for handling data changes ---//
 
   // Add a new row to the tower (For add row button)
-  const handleAddRow = () => {
-    if(!towerData) return
+  const handleAddRow = async () => {
+    console.log('handleAddRow called')
+    if(isAddingRow) {
+      console.log('Already adding a row')
+      toast({
+        title: "Already Adding Row.",
+        description: "You are already adding a row. Wait a sec."
+      })
+      return
+    }
+    setIsAddingRow(true)
+    
+    if(!towerData) {
+      console.log('towerData is null or undefined')
+      return
+    }
+
+    // Generate new row data
     const newRowData = {
       rowId: crypto.randomUUID() as UUID,  // Changed from id to rowId
       position: rows.length  // Fixed typo
-    };
-    const updatedTowerData = { ...towerData, rows: [...towerData.rows, newRowData] };  // Immutability
-    setTowerData(updatedTowerData);
-    setRows([...rows, newRowData]);
+    }
+
+    // Capture the old state for possible rollback
+    const oldRows = towerData.rows ? [...towerData.rows] : []
+    const oldTowerData = { ...towerData }
+
+    // Create the new updated rows array
+    const updatedRowsArray = towerData.rows ? [...towerData.rows, newRowData] : [newRowData]
+
+    // Optimistically update local state
+    const updatedTowerData = { ...towerData, rows: updatedRowsArray }
+    setTowerData(updatedTowerData)
+    setRows(updatedRowsArray)
+
+    // Update the server
+    const { data, error } = await supabase
+      .from('towers')
+      .update({ rows: updatedRowsArray })
+      .eq('id', towerData.id)
+      .single()
+
+    if (error) {
+      console.error('Failed to add new row:', error.message)
+      toast({
+        title: "Error Adding Row.",
+        description: "Error adding new row to database."
+      })
+      // Revert local state
+      setRows(oldRows)
+      setTowerData(oldTowerData)
+      return
+    }
+
+    console.log('Successfully added new row')
+    setIsAddingRow(false)
   }
+
 
   // Delete the tower (For delete button), delete the database and then create a new tower
   const deleteTower = async () => {
@@ -153,7 +203,7 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
     const updatedRows = rows.filter((row) => row.rowId !== rowId);
     const updatedTowerData = { ...towerData, rows: updatedRows };
     //Optomistic update local state
-    const oldRows = [...rows]
+    const oldRows = rows ? [...rows] : []
     const oldTowerData = { ...towerData }
     setRows(updatedRows);
     setTowerData(updatedTowerData);
@@ -171,6 +221,9 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
   const handleTowerNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     // Get old name
     const oldName = towerData ? towerData.name : ''
+    console.log('Old name: ', oldName)
+    console.log('New name: ', event.target.value)
+    if (oldName === event.target.value) return
     // Update local state
     const updatedTowerData = { ...towerData, name: event.target.value }
     setTowerData(updatedTowerData)
@@ -184,10 +237,6 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
       .update({ name: event.target.value })
       .eq('id', towerData.id)
       .single()
-
-    // Log server response for debugging
-    console.log('Server response data:', data)
-    console.log('Server response error:', error)
 
     // Error handling
     if (error) {
