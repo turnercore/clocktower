@@ -46,7 +46,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
         .from('tower_rows')
         .select('*')
         .eq('id', rowId)
-        .contains('users', userData.session.user.id)
+        .contains('users', [userData.session.user.id])
         .single()
       if (rowError) {
         console.error(rowError)

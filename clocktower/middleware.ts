@@ -3,16 +3,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 // define routes that require authentication
-const protectedRoutes = ['/addKnowledge', '/account', '/api', '/apiKeys', '/search']
+const protectedRoutes = ['/tower']
 
 // !!!!!!MAKE SURE TO UPDATE THE MATCHER AS WELL IF YOU CHANGE/ADD ROUTES!!!!!!!!
 export const config = {
     matcher: [
-        '/apiKeys/:path*',
-        '/addKnowledge/:path*',
-        '/account/:path*',
-        '/api/v1/:path*',
-        '/search/:path*',
+        '/tower/:path*', // matches /tower and /tower/anything-else
     ],
 }
 

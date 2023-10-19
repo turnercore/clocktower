@@ -3,10 +3,9 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SignOutButton, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui'
-import { Provider, Session, SupabaseClient } from '@supabase/supabase-js'
+import { Provider, Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
-import {GenericLoadingSkeleton} from '@/components/loading/GenericLoadingSkeleton'
-import { SupabaseAuthClient } from '@supabase/supabase-js/dist/module/lib/SupabaseAuthClient'
+import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 
 const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''

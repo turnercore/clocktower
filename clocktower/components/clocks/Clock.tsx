@@ -44,6 +44,7 @@ const Clock: React.FC<ClockProps> = ({ towerId, rowId, clockId, onDelete }) => {
         .from('clocks')
         .select('*')
         .eq('id', clockId)
+        .contains('users', [user?.id as UUID])
         .single()
 
       if (error) {
@@ -78,7 +79,7 @@ const Clock: React.FC<ClockProps> = ({ towerId, rowId, clockId, onDelete }) => {
       } else {
         // No data feteched create a new clock
         // Get allowed users from the tower
-        const { data: towerData, error: towerError } = await supabase.from('towers').select('users').eq('id', towerId).contains('users', userData.session.user.id).single()
+        const { data: towerData, error: towerError } = await supabase.from('towers').select('users').eq('id', towerId).contains('users', [userData.session.user.id]).single()
         if (towerError) {
           console.error(towerError)
         }
@@ -132,7 +133,6 @@ const Clock: React.FC<ClockProps> = ({ towerId, rowId, clockId, onDelete }) => {
       .from('clocks')
       .update(updatedData)
       .eq('id', clockId)
-      .contains('users', user?.id as UUID)
       .single()
 
     // If the update failed, revert the state
