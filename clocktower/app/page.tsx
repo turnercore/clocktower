@@ -1,12 +1,15 @@
 'use client'
-import {Clock, ClockProps} from '@/components/clocks/Clock'
-import {Tower} from '@/components/clocks/Tower'
+import Tower from '@/components/clocks/Tower'
+import { UUID } from '@/types'
+import { useState } from 'react'
 
 const Home: React.FC = () => {
+  const [towerId, setTowerId] = useState<UUID>(crypto.randomUUID() as UUID)
+  
   const rowData = {}
   return (
     <div className="flex flex-col">
-      <Tower towerId='new tower'/>
+      <Tower towerId={towerId}/>
     </div>
   )
 }
