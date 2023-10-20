@@ -1,9 +1,7 @@
 import '@/app/globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { Toast } from '@/components/ui'
 import { ThemeProvider } from "@/components/layout/theme-provider"
-
 import type { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
  

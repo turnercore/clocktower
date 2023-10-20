@@ -18,6 +18,7 @@ import Link from "next/link"
 import SignOutButton from "./SignOutButton"
 import { useEffect, useState } from "react"
 import type { Profile } from "@/types"
+import { PersonIcon } from "@radix-ui/react-icons"
 
 export default function UserAvatar() {
   const [isHovered, setIsHovered] = useState(false)
@@ -81,9 +82,9 @@ export default function UserAvatar() {
   const notLoggedInHtml = (
     <Avatar
       onClick={() => setIsDialogOpen(true)}
-      className="w-14 h-14 cursor-pointer hover:shadow hover:scale-105 active:scale-100 active:shadow-inner"
+      className="w-10 h-10 cursor-pointer hover:shadow hover:scale-105 active:scale-100 active:shadow-inner"
     >
-      <AvatarFallback> AI </AvatarFallback>
+      <AvatarFallback> <PersonIcon className="h-5 w-5" /> </AvatarFallback>
     </Avatar>
   )
 

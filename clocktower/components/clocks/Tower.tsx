@@ -1,10 +1,11 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import TowerRow from './TowerRow';
 import { Button, Input, ToastAction, toast } from '@/components/ui';  // Make sure to import Button from your UI library
 import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { SortedRowData, Tower, UUID } from '@/types';
 import { generateName } from '@/tools/clocktowerNameGenerator';
+import { isValidUUID } from '@/tools/isValidUUID';
 
 interface TowerProps {
   towerId?: UUID;
@@ -12,7 +13,8 @@ interface TowerProps {
 
 const Tower: React.FC<TowerProps> = ({ towerId }) => {
   // Create a new Tower ID if one was not provided
-  if (!towerId) towerId = crypto.randomUUID() as UUID
+  // Check if towerId is valid UUID
+  if (!towerId || !isValidUUID(towerId)) towerId = crypto.randomUUID() as UUID
 
   // Create state variables
   const [towerData, setTowerData] = useState<Tower>({
@@ -24,9 +26,9 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
   const [user, setUser] = useState<User | null>(null)
   const supabase = createClientComponentClient()
   const [rows, setRows] = useState<SortedRowData[]>([])
-  const [towerName, setTowerName] = useState<string>('')
   // Prevent duplicate row adds
   const [isAddingRow, setIsAddingRow] = useState(false)
+  const [isAddingTower, setIsAddingTower] = useState(false)
 
 
   // Fetch user and tower data on load
@@ -37,24 +39,10 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
       const { data: userData, error: userError } = await supabase.auth.getSession()
       if (userError) {
         console.error(userError)
-        // Notify user
-        toast({
-          variant: "destructive",
-          title: "Error Getting User.",
-          description: "Error finding your user session. Are you logged in?",
-          action: <ToastAction altText="Login" >Try again</ToastAction>,
-        })
         return
       }
       if (!userData?.session?.user) {
         console.error('No user logged in')
-        // Notify user
-        toast({
-          variant: "destructive",
-          title: "Error Getting User.",
-          description: "Error finding your user session. Are you logged in?",
-          action: <ToastAction altText="Login" >Try again</ToastAction>,
-        })
         return
       }
       // Set the user
@@ -70,18 +58,14 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
 
       if (towerError) {
         console.error(towerError)
-        // Notify user
-        toast({
-          title: "Tower not found, creating new Tower.",
-          description: "Adding new Tower to database. Error message: " + towerError.message,
-        })
       }
 
       console.log("Fetched tower data: ", fetchedTowerData)
       if (!fetchedTowerData) {
         // No data fetched, create a new tower
+        if (isAddingTower) return
+        setIsAddingTower(true)
         const newTowerName = generateName()
-        setTowerName(newTowerName)
         const newTower: Tower = {
           id: towerData.id,
           name: newTowerName,
@@ -93,11 +77,11 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
         console.log('Creating new tower:', newTower)
         console.log(' adding user : ' + userData.session.user.id)
         const { error: insertError } = await supabase.from('towers').insert(newTower)
-        
+        // Add tower and user to the towers_users join table
+        const { error: insertJoinError } = await supabase.from('towers_users').insert({ towerId: newTower.id, userId: userData.session.user.id })
+        setIsAddingTower(false)
         if (insertError) {
           console.error(insertError)
-          // Notify user
-          // TODO: Add your toast notification logic here
           toast({
             variant: "destructive",
             title: "Error Creating Tower.",
@@ -111,7 +95,6 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
 
       // Set tower data and sorted rows
       setTowerData(fetchedTowerData)
-      setTowerName(fetchedTowerData.name)
       if (fetchedTowerData.rows) {
         const sortedRows = [...fetchedTowerData.rows].sort((a, b) => a.position - b.position)
         setRows(sortedRows)
@@ -217,56 +200,48 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
     }
   }
 
-  // Update the local and server state when the tower name is changed
-  const handleTowerNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Get old name
-    const oldName = towerData ? towerData.name : ''
-    console.log('Old name: ', oldName)
-    console.log('New name: ', event.target.value)
-    if (oldName === event.target.value) return
-    // Update local state
-    const updatedTowerData = { ...towerData, name: event.target.value }
-    setTowerData(updatedTowerData)
+  // // Update the local and server state when the tower name is changed
+  // const handleTowerNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   // Get old name
+  //   const oldName = towerData ? towerData.name : ''
+  //   console.log('Old name: ', oldName)
+  //   console.log('New name: ', event.target.value)
+  //   if (oldName === event.target.value) return
+  //   // Update local state
+  //   const updatedTowerData = { ...towerData, name: event.target.value }
+  //   setTowerData(updatedTowerData)
 
-    // Log the query for debugging
-    console.log(`Updating tower with ID ${towerData.id} to name ${event.target.value}`)
+  //   // Log the query for debugging
+  //   console.log(`Updating tower with ID ${towerData.id} to name ${event.target.value}`)
 
-    // Update server state
-    const { data, error } = await supabase
-      .from('towers')
-      .update({ name: event.target.value })
-      .eq('id', towerData.id)
-      .single()
+  //   // Update server state
+  //   const { data, error } = await supabase
+  //     .from('towers')
+  //     .update({ name: event.target.value })
+  //     .eq('id', towerData.id)
+  //     .single()
 
-    // Error handling
-    if (error) {
-      console.error(error)
-      // Revert local state
-      setTowerData({ ...towerData, name: oldName })
-      return
-    }
-  }
+  //   // Error handling
+  //   if (error) {
+  //     console.error(error)
+  //     // Revert local state
+  //     setTowerData({ ...towerData, name: oldName })
+  //     return
+  //   }
+  // }
 
 
   return (
     <div className="flex flex-col items-center space-y-4">
       {/* Input for Tower Name */}
-      <div className="w-full max-w-md">
-        <Input 
-          className="w-full p-2 border rounded" 
-          defaultValue={towerName}
-          onBlur={handleTowerNameChange} 
-          placeholder="Enter Tower Name"
-        />
+      <div className="w-full max-w-md text-center">
+        <h1 className='text-3xl font-serif'> {towerData.name} </h1>
       </div>
       
       {/* Add Row and Settings Buttons */}
       <div className="flex space-x-2">
         <Button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAddRow}>
           Add Row
-        </Button>
-        <Button className="bg-gray-300 text-gray-800 px-4 py-2 rounded">
-          ⛭
         </Button>
       </div>
 
