@@ -70,7 +70,7 @@ export default function UserAvatar() {
     <Dialog open={isDialogOpen} onOpenChange={(open) => setIsDialogOpen(open)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Please Login</DialogTitle>
+          <DialogTitle className=" text-center">Login</DialogTitle>
         </DialogHeader>
         <LoginForm />
       </DialogContent>

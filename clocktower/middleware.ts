@@ -16,8 +16,11 @@ function isProtectedRoute(pathname: string): boolean {
   return protectedRoutes.some(route => pathname.startsWith(route))
 }
 
-function handleUnauthenticatedClient(): NextResponse {
-    return NextResponse.redirect('/login')
+function handleUnauthenticatedClient(request: NextRequest): NextResponse {
+    const url = request.nextUrl.clone()
+    url.pathname = '/login'
+    return NextResponse.rewrite(url)
+    // return NextResponse.redirect('/login')
 }
 
 function handleUnauthenticatedApi(): NextResponse {
@@ -37,14 +40,15 @@ function isApiRoute(pathname: string): boolean {
 export async function middleware(req: NextRequest) {
     const res = NextResponse.next()
     const supabase = createMiddlewareClient({ req, res })
-    const session = await supabase.auth.getSession()
+    const {data, error} = await supabase.auth.getSession()
+    const session = data?.session
     const { pathname } = req.nextUrl
 
-    if (!session) {
+    if (!session || error) {
         if (isProtectedRoute(pathname)) {
-            return isApiRoute(pathname) ? handleUnauthenticatedApi()  : handleUnauthenticatedClient()
+            console.log("going to protected route")
+            return isApiRoute(pathname) ? handleUnauthenticatedApi()  : handleUnauthenticatedClient(req)
         }
     }
-    
     return res
 }

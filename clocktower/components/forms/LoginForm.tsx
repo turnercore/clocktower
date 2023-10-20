@@ -6,16 +6,20 @@ import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Sign
 import { Provider, Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
+import Router, { usePathname } from 'next/navigation'
+import { useTheme } from 'next-themes'
 
 const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''
-
-
 
 export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(true)
   const [userSession,setUserSession] = useState<Session | null>(null)
   const supabase = createClientComponentClient()
+  const path = usePathname()
+  const url = new URL(path, domain)
+  const theme = useTheme().resolvedTheme
+  console.log(domain + "/api/auth/callback")
 
   // see if user is logged in already
   //useEffect to see if the user is logged in 
@@ -60,75 +64,23 @@ export default function LoginForm() {
     ) : (
       <div className="flex flex-col items-center justify-center w-full h-full">
         {userSession ? (
-          <div className='flex flex-col items-center justify-center'>
+        <>
           <h1> You are Logged in! </h1>
-          <Button variant='destructive' onClick={handleSignOut}>Sign Out 👋 </Button>
-        </div>
+          <h2> Email: {userSession.user.email} </h2>
+          <Button variant='destructive' onClick={handleSignOut}>Sign Out 👋</Button>
+        </>
         ) : (
-      <Tabs defaultValue="magicLink" className="w-[400px]">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="magicLink">{"Magic Link 🧙‍♂️"}</TabsTrigger>
-          <TabsTrigger value="signIn">{"Sign In 🧑‍💻"}</TabsTrigger>
-          <TabsTrigger value="signUp">{"Sign Up 📝"}</TabsTrigger>
-        </TabsList>
-        <TabsContent value="magicLink">
-          <Card>
-            <CardHeader>
-              <CardTitle>Magic Link</CardTitle>
-              <CardDescription>Sign in or Sign up with a magic link to your email.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Auth
-                supabaseClient={supabase}
-                view="magic_link"
-                appearance={{ theme: ThemeSupa }}
-                theme="light"
-                showLinks={false}
-                providers={providers}
-                redirectTo= {domain + "/api/v1/auth/callback"}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="signIn">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sign In</CardTitle>
-              <CardDescription>Sign in with your email and password.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Auth
-                supabaseClient={supabase}
-                view="sign_in"
-                appearance={{ theme: ThemeSupa }}
-                theme="light"
-                showLinks={false}
-                providers={providers}
-                redirectTo={domain + "/api/v1/auth/callback"}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="signUp">
-          <Card>
-            <CardHeader>
-              <CardTitle>Sign Up</CardTitle>
-              <CardDescription>Create a new account with an email and password.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Auth
-                supabaseClient={supabase}
-                view="sign_up"
-                appearance={{ theme: ThemeSupa }}
-                theme="light"
-                showLinks={false}
-                providers={providers}
-                redirectTo={domain + "/api/v1/auth/callback"}
-              />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <Auth
+              supabaseClient={supabase}
+              view="sign_in"
+              magicLink={true}
+              appearance={{ theme: ThemeSupa }}
+              theme={theme === 'dark' ? 'dark' : 'light'}
+              showLinks={true}
+              providers={providers}
+              redirectTo={domain + "/api/auth/callback"}
+              queryParams={ { 'from': url.toString() } }
+            />
         )}
     </div>
     )

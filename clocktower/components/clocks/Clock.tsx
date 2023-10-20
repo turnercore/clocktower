@@ -271,8 +271,11 @@ const updatedData = chartData.map((entry, index) => {
   }
 
   // Trailing Hover Effect
-  if (hoveredSliceIndex !== null && index < hoveredSliceIndex && clockData.selectedSliceIndex === null) {
-    fillColor = lightenHexColor(entry.color, clockData.lightenIntensity)
+  if (hoveredSliceIndex !== null && index < hoveredSliceIndex) {
+    // Apply lighten effect if the segment is not filled
+    if (clockData.selectedSliceIndex === null || index > clockData.selectedSliceIndex) {
+      fillColor = lightenHexColor(entry.color, clockData.lightenIntensity)
+    }
   }
 
   // Leading Hover Effect
@@ -299,7 +302,7 @@ const updatedData = chartData.map((entry, index) => {
 
   return (
     <div className='flex-col'> 
-    <Input value={clockData.name} onBlur={handleNameChange} />
+    <Input defaultValue={clockData.name} onBlur={handleNameChange} />
     <PieChart
       data={updatedData}
       lineWidth={clockData.isRounded ? clockData.lineWidth + 5 : clockData.lineWidth}  // Custom arc's width for the Donut chart
