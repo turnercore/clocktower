@@ -301,6 +301,7 @@ const updatedData = chartData.map((entry, index) => {
 })
 
 
+  const dotsCss = `absolute top-[5%] right-[3%] w-[15%] h-[15%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
 
   return (
     <div className='flex-col relative'> 
@@ -319,7 +320,7 @@ const updatedData = chartData.map((entry, index) => {
         viewBoxSize={[110, 110]}  // Increase the viewbox dimensions
         center={[55, 55]}  // Move the center of the chart
       />
-      <DotsVerticalIcon className='absolute top-[8%] right-[85%] w-[15%] h-[15%]' onClick={handleDelete}/>
+      <DotsVerticalIcon className={dotsCss}  onClick={handleDelete}/>
     </div>
   )
 }
