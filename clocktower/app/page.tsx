@@ -9,7 +9,7 @@ const Home: React.FC = () => {
   const rowData = {}
   return (
     <div className="flex flex-col">
-      <Tower towerId={'096d510f-018c-4fd2-b75f-82ec3ef4ec21'}/>
+      <h1> Welcome to Clocktower </h1>
     </div>
   )
 }
