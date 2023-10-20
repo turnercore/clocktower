@@ -232,31 +232,26 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
 
 
   return (
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col space-y-4">
       {/* Input for Tower Name */}
-      <div className="w-full max-w-md text-center">
-        <h1 className='text-3xl font-serif'> {towerData.name} </h1>
-      </div>
-      
-      {/* Add Row and Settings Buttons */}
-      <div className="flex space-x-2">
+      <div className="mx-auto w-full max-w-md text-center flex flex-row space-x-2">
+        <h1 className="text-3xl font-serif mx-auto"> {towerData.name} </h1>
         <Button className="bg-blue-500 text-white px-4 py-2 rounded" onClick={handleAddRow}>
           Add Row
         </Button>
       </div>
-
       {/* Rows */}
-      <div className="w-full max-w-md space-y-2">
-        {rows.map(({ rowId }) => (
-          <TowerRow
-            key={rowId}
-            rowId={rowId}
-            towerId={towerData.id}
-            onRowDelete={handleRowDelete}
-            // Add updateRow function here
-          />
-        ))}
-      </div>
+        <div className="flex flex-col space-y-10 w-full mx-3 max-w-full">
+          {rows.map(({ rowId }) => (
+            <TowerRow
+              key={rowId}
+              rowId={rowId}
+              towerId={towerData.id}
+              onRowDelete={handleRowDelete}
+              // Add updateRow function here
+            />
+          ))}
+        </div>
     </div>
   )
 }

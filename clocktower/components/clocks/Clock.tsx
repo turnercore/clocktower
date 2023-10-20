@@ -6,6 +6,8 @@ import { UUID } from 'crypto'
 import { Button, Input, toast } from '../ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import type { Clock as ClockData } from '@/types'
+import { Settings2Icon, SettingsIcon } from 'lucide-react'
+import { DotsVerticalIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
 
 interface ClockProps {
   towerId: UUID
@@ -301,23 +303,23 @@ const updatedData = chartData.map((entry, index) => {
 
 
   return (
-    <div className='flex-col'> 
-    <Input defaultValue={clockData.name} onBlur={handleNameChange} />
-    <PieChart
-      data={updatedData}
-      lineWidth={clockData.isRounded ? clockData.lineWidth + 5 : clockData.lineWidth}  // Custom arc's width for the Donut chart
-      paddingAngle={clockData.isRounded ? clockData.lineWidth + 5 : clockData.lineWidth / 4}  // Padding between arcs
-      rounded={clockData.isRounded ? true : false}
-      startAngle={-90}  // Start from the top-right
-      segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
-      segmentsShift={(index) => (index === hoveredSliceIndex ? 0.5 : -0.5)}  // Slight grow on hover
-      onClick={handleSliceClick}
-      onMouseOver={handleMouseOver}
-      onMouseOut={handleMouseOut}
-      viewBoxSize={[110, 110]}  // Increase the viewbox dimensions
-      center={[55, 55]}  // Move the center of the chart
-    />
-    <Button onClick={handleDelete}>Delete</Button>
+    <div className='flex-col relative'> 
+      {/* <Input defaultValue={clockData.name} onBlur={handleNameChange} /> */}
+      <PieChart
+        data={updatedData}
+        lineWidth={clockData.isRounded ? clockData.lineWidth + 5 : clockData.lineWidth}  // Custom arc's width for the Donut chart
+        paddingAngle={clockData.isRounded ? clockData.lineWidth + 5 : clockData.lineWidth / 4}  // Padding between arcs
+        rounded={clockData.isRounded ? true : false}
+        startAngle={-90}  // Start from the top-right
+        segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
+        segmentsShift={(index) => (index === hoveredSliceIndex ? 0.5 : -0.5)}  // Slight grow on hover
+        onClick={handleSliceClick}
+        onMouseOver={handleMouseOver}
+        onMouseOut={handleMouseOut}
+        viewBoxSize={[110, 110]}  // Increase the viewbox dimensions
+        center={[55, 55]}  // Move the center of the chart
+      />
+      <DotsVerticalIcon className='absolute top-[8%] right-[85%] w-[15%] h-[15%]' onClick={handleDelete}/>
     </div>
   )
 }

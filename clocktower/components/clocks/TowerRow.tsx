@@ -1,11 +1,12 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Clock from './Clock'
-import { Button, Input, ToastAction, toast } from '@/components/ui'
+import { Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, ToastAction, toast } from '@/components/ui'
 import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
 import { SortedClockData } from '@/types'
+import { ClockIcon, PlusIcon, DragHandleHorizontalIcon } from '@radix-ui/react-icons'
 
 
 interface TowerRowProps {
@@ -114,7 +115,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
       console.log("Row data fetched, updating local state:", fetchedRowData)
       // Existing row fetched; update local state
       setRowName(fetchedRowData.name)
-      const sortedClocks = [...fetchedRowData.clocks].sort((a, b) => a.position - b.position)
+      const sortedClocks = sortClocks(fetchedRowData.clocks)
       setClocks(sortedClocks)
     }
   
@@ -122,6 +123,10 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
     fetchAllData()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+  
+  const sortClocks = (clocks: SortedClockData[]) => {
+    return [...clocks].sort((a, b) => a.position - b.position)
+  }
   
   const addClock = async () => {
     // Update clocks with new data
@@ -200,20 +205,33 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
   }
 
   return (
-    <div>
-      <Input 
-        placeholder="Row" 
-        defaultValue={rowName} 
-        onBlur={handleRowNameChange} />
-      <Button onClick={addClock}>+</Button>
-      <Button onClick={handleRowDelete}>Delete Row</Button>
-      {clocks.map(({ clockId }, index) => (
-        <>
-        <h1> Clock ID: {clockId } </h1>
-        <Clock key={clockId} clockId={clockId} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
-        </>
-      ))}
-    </div>
+    <Card className='flex flex-col space-y-2 mr-10 ml-2'>
+      {/* Row Name and Settings*/}
+      <CardTitle className='flex flex-row space-x-2 space-y-2 items-center mx-8 mt-3'>
+        <Input 
+          className='w-[200px] mt-2'
+          placeholder="Row" 
+          defaultValue={rowName} 
+          onBlur={handleRowNameChange} />
+        <Button onClick={handleRowDelete}>Delete Row</Button>
+      </CardTitle>
+      {/* Clocks */}
+      <CardContent>
+      <ScrollArea className='overflow-auto'>
+        <div className='flex flex-row width-full items-center space-x-4'>
+        {clocks.map(({ clockId }, index) => (
+          <>
+          <div key={clockId} className='min-w-[150px]'>
+            <Clock key={clockId} clockId={clockId} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
+          </div>
+          </>
+        ))}
+        <Button variant='ghost'className='h-24 w-24' onClick={addClock}><PlusIcon className='h-6 w-6' /><ClockIcon className='ml-1 h-8 w-8'/></Button>
+        </div>
+        <ScrollBar orientation='horizontal' className='w-full' />
+        </ScrollArea> 
+      </CardContent>
+    </Card>
   )
 }
 

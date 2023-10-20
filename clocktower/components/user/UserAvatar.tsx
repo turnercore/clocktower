@@ -110,7 +110,7 @@ export default function UserAvatar() {
             className="w-full h-full object-cover object-center"
             src={profile.avatar_url}
           ></AvatarImage>
-          <AvatarFallback> AI </AvatarFallback>
+          <AvatarFallback> <PersonIcon className="h-5 w-5" /> </AvatarFallback>
         </Avatar>
         
         </DropdownMenuTrigger>
