@@ -73,6 +73,7 @@ const Tower: React.FC<TowerProps> = ({ towerId }) => {
           // ignore typescript errr
           // @ts-ignore
           users: [userData.session.user.id as UUID], // Add current user to the tower
+          
         }
         console.log('Creating new tower:', newTower)
         console.log(' adding user : ' + userData.session.user.id)

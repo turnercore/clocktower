@@ -15,14 +15,14 @@ export async function TowersDropdown() {
   const userId = sessionData.session.user.id
 
   // Fetch the towers the user has access to using the join table
-  const { data: towerAccessData, error: towerAccessError } = await supabase.from('towers_users').select('towerId').eq('userId', userId)
+  const { data: towerAccessData, error: towerAccessError } = await supabase.from('towers_users').select('tower_id').eq('user_id', userId)
   // Handle errors
   if (towerAccessError) {
     console.error(towerAccessError)
     return
   }
   // Get the tower ids from the join table
-  const towerIds = towerAccessData?.map(tower => tower.towerId) || []
+  const towerIds = towerAccessData?.map(tower => tower.tower_id) || []
   // Fetch the towers from the tower ids
   const { data: towersData, error: towersError } = await supabase.from('towers').select('*').in('id', towerIds)
   // Handle errors
