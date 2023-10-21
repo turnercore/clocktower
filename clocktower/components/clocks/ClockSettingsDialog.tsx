@@ -1,14 +1,15 @@
-import React, { FC, ChangeEvent } from 'react'
-import { Button, Input, Slider } from "@/components/ui"
+import React, { FC, ChangeEvent, useEffect } from 'react'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Slider } from "@/components/ui"
 import { BlockPicker, SketchPicker } from 'react-color'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import type { ClockData } from '@/types'
+import type { ClockData, ColorPaletteItem } from '@/types'
 import { LuSettings2 } from 'react-icons/lu'
-
+import { TiDelete } from 'react-icons/ti'
+import { BsTrash3Fill } from 'react-icons/bs'
 
 interface ClockSettingsDialogProps {
   configuredPieChart: JSX.Element
-  colorPalette: string[]
+  colorPalette: ColorPaletteItem[]
   clockData: ClockData
   handleNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   handleSegmentsChange: (value: number) => void
@@ -31,8 +32,12 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
 }) => {
   const dotsCss = `absolute top-[3%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
   const [segmentsValue, setSegmentsValue] = React.useState<number | null>(clockData.segments)
-  const [localColorValue, setLocalColorValue] = React.useState<string | null>(clockData.color)
-  const [colorPaletteValues, setColorPaletteValues] = React.useState<string[]>(colorPalette)
+  const [colorPaletteValues, setColorPaletteValues] = React.useState<string[]>(colorPalette.map((color) => color.hex))
+
+  // Update colorPaletteValues when colorPalette changes
+  useEffect(() => {
+    setColorPaletteValues(colorPalette.map((color) => color.hex))
+  }, [colorPalette])
 
   // const modifiedPieChart = React.cloneElement(configuredPieChart, {color: localColorValue})
 
@@ -62,26 +67,44 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         <DialogHeader >
           <DialogTitle className=' text-center text-2xl'>Clock Settings</DialogTitle>
         </DialogHeader>
-
+        {/* Name */}
+            <div className='flex flex-row space-x-2 items-center w-full'>
+              <label> Name: </label>
+              <Input type="text" placeholder='Clock Name' defaultValue={clockData.name} onBlur={handleNameChange} />
+            </div>
         <div className="flex flex-row">
           {/* Current Clock */}
-          <div className="w-2/3">
+          <div className="w-2/3 flex flex-col items-center">
             {configuredPieChart}
+            {/* Delete Button */}
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant='destructive' className='w-1/2 text-center'><BsTrash3Fill className='w-full h-full'/></Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete Clock?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Are you sure? This delete is forever, like a diamond 💎.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction className='vibrating-element bg-red-500' onClick={handleDelete}>Delete</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {/* Settings */}
           <div className="w-1/2 flex flex-col space-y-6 mx-5">
-            {/* Name */}
-            <div className='flex flex-col space-y-2 w-full'>
-              <label> Name </label>
-              <Input type="text" placeholder='Clock Name' defaultValue={clockData.name} onBlur={handleNameChange} />
-            </div>
+            
             {/* Number of Segments */}
             <div className='flex flex-col space-y-2 w-full'>
               <label> Segments </label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider defaultValue={[segmentsValue || 1]} min={1} max={12} onValueChange={(value) => setSegmentsValue(value[0])} onValueCommit={(value) => handleSegmentInputChange(null, value[0])} />
-                <Input className='max-w-[70px]' type="number" value={segmentsValue || undefined} defaultValue={segmentsValue || 1} onChange={handleSegmentInputChange} />
+                <Input className='max-w-[70px]' type="number" value={segmentsValue || undefined} onChange={handleSegmentInputChange} />
               </div>
             </div>
 
@@ -95,9 +118,9 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               <label className="flex items-center space-x-2"> Rounded </label>
               <Input type="checkbox" checked={clockData.rounded} onChange={handleIsRoundedChange} />
             </div>
-
-
             {/* Color */}
+            <div className='flex flex-col space-y-2 w-full'>
+            <label> Color </label>
             <SketchPicker
               width="100%"
               disableAlpha={true}
@@ -106,6 +129,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               onChangeComplete={({ hex } : {hex: string}) => handleColorChange(hex)}
             />
           </div>
+        </div>
         </div>
       </DialogContent>
     </Dialog>

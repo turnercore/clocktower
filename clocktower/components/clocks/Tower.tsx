@@ -1,5 +1,5 @@
 'use client'
-import type{ TowerData, UUID, TowerRowInitialData, TowerInitialData, TowerRowData } from '@/types'
+import type{ TowerData, UUID, TowerRowInitialData, TowerInitialData, TowerRowData, ColorPaletteItem } from '@/types'
 import React, { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
@@ -7,7 +7,7 @@ import { Button, toast } from '@/components/ui'
 
 interface TowerProps {
   initialData: TowerInitialData
-  initialUsedColors: string[]
+  initialUsedColors: ColorPaletteItem[]
   towerId: UUID
 }
 

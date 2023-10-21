@@ -52,6 +52,11 @@ export type User = {
     last_sign_in: Date
 }
 
+export interface ColorPaletteItem {
+  clocksUsing: UUID[]
+  hex: string
+}
+
 export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD' | 'CONNECT' | 'TRACE'
 
 export type UserProfile = {

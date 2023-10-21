@@ -6,13 +6,13 @@ import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
 import { TbClockPlus } from 'react-icons/tb'
-import type { ClockData, TowerRowData, TowerRowInitialData} from '@/types'
+import type { ClockData, ColorPaletteItem, TowerRowData, TowerRowInitialData} from '@/types'
 import { TbHttpDelete } from 'react-icons/tb'
 import { TiDelete } from 'react-icons/ti'
 
 interface TowerRowProps {
   initialData: TowerRowInitialData
-  initialUsedColors: string[]
+  initialUsedColors: ColorPaletteItem[]
   rowId: UUID
   towerId: UUID
   users: UUID[]

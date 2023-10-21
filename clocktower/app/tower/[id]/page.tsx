@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { ClockData, TowerData, TowerInitialData, TowerRowData, TowerRowInitialData, UUID } from '@/types'
+import type { ClockData, ColorPaletteItem, TowerData, TowerInitialData, TowerRowData, TowerRowInitialData, UUID } from '@/types'
 import Tower from '@/components/clocks/Tower'
 import { isValidUUID } from '@/tools/isValidUUID'
 import { headers, cookies } from 'next/headers'
@@ -59,7 +59,7 @@ export default async function TowerPage({ params }: { params: { id: UUID | strin
 
       //Set up initialData
       initialData = setInitialData(towerData, rowsData, clocksData, supabase)
-      const initialUsedColors = getUsedColors(initialData)
+      const initialUsedColors: ColorPaletteItem[] = getUsedColors(initialData)
 
       // Render the tower component with the initial data
       return (
@@ -240,19 +240,22 @@ const updateAndSyncClockPositions = async (
 }
 
 // Get all the colors used by all the clocks in the tower for the color picker
-const getUsedColors = (initialData: TowerInitialData) => {
-  const usedColors: string[] = []
+const getUsedColors = (initialData: TowerInitialData): ColorPaletteItem[] => {
+  const usedColors: ColorPaletteItem[] = []
+
   initialData.rows.forEach(row => {
     if (row) {
       row.clocks.forEach(clock => {
-        if (clock) {
-          if (!usedColors.includes(clock.color) && isValidHexColor(clock.color) ) {
-            usedColors.push(clock.color)
+        if (clock && isValidHexColor(clock.color)) {
+          const colorIndex = usedColors.findIndex(item => item.hex === clock.color)
+          if (colorIndex === -1) {
+            usedColors.push({ clocksUsing: [clock.id], hex: clock.color })
+          } else {
+            usedColors[colorIndex].clocksUsing.push(clock.id)
           }
         }
       })
     }
   })
-  console.log(usedColors)
   return usedColors
 }

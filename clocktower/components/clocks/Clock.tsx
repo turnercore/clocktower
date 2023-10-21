@@ -5,12 +5,12 @@
   import { UUID } from 'crypto'
   import { toast } from '@/components/ui'
   import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
-  import type { ClockData } from '@/types'
+  import type { ClockData, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
 
   interface ClockProps {
     initialData: ClockData
-    initialUsedColors: string[]
+    initialUsedColors: ColorPaletteItem[]
     towerId: UUID
     rowId: UUID
     onDelete: (clockId: UUID, skipServer?: boolean) => void
@@ -24,13 +24,12 @@ import ClockSettingsDialog from './ClockSettingsDialog'
     const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(null)
 
     //Find all the colors used in the tower for the color picker
-    const [colorPalette, setcolorPalette] = useState<string[]>(initialUsedColors)
+    const [colorPalette, setColorPalette] = useState<ColorPaletteItem[]>(initialUsedColors)
     
     // Init supabase
     const supabase = createClientComponentClient()
   
     const handleClockPayload = (payload: any) => {
-      console.log('Received payload event:', payload)
       const eventType = payload.eventType
       const data = payload.new
       if(data.id !== clockId) return
@@ -48,26 +47,88 @@ import ClockSettingsDialog from './ClockSettingsDialog'
           console.error('not valid eventType on payload')
       }
     }
-  
-    const handleTowerClocksUpdate = (payload: any) => {
-      console.log('Received payload event:', payload)
-      const data = payload.new
-      if(data.tower_id !== towerId) return
 
-      // See if the clock has a color not in the colors pallete
-      if(!colorPalette.includes(data.color)) {
-        // Add the color to the color palette
-        setcolorPalette(prevState => [...prevState, data.color])
-      }
+    const handleTowerClocksChanges = (payload: any) => {
+      console.log('Received clock event:', payload)
+    
+      // Destructure eventType and clockId for easier reference
+      const eventType = payload.eventType
+      const clockId = payload.new?.id ?? payload.old?.id
       
+      switch (eventType) {
+        case 'UPDATE':
+          const newColor = payload.new?.color
+    
+          if (newColor) {
+            setColorPalette(prevPalette => {
+              console.log('prevPalette:', prevPalette)
+              const updatedPalette = JSON.parse(JSON.stringify(prevPalette))
+    
+              // Find and remove clockId from old color
+              const oldColorItem = updatedPalette.find((item: ColorPaletteItem) => item.clocksUsing.includes(clockId))
+              if (oldColorItem) {
+                const index = oldColorItem.clocksUsing.indexOf(clockId)
+                if (index > -1) {
+                  oldColorItem.clocksUsing.splice(index, 1)
+                  // Remove the color entry if no clock is using it
+                  if (oldColorItem.clocksUsing.length === 0) {
+                    const oldColorIndex = updatedPalette.findIndex((item: ColorPaletteItem) => item.hex === oldColorItem.hex)
+                    updatedPalette.splice(oldColorIndex, 1)
+                  }
+                }
+              }
+    
+              // Add clockId to the new color
+              const newColorIndex = updatedPalette.findIndex((item: ColorPaletteItem) => item.hex === newColor)
+              if (newColorIndex === -1) {
+                updatedPalette.push({ clocksUsing: [clockId], hex: newColor })
+              } else {
+                updatedPalette[newColorIndex].clocksUsing.push(clockId)
+              }
+    
+              return updatedPalette
+            })
+          }
+          break
+    
+        case 'DELETE':
+          setColorPalette(prevPalette => {
+            const updatedPalette = JSON.parse(JSON.stringify(prevPalette))
+    
+            // Remove clockId from the deleted color
+            const deletedColorItem = updatedPalette.find((item: ColorPaletteItem) => item.clocksUsing.includes(clockId))
+            if (deletedColorItem) {
+              const index = deletedColorItem.clocksUsing.indexOf(clockId)
+              if (index > -1) {
+                deletedColorItem.clocksUsing.splice(index, 1)
+                // Remove the color entry if no clock is using it
+                if (deletedColorItem.clocksUsing.length === 0) {
+                  const deletedColorIndex = updatedPalette.findIndex((item: ColorPaletteItem) => item.hex === deletedColorItem.hex)
+                  updatedPalette.splice(deletedColorIndex, 1)
+                }
+              }
+            }
+    
+            return updatedPalette
+          })
+          break
+    
+        default:
+          return
+      }
     }
+    
+    //TESTING C OLOR CHANGES
+    useEffect(() => {
+      console.log('Updated colorPalette:', colorPalette)
+    }, [colorPalette])
 
   //Subscribe to changes in the clock on the server and handle them appropriately
     useEffect(() => {
       const channel = supabase
       .channel(`clock_${clockId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`id=eq.${clockId}`}, handleClockPayload)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clocks', filter:`id=eq.${towerId}`}, handleTowerClocksUpdate)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`tower_id=eq.${towerId}`}, handleTowerClocksChanges)
       .subscribe()
       // Cleanup function to unsubscribe from real-time updates
       return () => {
