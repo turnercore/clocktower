@@ -1,7 +1,8 @@
 import UserAvatar from "../user/UserAvatar"
 import { Button, ModeToggle } from "@/components/ui"
 import {TowersDropdown} from "./TowersDropdown"
-import { GearIcon, Share1Icon } from "@radix-ui/react-icons"
+import { BsGear } from "react-icons/bs"
+import { TbUserShare } from "react-icons/tb"
 
 export default function Header() {
   return (
@@ -12,10 +13,10 @@ export default function Header() {
           <TowersDropdown />
         </div>
         <Button title="Tower Settings" variant={'ghost'} className="ml-2">
-          <GearIcon className="h-5 w-5" />
+          <BsGear className="h-5 w-5" />
         </Button>
         <Button title="Invite Users" variant={'ghost'} className="ml-2">
-          <Share1Icon className="h-5 w-5" />
+          <TbUserShare className="h-5 w-5" />
         </Button>
       </div>
       <div className='flex mt-1 mb-1'>

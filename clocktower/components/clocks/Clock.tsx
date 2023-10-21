@@ -1,13 +1,12 @@
   'use client'
   import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
-  import { PieChart, PieChartProps } from 'react-minimal-pie-chart'
-  import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+  import { PieChart } from 'react-minimal-pie-chart'
+  import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
   import { UUID } from 'crypto'
-  import { Button, Input, toast } from '../ui'
+  import { toast } from '@/components/ui'
   import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
   import type { ClockData } from '@/types'
-  import { Settings2Icon, SettingsIcon } from 'lucide-react'
-  import { DotsVerticalIcon, DotsHorizontalIcon } from '@radix-ui/react-icons'
+  import { LuSettings2 } from 'react-icons/lu'
 
   interface ClockProps {
     initialData: ClockData
@@ -25,7 +24,7 @@
     
     // Init supabase
     const supabase = createClientComponentClient()
-    //Subscribe to changes in the clock on the server and handle them appropriately
+  
     const handleClockPayload = (payload: any) => {
       console.log('Received payload event:', payload)
       const eventType = payload.eventType
@@ -45,19 +44,25 @@
           console.error('not valid eventType on payload')
       }
     }
-    // Listen for changes in the clock's data
-    supabase
+
+  //Subscribe to changes in the clock on the server and handle them appropriately
+    useEffect(() => {
+      const channel = supabase
       .channel(`clock_${clockId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`id=eq.${clockId}`}, handleClockPayload)
       .subscribe()
-    
+      // Cleanup function to unsubscribe from real-time updates
+      return () => {
+        supabase.removeChannel(channel)
+      }
+    }, [])
+
     // Create the chart data, this is not used just to make the piechart work
     const chartData = Array.from({ length: clockData.segments }, (_, i) => ({
       title: `Segment ${i + 1}`,
       value: 10,
       color: clockData.color || '#E38627', // Green
     }))
-
 
     // Delete the clock
     const handleDelete = async () => {
@@ -100,7 +105,6 @@
         setClockData(prevState => ({ ...prevState, ...oldClockData }))
       }
     }
-
 
     // Optimistically update clock name and then update in the database
     const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -218,7 +222,7 @@
           viewBoxSize={[110, 110]}  // Increase the viewbox dimensions
           center={[55, 55]}  // Move the center of the chart
         />
-        <DotsVerticalIcon className={dotsCss}  onClick={handleDelete}/>
+        <LuSettings2 className={dotsCss}  onClick={handleDelete}/>
       </div>
     )
   }

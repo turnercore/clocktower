@@ -18,7 +18,7 @@ import Link from "next/link"
 import SignOutButton from "./SignOutButton"
 import { useEffect, useState } from "react"
 import type { Profile } from "@/types"
-import { PersonIcon } from "@radix-ui/react-icons"
+import { GiMeeple } from "react-icons/gi"
 
 export default function UserAvatar() {
   const [isHovered, setIsHovered] = useState(false)
@@ -84,7 +84,7 @@ export default function UserAvatar() {
       onClick={() => setIsDialogOpen(true)}
       className="w-10 h-10 cursor-pointer hover:shadow hover:scale-105 active:scale-100 active:shadow-inner"
     >
-      <AvatarFallback> <PersonIcon className="h-5 w-5" /> </AvatarFallback>
+      <AvatarFallback> <GiMeeple className="h-5 w-5" /> </AvatarFallback>
     </Avatar>
   )
 
@@ -110,7 +110,7 @@ export default function UserAvatar() {
             className="w-full h-full object-cover object-center"
             src={profile.avatar_url}
           ></AvatarImage>
-          <AvatarFallback> <PersonIcon className="h-5 w-5" /> </AvatarFallback>
+          <AvatarFallback> <GiMeeple className="h-5 w-5" /> </AvatarFallback>
         </Avatar>
         
         </DropdownMenuTrigger>

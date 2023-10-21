@@ -1,15 +1,14 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Clock from './Clock'
-import { Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, toast } from '@/components/ui'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, toast } from '@/components/ui'
 import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
-import { ClockIcon, PlusIcon } from '@radix-ui/react-icons'
+import { TbClockPlus } from 'react-icons/tb'
 import type { ClockData, TowerRowData, TowerRowInitialData} from '@/types'
-
-
-
+import { TbHttpDelete } from 'react-icons/tb'
+import { TiDelete } from 'react-icons/ti'
 
 interface TowerRowProps {
   initialData: TowerRowInitialData
@@ -22,7 +21,7 @@ interface TowerRowProps {
 const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowDelete }) => {
   const rowId = initialData.id
   const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks)
-  const [rowName, setRowName] = useState<string>(initialData.name)
+  const [rowName, setRowName] = useState<string>(initialData.name || '')
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -54,13 +53,20 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowD
     const newClocks = [...clocks, data]
     setClocks(sortClocks(newClocks))
   }
-  
-  supabase
+
+  useEffect(() => {
+    const subscription = supabase
     .channel(`tower_row_${rowId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tower_rows', filter:`id=eq.${rowId}`}, handleTowerRowPayload)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clocks', filter:`row_id=eq.${rowId}`}, handleClockAdds)
     .subscribe()
 
+  
+    // Cleanup function to unsubscribe from real-time updates
+    return () => {
+      supabase.removeChannel(subscription)
+    }
+  }, [])
   
   const sortClocks = (clocks: ClockData[]) => {
     const sortedClocks = [...clocks].sort((a, b) => a.position - b.position)
@@ -143,6 +149,8 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowD
         setClocks(sortClocks(updatedClocks))
   }
 
+
+
   return (
     <Card className='flex flex-col space-y-2 mr-10 ml-2'>
       {/* Row Name and Settings*/}
@@ -152,20 +160,34 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowD
           placeholder="Row" 
           defaultValue={rowName} 
           onBlur={handleRowNameChange} />
-        <Button onClick={handleRowDelete}>Delete Row</Button>
+      <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant='outline' ><TiDelete className='w-full h-full' /></Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete Row{rowName ? " " + rowName : ''}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This will delete the row and all clocks contained within.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction className='vibrating-element bg-red-500' onClick={handleRowDelete}>Delete</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
       </CardTitle>
       {/* Clocks */}
       <CardContent>
       <ScrollArea className='overflow-auto'>
         <div className='flex flex-row width-full items-center space-x-4'>
-        {clocks.map((clock) => (
-          <>
+        {clocks && clocks.length > 0 && clocks.map((clock) => (
           <div key={clock.id} className='min-w-[150px]'>
             <Clock initialData={clock} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
           </div>
-          </>
         ))}
-        <Button variant='ghost'className='h-24 w-24' onClick={addClock}><PlusIcon className='h-6 w-6' /><ClockIcon className='ml-1 h-8 w-8'/></Button>
+        <Button variant='ghost'className='h-24 w-24' onClick={addClock}><TbClockPlus className='ml-1 h-8 w-8'/></Button>
         </div>
         <ScrollBar orientation='horizontal' className='w-full' />
         </ScrollArea> 

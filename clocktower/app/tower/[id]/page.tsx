@@ -7,10 +7,9 @@ import { redirect } from 'next/navigation'
 import { generateName } from '@/tools/clocktowerNameGenerator'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { sortByPosition } from '@/tools/sortByPosition'
-import { init } from 'next/dist/compiled/webpack/webpack'
 
 
-export default async function PostsCategory({ params }: { params: { id: UUID | string } }) {
+export default async function TowerPage({ params }: { params: { id: UUID | string } }) {
   const supabase = createServerComponentClient({cookies})
   const id = params.id
   // See if it's a new tower
@@ -19,7 +18,7 @@ export default async function PostsCategory({ params }: { params: { id: UUID | s
     // Create new tower Id
     const newTowerId = crypto.randomUUID() as UUID
     // Create new tower and add it to the database
-    const { error } = await createNewTower(supabase, newTowerId)
+    const error = await createNewTower(supabase, newTowerId)
     // If there is an error report it
     if (error) console.error(error)
     // Otherwise redirect to the new tower id url
@@ -47,7 +46,7 @@ export default async function PostsCategory({ params }: { params: { id: UUID | s
       if (!towerExistsData || towerExistsData.length === 0) {
         // This is a new tower
         const newTowerId = crypto.randomUUID() as UUID
-        const { error } = await createNewTower(supabase, newTowerId)
+        const error = await createNewTower(supabase, newTowerId)
         if (error) throw error
         else redirectToNewTowerId(newTowerId)
       }
@@ -58,7 +57,7 @@ export default async function PostsCategory({ params }: { params: { id: UUID | s
       const clocksData = await fetchClockData(supabase, id as UUID)
 
       //Set up initialData
-      initialData = setInitialData(towerData, rowsData, clocksData)
+      initialData = setInitialData(towerData, rowsData, clocksData, supabase)
 
       // Render the tower component with the initial data
       return (
@@ -83,22 +82,26 @@ const createNewTower = async (supabase: SupabaseClient, newTowerId: UUID) => {
     const {data: sessionData, error: sessionError} = await supabase.auth.getSession()
     if (sessionError) throw sessionError
     if (!sessionData?.session?.user?.id) throw new Error("No user id found")
+    const userId = sessionData.session.user.id
 
     // Create a new tower
     const newTower = {
       id: newTowerId,
       name: generateName(),
-      owner: sessionData.session.user.id,
-      users: [sessionData.session.user.id],
+      owner: userId,
+      users: [userId],
     }
 
     //Create the tower in the database
     const {error: insertError} = await supabase.from('towers').insert(newTower)
+    const {error: towersUsersError} = await supabase.from('towers_users').insert({tower_id: newTowerId, user_id: userId})
+
     if (insertError) throw insertError
-    return {error: null}
+    if (towersUsersError) throw towersUsersError
   } catch (error) {
     return {error}
   }
+  // Update the towers_users table
 }
 
 const redirectToNewTowerId = (newTowerId: UUID) => {
@@ -138,9 +141,13 @@ const fetchClockData = async (supabase: SupabaseClient, id: UUID): Promise<Clock
   return data as ClockData[]
 }
 
-const setInitialData = (towerData: TowerData, rowsData: TowerRowData[], clocksData: ClockData[]) => {
+const setInitialData = (towerData: TowerData, rowsData: TowerRowData[], clocksData: ClockData[], supabase: SupabaseClient) => {
   // Sort rows by their position
   const sortedRowData = sortByPosition(rowsData) as TowerRowData[]
+  const sortedClockData = sortByPosition(clocksData) as ClockData[]
+  // Update the row positions and sync with the server
+  void updateAndSyncRowPositions(sortedRowData, rowsData, supabase)
+  void updateAndSyncClockPositions(sortedClockData, clocksData, supabase)
 
   // Group clocks by their row ID
   const clocksGroupedByRow: { [key: string]: ClockData[] } = {}
@@ -171,4 +178,58 @@ const setInitialData = (towerData: TowerData, rowsData: TowerRowData[], clocksDa
     ...towerData,
     rows: filteredInitialRowsData ? filteredInitialRowsData as TowerRowInitialData[] : []
   }
+}
+
+// Update row positions based on sorted order and sync any changes with the server
+const updateAndSyncRowPositions = async (
+  sortedRowData: TowerRowData[], 
+  originalRowData: TowerRowData[], 
+  supabase: SupabaseClient
+) => {
+  const updatePromises = sortedRowData.map(async (sortedRow, index) => {
+    const originalRow = originalRowData.find(row => row.id === sortedRow.id)
+    if (!originalRow) return // If the row doesn't exist in the original data, skip it
+
+    if (sortedRow.position !== index) {
+      sortedRow.position = index  // Update the position to the current index
+
+      const { error } = await supabase
+        .from('tower_rows')
+        .update({ position: index })
+        .eq('id', sortedRow.id)
+      
+      if (error) {
+        console.error(`Failed to update position for row with id ${sortedRow.id}`, error)
+      }
+    }
+  })
+
+  await Promise.all(updatePromises)
+}
+
+// Update clock positions based on sorted order and sync any changes with the server
+const updateAndSyncClockPositions = async (
+  sortedClockData: ClockData[], 
+  originalClockData: ClockData[], 
+  supabase: SupabaseClient
+) => {
+  const updatePromises = sortedClockData.map(async (sortedClock, index) => {
+    const originalClock = originalClockData.find(clock => clock.id === sortedClock.id)
+    if (!originalClock) return // If the clock doesn't exist in the original data, skip it
+
+    if (sortedClock.position !== index) {
+      sortedClock.position = index  // Update the position to the current index
+
+      const { error } = await supabase
+        .from('clocks')
+        .update({ position: index })
+        .eq('id', sortedClock.id)
+      
+      if (error) {
+        console.error(`Failed to update position for clock with id ${sortedClock.id}`, error)
+      }
+    }
+  })
+
+  await Promise.all(updatePromises)
 }

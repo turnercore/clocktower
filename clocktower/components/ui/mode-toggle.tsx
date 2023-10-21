@@ -1,7 +1,10 @@
 import * as React from "react"
-import { MoonIcon, SunIcon } from "@radix-ui/react-icons"
+import { TbMoonStars } from "react-icons/tb"
+import { GiMoonBats } from "react-icons/gi"
+import { BsSunglasses } from "react-icons/bs"
 import { useTheme } from "next-themes"
 import { Button } from "./button"
+import { TbSunHigh } from "react-icons/tb"
 
 export function ModeToggle({ className }: { className?: string }) {
   const { setTheme, resolvedTheme } = useTheme()
@@ -24,9 +27,9 @@ export function ModeToggle({ className }: { className?: string }) {
     >
       {/* Show Sun icon if theme is light, otherwise show Moon icon */}
       {resolvedTheme !== "dark" ? (
-        <SunIcon className="h-[1.2rem] w-[1.2rem]" />
+        <TbSunHigh className="h-[1.2rem] w-[1.2rem]" />
       ) : (
-        <MoonIcon className="h-[1.2rem] w-[1.2rem]" />
+        <GiMoonBats className="h-[1.2rem] w-[1.2rem]" />
       )}
       <span className="sr-only">Toggle theme</span>
     </Button>
