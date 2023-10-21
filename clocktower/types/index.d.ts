@@ -1,46 +1,41 @@
 // UUID type imported from 'crypto' library
 import type { UUID as CryptoUUID } from 'crypto'
 
-
-export type Tower = { 
+export interface TowerData { 
   id: UUID
   name?: string
-  rows: SortedRowData[]
   users: UUID[]
 }
 
-export interface SortedRowData {
-  rowId: UUID;  // Changed from id to rowId
-  position: number;
+export interface TowerInitialData extends TowerData {
+  rows: TowerRowInitialData[]
 }
 
-export type TowerRow = {
+export interface TowerRowData {
   id: UUID
-  towerId: UUID
+  tower_id: UUID
   name?: string
-  towerId: UUID
   position: number
-  clocks: UUID[]
   users: UUID[]
 }
 
-export interface SortedClockData {
-  clockId: UUID
-  position: number
+export interface TowerRowInitialData extends TowerRowData {
+  clocks: ClockData[]
 }
 
 // Define a type for the clock data
-export type Clock = {
+export interface ClockData {
   id: UUID
-  rowId: UUID
-  towerId: UUID
+  row_id: UUID
+  tower_id: UUID
   name: string
   segments: number
-  selectedSliceIndex: number | null
-  isRounded: boolean
-  lineWidth: number
-  lightenIntensity: number
-  darkenIntensity: number
+  filled: number | null
+  rounded: boolean
+  line_width: number
+  lighten_intensity: number
+  darken_intensity: number
+  position: number
   color: string // Assuming color is a string
   users: UUID[]
 }

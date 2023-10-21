@@ -1,144 +1,93 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import Clock from './Clock'
-import { Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, ToastAction, toast } from '@/components/ui'
+import { Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, toast } from '@/components/ui'
 import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
-import { SortedClockData } from '@/types'
-import { ClockIcon, PlusIcon, DragHandleHorizontalIcon } from '@radix-ui/react-icons'
+import { ClockIcon, PlusIcon } from '@radix-ui/react-icons'
+import type { ClockData, TowerRowData, TowerRowInitialData} from '@/types'
+
+
 
 
 interface TowerRowProps {
+  initialData: TowerRowInitialData
   rowId: UUID
   towerId: UUID
+  users: UUID[]
   onRowDelete: (rowId: UUID) => void
 }
 
-const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
-  const [clocks, setClocks] = useState<SortedClockData[]>([])
-  const [rowName, setRowName] = useState<string>('')
-  const [user, setUser] = useState<User | null>(null)
+const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowDelete }) => {
+  const rowId = initialData.id
+  const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks)
+  const [rowName, setRowName] = useState<string>(initialData.name)
   const supabase = createClientComponentClient()
 
-  // Fetch self and get data, or create a new row if no data exists on mount
-  useEffect(() => {
-    const fetchAllData = async () => {
-      console.log("Starting to fetch all data for TowerRow")
-  
-      // Fetch user data first
-      const { data: userData, error: userError } = await supabase.auth.getSession()
-      if (userError) {
-        console.error("User fetch error:", userError)
-        toast({
-          variant: "destructive",
-          title: "Error fetching user data",
-          description: userError.message,
-        })
-        return
-      }
-      if (!userData?.session?.user) {
-        console.log("No user logged in")
-        toast({
-          variant: "destructive",
-          title: "User not logged in",
-          description: "You need to be logged in to fetch row data.",
-        })
-        return
-      }
-      
-      console.log("Fetched user data:", userData.session.user)
-      // Set the user
-      setUser(userData.session.user)
-  
-      // Skip fetching row data if rowId or towerId is not available
-      if (!rowId || !towerId) {
-        console.log("RowId or TowerId is missing, skipping row fetch.")
-        return
-      }
-  
-      console.log(`Fetching row data for rowId: ${rowId} and towerId: ${towerId}`)
-  
-      // Fetch row data
-      const { data: fetchedRowData, error: rowError } = await supabase
-        .from('tower_rows')
-        .select('*')
-        .eq('id', rowId)
-        .contains('users', [userData.session.user.id])
-        .single()
-  
-      if (rowError) {
-        console.error("Row fetch error:", rowError)
-      }
-  
-      if (!fetchedRowData) {
-        console.log("No row data fetched, creating a new row")
-        // Get users list from the tower
-        const {data:towerData, error:towerUsersError} = await supabase.from('towers').select('users').eq('id', towerId).single()
-        const towerUsers: UUID[] = towerData?.users || []
-        if(towerUsersError || !towerUsers || towerUsers.includes(userData.session.user.id as UUID) === false) {
-          console.error("Error fetching tower users:", towerUsersError)
-          toast({
-            variant: "destructive",
-            title: "Error fetching tower users",
-            description: towerUsersError?.message || "Error fetching tower users",
-          })
-          return
+  // Update self when a server payload is received
+  const handleTowerRowPayload = (payload: any) => {
+    console.log('Received payload event:', payload)
+    const eventType = payload.eventType
+    const data = payload.new
+    if( data.id !== rowId) return 
+
+    switch (eventType) {
+      case 'UPDATE':
+        // Handle Row Name Change
+        if(data.name !== rowName) {
+         setRowName(data.name)
         }
-        // No data fetched, create a new row
-        const newRow = {
-          id: rowId,
-          towerId: towerId,
-          name: '',
-          clocks: [],
-          users: towerUsers || [userData.session.user.id as UUID] 
-        }
-        const { error: insertError } = await supabase.from('tower_rows').insert(newRow)
-        if (insertError) {
-          console.error("Row insertion error:", insertError)
-          toast({
-            variant: "destructive",
-            title: "Error creating new row",
-            description: insertError.message,
-          })
-          return
-        }
-        
-        console.log("Successfully created new row")
-  
-        // Initialize with empty data
-        setRowName(newRow.name)
-        setClocks([])  // New row, so empty clocks
-        return
-      }
-      
-      console.log("Row data fetched, updating local state:", fetchedRowData)
-      // Existing row fetched; update local state
-      setRowName(fetchedRowData.name)
-      const sortedClocks = sortClocks(fetchedRowData.clocks)
-      setClocks(sortedClocks)
+        break
+      case 'DELETE':
+        onRowDelete(rowId)
+        break
+      default:
+        console.error('not valid eventType on payload')
     }
-  
-    // Execute the async function
-    fetchAllData()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  
-  const sortClocks = (clocks: SortedClockData[]) => {
-    return [...clocks].sort((a, b) => a.position - b.position)
+  }
+
+  // If server adds a clock, add it to the local state
+  const handleClockAdds = (payload: any) => {
+    const data = payload.new
+    if(data.row_id !== rowId) return
+    const newClocks = [...clocks, data]
+    setClocks(sortClocks(newClocks))
   }
   
+  supabase
+    .channel(`tower_row_${rowId}`)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'tower_rows', filter:`id=eq.${rowId}`}, handleTowerRowPayload)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clocks', filter:`row_id=eq.${rowId}`}, handleClockAdds)
+    .subscribe()
+
+  
+  const sortClocks = (clocks: ClockData[]) => {
+    const sortedClocks = [...clocks].sort((a, b) => a.position - b.position)
+    return sortedClocks
+  }
+
   const addClock = async () => {
-    // Update clocks with new data
-    const newClockData = {
-      clockId: crypto.randomUUID() as UUID,
+    const newClock: ClockData = {
+      id: crypto.randomUUID() as UUID,
       position: clocks.length,
+      name: '',
+      segments: 6,
+      row_id: rowId,
+      tower_id: towerId,
+      users,
+      filled: null,
+      rounded: false,
+      line_width: 20,
+      lighten_intensity: 0.35,
+      darken_intensity: 0.5,
+      color: '#E38627', // Default color
     }
     const oldClockData = clocks ? [...clocks] : []
-    const updatedClocks = clocks ? [...clocks, newClockData] : [newClockData]
+    const updatedClocks = clocks ? [...clocks, newClock] : [newClock]
     setClocks(updatedClocks)
     // Update the server
-    const { data, error } = await supabase.from('tower_rows').update({ clocks: updatedClocks }).eq('id', rowId).single()
+    const { error } = await supabase.from('clocks').insert(newClock)
     // Handle Errors
     if (error) {
       console.error(error);
@@ -172,7 +121,6 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
       })
       // Revert if error
       setRowName(oldRowName)
-      return
     }
   }
 
@@ -189,19 +137,10 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
   }
 
   // Update local and server state when a clock is deleted tower_row.clocks should be updated
-  const handleClockDelete = async (clockId: UUID) => {
-        // Update the server by removing the clock
-        if (!towerId) return
-        const updatedClocks = clocks.filter((clock) => clock.clockId !== clockId)
-        //Reoder the clocks by position
-        const reorderedClocks = updatedClocks.map((clock, index) => ({ ...clock, position: index }))
-        const { error } = await supabase.from('tower_rows').update({ clocks: reorderedClocks }).eq('id', rowId).single()
-        if (error) {
-          console.error(error)
-          return
-        }
+  const handleClockDelete = async (clockId: UUID, skipServerUpdate = false) => {
+        const updatedClocks = clocks.filter((clock) => clock.id !== clockId)
         // Update the local state by removing the clock
-        setClocks(reorderedClocks)
+        setClocks(sortClocks(updatedClocks))
   }
 
   return (
@@ -219,10 +158,10 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
       <CardContent>
       <ScrollArea className='overflow-auto'>
         <div className='flex flex-row width-full items-center space-x-4'>
-        {clocks.map(({ clockId }, index) => (
+        {clocks.map((clock) => (
           <>
-          <div key={clockId} className='min-w-[150px]'>
-            <Clock key={clockId} clockId={clockId} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
+          <div key={clock.id} className='min-w-[150px]'>
+            <Clock initialData={clock} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
           </div>
           </>
         ))}
@@ -236,4 +175,4 @@ const TowerRow: React.FC<TowerRowProps> = ({ rowId, towerId, onRowDelete }) => {
 }
 
 
-export default TowerRow
+export default React.memo(TowerRow)
