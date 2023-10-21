@@ -8,26 +8,31 @@ import { LuSettings2 } from 'react-icons/lu'
 
 interface ClockSettingsDialogProps {
   configuredPieChart: JSX.Element
+  colorPalette: string[]
   clockData: ClockData
   handleNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   handleSegmentsChange: (value: number) => void
   handleIsRoundedChange: (event: ChangeEvent<HTMLInputElement>) => void
   handleLineWidthChange: (value: number) => void
   handleColorChange: (hex: string) => void
+  handleDelete: () => void
 }
 
 const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   configuredPieChart,
   clockData,
+  colorPalette,
   handleNameChange,
   handleSegmentsChange,
   handleIsRoundedChange,
   handleLineWidthChange,
   handleColorChange,
+  handleDelete,
 }) => {
   const dotsCss = `absolute top-[3%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
   const [segmentsValue, setSegmentsValue] = React.useState<number | null>(clockData.segments)
   const [localColorValue, setLocalColorValue] = React.useState<string | null>(clockData.color)
+  const [colorPaletteValues, setColorPaletteValues] = React.useState<string[]>(colorPalette)
 
   // const modifiedPieChart = React.cloneElement(configuredPieChart, {color: localColorValue})
 
@@ -91,12 +96,13 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               <Input type="checkbox" checked={clockData.rounded} onChange={handleIsRoundedChange} />
             </div>
 
+
             {/* Color */}
             <SketchPicker
               width="100%"
               disableAlpha={true}
               color={clockData.color}
-              presetColors={[clockData.color]}
+              presetColors={colorPaletteValues}
               onChangeComplete={({ hex } : {hex: string}) => handleColorChange(hex)}
             />
           </div>

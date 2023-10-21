@@ -253,5 +253,6 @@ const getUsedColors = (initialData: TowerInitialData) => {
       })
     }
   })
+  console.log(usedColors)
   return usedColors
 }

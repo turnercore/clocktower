@@ -24,7 +24,7 @@ import ClockSettingsDialog from './ClockSettingsDialog'
     const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(null)
 
     //Find all the colors used in the tower for the color picker
-    const [usedColors, setUsedColors] = useState<string[]>(initialUsedColors)
+    const [colorPalette, setcolorPalette] = useState<string[]>(initialUsedColors)
     
     // Init supabase
     const supabase = createClientComponentClient()
@@ -48,13 +48,26 @@ import ClockSettingsDialog from './ClockSettingsDialog'
           console.error('not valid eventType on payload')
       }
     }
+  
+    const handleTowerClocksUpdate = (payload: any) => {
+      console.log('Received payload event:', payload)
+      const data = payload.new
+      if(data.tower_id !== towerId) return
+
+      // See if the clock has a color not in the colors pallete
+      if(!colorPalette.includes(data.color)) {
+        // Add the color to the color palette
+        setcolorPalette(prevState => [...prevState, data.color])
+      }
+      
+    }
 
   //Subscribe to changes in the clock on the server and handle them appropriately
     useEffect(() => {
       const channel = supabase
       .channel(`clock_${clockId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`id=eq.${clockId}`}, handleClockPayload)
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clocks', filter:`id=eq.$(towerId)`, handleTowerClocksUpdate})
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clocks', filter:`id=eq.${towerId}`}, handleTowerClocksUpdate)
       .subscribe()
       // Cleanup function to unsubscribe from real-time updates
       return () => {
@@ -242,12 +255,13 @@ import ClockSettingsDialog from './ClockSettingsDialog'
         <ClockSettingsDialog 
           configuredPieChart={configuredPieChart}
           clockData={clockData}
-          usedColors={usedColors}
+          colorPalette={colorPalette}
           handleNameChange={handleNameChange}
           handleSegmentsChange={handleSegmentsChange}
           handleIsRoundedChange={handleIsRoundedChange}
           handleLineWidthChange={handleLineWidthChange}
           handleColorChange={handleColorChange}
+          handleDelete={handleDelete}
         />
       </div>
     )
