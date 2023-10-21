@@ -7,10 +7,11 @@ import { Button, toast } from '@/components/ui'
 
 interface TowerProps {
   initialData: TowerInitialData
+  initialUsedColors: string[]
   towerId: UUID
 }
 
-const Tower: React.FC<TowerProps> = ({initialData, towerId }) => {
+const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId }) => {
  // Initialize state variables with initialData
  const [towerData, setTowerData] = useState<TowerData>(initialData)
  const [rows, setRows] = useState<TowerRowInitialData[]>(initialData.rows)
@@ -108,6 +109,7 @@ const Tower: React.FC<TowerProps> = ({initialData, towerId }) => {
         <TowerRow
           key={rowData.id}
           initialData={rowData}
+          initialUsedColors={initialUsedColors}
           rowId={rowData.id}
           towerId={towerId}
           users={towerData?.users || []}

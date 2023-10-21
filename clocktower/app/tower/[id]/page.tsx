@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import type { ClockData, TowerData, TowerRowData, TowerRowInitialData, UUID } from '@/types'
+import type { ClockData, TowerData, TowerInitialData, TowerRowData, TowerRowInitialData, UUID } from '@/types'
 import Tower from '@/components/clocks/Tower'
 import { isValidUUID } from '@/tools/isValidUUID'
 import { headers, cookies } from 'next/headers'
@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import { generateName } from '@/tools/clocktowerNameGenerator'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { sortByPosition } from '@/tools/sortByPosition'
+import { isValidHexColor } from '@/tools/isValidHexColor'
 
 
 export default async function TowerPage({ params }: { params: { id: UUID | string } }) {
@@ -38,7 +39,7 @@ export default async function TowerPage({ params }: { params: { id: UUID | strin
   // Valid UUID, fetch tower data, if it doesn't exist then create tower with a new id (to prevent exploits) and redirect to that id
   else {
     // Fetch tower data
-    let initialData
+    let initialData: TowerInitialData
     try {
       // Ensure that the tower already exists
       const {data: towerExistsData, error: towerExistsError} = await supabase.from('towers').select('id').eq('id', id as UUID)
@@ -58,11 +59,12 @@ export default async function TowerPage({ params }: { params: { id: UUID | strin
 
       //Set up initialData
       initialData = setInitialData(towerData, rowsData, clocksData, supabase)
+      const initialUsedColors = getUsedColors(initialData)
 
       // Render the tower component with the initial data
       return (
         <div className="flex flex-col">
-          <Tower initialData={initialData} towerId={id as UUID} />
+          <Tower initialData={initialData} initialUsedColors={initialUsedColors} towerId={id as UUID} />
         </div>)
 
     } catch (error) {
@@ -75,6 +77,9 @@ export default async function TowerPage({ params }: { params: { id: UUID | strin
     }
   }
 }
+
+
+/// ------- Helper Functions ------- ///
 
 const createNewTower = async (supabase: SupabaseClient, newTowerId: UUID) => {
   try {
@@ -232,4 +237,21 @@ const updateAndSyncClockPositions = async (
   })
 
   await Promise.all(updatePromises)
+}
+
+// Get all the colors used by all the clocks in the tower for the color picker
+const getUsedColors = (initialData: TowerInitialData) => {
+  const usedColors: string[] = []
+  initialData.rows.forEach(row => {
+    if (row) {
+      row.clocks.forEach(clock => {
+        if (clock) {
+          if (!usedColors.includes(clock.color) && isValidHexColor(clock.color) ) {
+            usedColors.push(clock.color)
+          }
+        }
+      })
+    }
+  })
+  return usedColors
 }

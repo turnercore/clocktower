@@ -12,13 +12,14 @@ import { TiDelete } from 'react-icons/ti'
 
 interface TowerRowProps {
   initialData: TowerRowInitialData
+  initialUsedColors: string[]
   rowId: UUID
   towerId: UUID
   users: UUID[]
   onRowDelete: (rowId: UUID) => void
 }
 
-const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowDelete }) => {
+const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, towerId, users, onRowDelete }) => {
   const rowId = initialData.id
   const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks)
   const [rowName, setRowName] = useState<string>(initialData.name || '')
@@ -184,7 +185,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, towerId, users, onRowD
         <div className='flex flex-row width-full items-center space-x-4'>
         {clocks && clocks.length > 0 && clocks.map((clock) => (
           <div key={clock.id} className='min-w-[150px]'>
-            <Clock initialData={clock} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
+            <Clock initialData={clock} initialUsedColors={initialUsedColors} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
           </div>
         ))}
         <Button variant='ghost'className='h-24 w-24' onClick={addClock}><TbClockPlus className='ml-1 h-8 w-8'/></Button>

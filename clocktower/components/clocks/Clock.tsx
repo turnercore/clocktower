@@ -6,21 +6,25 @@
   import { toast } from '@/components/ui'
   import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
   import type { ClockData } from '@/types'
-  import { LuSettings2 } from 'react-icons/lu'
+import ClockSettingsDialog from './ClockSettingsDialog'
 
   interface ClockProps {
     initialData: ClockData
+    initialUsedColors: string[]
     towerId: UUID
     rowId: UUID
     onDelete: (clockId: UUID, skipServer?: boolean) => void
   }
 
   // Define the React component
-  const Clock: React.FC<ClockProps> = ({ initialData, towerId, rowId, onDelete }) => {
+  const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, rowId, onDelete }) => {
     const clockId = initialData.id
     // Create state variables
     const [clockData, setClockData] = useState<ClockData>(initialData)
     const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(null)
+
+    //Find all the colors used in the tower for the color picker
+    const [usedColors, setUsedColors] = useState<string[]>(initialUsedColors)
     
     // Init supabase
     const supabase = createClientComponentClient()
@@ -50,6 +54,7 @@
       const channel = supabase
       .channel(`clock_${clockId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`id=eq.${clockId}`}, handleClockPayload)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'clocks', filter:`id=eq.$(towerId)`, handleTowerClocksUpdate})
       .subscribe()
       // Cleanup function to unsubscribe from real-time updates
       return () => {
@@ -108,19 +113,31 @@
 
     // Optimistically update clock name and then update in the database
     const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
+      // Check to see if the value is the same as the current value
+      if (event.target.value === clockData.name) return
       updateClockData({name: event.target.value}, clockId)
     }
 
     const handleIsRoundedChange = async (event: ChangeEvent<HTMLInputElement>) => {
+      // Check to see if the value is the same as the current value
+      if (event.target.checked === clockData.rounded) return
       updateClockData({rounded: event.target.checked}, clockId)
     }
 
-    const handleLineWidthChange = async (event: ChangeEvent<HTMLInputElement>) => {
-      updateClockData({line_width: Number(event.target.value)}, clockId)
+    const handleLineWidthChange = async (value: number) => {
+      // Check to see if the value is the same as the current value
+      if (value === clockData.line_width) return
+      // Ensure the line width is not less than 1
+      if (value < 1) return
+      // Ensure the line width is not greater than 50
+      if (value > 50) return
+      updateClockData({line_width: Number(value)}, clockId)
     }
 
-    const handleSegmentsChange = async (event: ChangeEvent<HTMLInputElement>) => {
-      updateClockData({segments: Number(event.target.value)}, clockId)
+    const handleSegmentsChange = async (value: number) => {
+      // Check to see if the value is the same as the current value
+      if (value === clockData.segments) return
+      updateClockData({segments: value}, clockId)
     }
 
     const handleLightenIntensityChange = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -131,10 +148,10 @@
       updateClockData({darken_intensity: Number(event.target.value)}, clockId)
     }
 
-    const handleColorChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const handleColorChange = async (hex: string) => {
       // Verify color is a valid hex color
       const colorRegex = /^#([0-9A-F]{3}){1,2}$/i
-      if (!colorRegex.test(event.target.value)) {
+      if (!colorRegex.test(hex)) {
         console.error('Invalid hex color')
         toast({
           variant: 'destructive',
@@ -143,7 +160,7 @@
         })
         return
       }
-      updateClockData({color: event.target.value}, clockId)
+      updateClockData({color: hex}, clockId)
     }
 
     // Handle slice click
@@ -203,26 +220,35 @@
     })
 
     //Css for the settings icon
-    const dotsCss = `absolute top-[5%] right-[3%] w-[15%] h-[15%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
-
-    return (
-      <div className='flex-col relative'> 
-        {/* <Input defaultValue={clockData.name} onBlur={handleNameChange} /> */}
-        <PieChart
+    const configuredPieChart = (
+      <PieChart
           data={updatedData}
-          lineWidth={clockData.rounded ? clockData.line_width + 5 : clockData.line_width}  // Custom arc's width for the Donut chart
-          paddingAngle={clockData.rounded ? clockData.line_width + 5 : clockData.line_width / 4}  // Padding between arcs
+          lineWidth={clockData.rounded ? clockData.line_width / 2  : clockData.line_width}  // Custom arc's width for the Donut chart
+          paddingAngle={clockData.rounded ? clockData.line_width: clockData.line_width / 4}  // Padding between arcs
           rounded={clockData.rounded ? true : false}
           startAngle={-90}  // Start from the top-right
           segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
-          segmentsShift={(index) => (index === hoveredSliceIndex ? 0.5 : -0.5)}  // Slight grow on hover
+          segmentsShift={(index:number) => (index === hoveredSliceIndex ? 0.5 : -0.5)}  // Slight grow on hover
           onClick={handleSliceClick}
           onMouseOver={handleMouseOver}
           onMouseOut={handleMouseOut}
           viewBoxSize={[110, 110]}  // Increase the viewbox dimensions
           center={[55, 55]}  // Move the center of the chart
         />
-        <LuSettings2 className={dotsCss}  onClick={handleDelete}/>
+    )
+    return (
+      <div className='flex-col relative'> 
+        {configuredPieChart}
+        <ClockSettingsDialog 
+          configuredPieChart={configuredPieChart}
+          clockData={clockData}
+          usedColors={usedColors}
+          handleNameChange={handleNameChange}
+          handleSegmentsChange={handleSegmentsChange}
+          handleIsRoundedChange={handleIsRoundedChange}
+          handleLineWidthChange={handleLineWidthChange}
+          handleColorChange={handleColorChange}
+        />
       </div>
     )
   }
