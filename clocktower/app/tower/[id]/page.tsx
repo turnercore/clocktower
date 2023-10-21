@@ -8,7 +8,7 @@ import { generateName } from '@/tools/clocktowerNameGenerator'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { sortByPosition } from '@/tools/sortByPosition'
 import { isValidHexColor } from '@/tools/isValidHexColor'
-
+export const dynamic = 'force-dynamic'
 
 export default async function TowerPage({ params }: { params: { id: UUID | string } }) {
   const supabase = createServerComponentClient({cookies})
