@@ -184,8 +184,9 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
       <ScrollArea className='overflow-auto'>
         <div className='flex flex-row width-full items-center space-x-4'>
         {clocks && clocks.length > 0 && clocks.map((clock) => (
-          <div key={clock.id} className='min-w-[150px]'>
+          <div key={clock.id} className='min-w-[150px] flex flex-col'>
             <Clock initialData={clock} initialUsedColors={initialUsedColors} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
+            <label className='text-center'>{clock.name}</label>
           </div>
         ))}
         <Button variant='ghost'className='h-24 w-24' onClick={addClock}><TbClockPlus className='ml-1 h-8 w-8'/></Button>

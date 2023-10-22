@@ -1,8 +1,8 @@
+import type { ClockData, ColorPaletteItem } from '@/types'
 import React, { FC, ChangeEvent, useEffect } from 'react'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Slider } from "@/components/ui"
 import { SketchPicker } from 'react-color'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import type { ClockData, ColorPaletteItem } from '@/types'
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 

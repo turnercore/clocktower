@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
 import { Button, toast } from '@/components/ui'
+import TowerSettingsDialog from './TowerSettingsDialog'
 
 interface TowerProps {
   initialData: TowerInitialData
@@ -103,7 +104,7 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
     <div className="flex flex-col space-y-4">
       <div className="flex flex-row items-center mx-auto space-x-5">
         <h1 className='text-lg'>{towerData?.name}</h1>
-        <Button onClick={handleAddRow}>Add Row</Button>
+        <TowerSettingsDialog towerData={towerData} />
       </div>
       {rows.map((rowData) => (
         <TowerRow
@@ -116,6 +117,7 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
           onRowDelete={handleRowDelete}
         />
       ))}
+      <Button onClick={handleAddRow} className='max-w-[250px] self-center mx-auto'>Add Row</Button>
     </div>
   )
 }

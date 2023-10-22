@@ -12,9 +12,6 @@ export default function Header() {
         <div className="flex items-center mx-auto ml-5">
           <TowersDropdown />
         </div>
-        <Button title="Tower Settings" variant={'ghost'} className="ml-2">
-          <BsGear className="h-5 w-5" />
-        </Button>
         <Button title="Invite Users" variant={'ghost'} className="ml-2">
           <TbUserShare className="h-5 w-5" />
         </Button>
