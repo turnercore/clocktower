@@ -2,6 +2,7 @@
 import {
   Avatar,
   AvatarImage,
+  Button,
   AvatarFallback,
   DropdownMenu,
   DropdownMenuContent,
@@ -11,16 +12,23 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
 } from "@/components/ui"
 import LoginForm from "@/components/forms/LoginForm"
 import { User, createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 import Link from "next/link"
 import SignOutButton from "./SignOutButton"
 import { useEffect, useState } from "react"
-import type { Profile } from "@/types"
+import type { Profile, UUID } from "@/types"
+import { generateUsername } from '@/tools/generateUsername'
+import { UserIcon } from '@/components/user/UserIcon'
 import { GiMeeple } from "react-icons/gi"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Settings } from "lucide-react"
 
 export default function UserAvatar() {
+  // ... existing state and useEffect hooks
   const [isHovered, setIsHovered] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -44,26 +52,71 @@ export default function UserAvatar() {
     getSupabaseUser()
   }, [])
 
-  //When user changes, get the user's profile from supabase
+  // When user changes, get the user's profile from Supabase
   useEffect(() => {
     if (!user) return
-      // Fetch the user's profile
-      const fetchProfile = async () => {
-        try {
-          if(!user) return
-          const supabase = createClientComponentClient()
-          const { data: fetchedProfile } = await supabase
+    const fetchProfile = async () => {
+      try {
+        const supabase = createClientComponentClient()
+        const { data: fetchedProfile, error } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, icon, color, icon_color, username")
           .eq("id", user.id)
           .single()
-      
-          setProfile(fetchedProfile)
-        } catch(error: any) {
-          console.error(error.message)
+
+        if (!fetchedProfile) {
+          //If no user profile is found we'll create our own
+          const newProfile: Profile = {
+            id: user.id as UUID,
+            icon: 'default',
+            color: '#FFFFFF',
+            icon_color: '#000000',
+            username: generateUsername(),
+          }
+          //then we insert it into the database
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert(newProfile)
+          
+          if (insertError) throw insertError
+
+          setProfile(newProfile)
+        } else {
+          let updatedProfile: Profile = { ...fetchedProfile }
+          let needsUpdate = false
+  
+          if (fetchedProfile.icon === null) {
+            updatedProfile.icon = 'default'
+            needsUpdate = true
+          }
+          if (fetchedProfile.color === null) {
+            updatedProfile.color = '#FFFFFF' // Hex for white
+            needsUpdate = true
+          }
+          if (fetchedProfile.icon_color === null) {
+            updatedProfile.icon_color = '#000000' // Hex for black
+            needsUpdate = true
+          }
+          if (fetchedProfile.username === null) {
+            updatedProfile.username = generateUsername()
+            needsUpdate = true
+          }
+          
+          if (needsUpdate) {
+            const { error: updateError } = await supabase
+              .from("profiles")
+              .update(updatedProfile)
+              .eq("id", user.id)
+  
+            if (updateError) throw updateError
+          }
+          setProfile(updatedProfile)
         }
+      } catch (error: any) {
+        console.error(error.message)
       }
-      fetchProfile()
+    }
+    fetchProfile()
   }, [user])
 
   // Dialog for login form
@@ -71,7 +124,7 @@ export default function UserAvatar() {
     <Dialog open={isDialogOpen} onOpenChange={(open) => setIsDialogOpen(open)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className=" text-center">Login</DialogTitle>
+          <DialogTitle className="text-center">Login</DialogTitle>
         </DialogHeader>
         <LoginForm />
       </DialogContent>
@@ -88,46 +141,39 @@ export default function UserAvatar() {
     </Avatar>
   )
 
+
+
+
   if (!user || !profile) return (
     <>
       {notLoggedInHtml}
       {notLoggedInDialog}
     </>
   )
-  
-  if (!user || !profile) return (
-    <>
-      {notLoggedInHtml}
-      {notLoggedInDialog}
-    </>
-  )
-  else return (
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-        <Avatar
-          className="w-14 h-14 cursor-pointer bg-primary transition-all duration-300 hover:shadow-lg hover">
-          <AvatarImage
-            className="w-full h-full object-cover object-center"
-            src={profile.avatar_url}
-          ></AvatarImage>
-          <AvatarFallback> <GiMeeple className="h-5 w-5" /> </AvatarFallback>
-        </Avatar>
-        
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <Link href="/tokens">
-            <DropdownMenuItem>Tokens</DropdownMenuItem>
-          </Link>
-          <Link href="/keys">
-            <DropdownMenuItem>Keys</DropdownMenuItem>
-          </Link>
+
+  const loggedInHtml = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant='outline' className={`rounded-full`} style={{ backgroundColor: profile.color }}>
+          <UserIcon name={profile.icon} color={profile.color} color_icon={profile.icon_color} />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56">
+        <DropdownMenuLabel className="text-center">{profile.username}</DropdownMenuLabel>
+        <DropdownMenuGroup>
           <Link href="/account">
-            <DropdownMenuItem>Settings</DropdownMenuItem>
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem className = 'justify-center items-center'>
+          <DropdownMenuItem>
             <SignOutButton />
           </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    )
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+
+  return loggedInHtml
 }

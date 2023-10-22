@@ -87,10 +87,10 @@ export interface StandardResponse {
 export interface Profile {
   id: UUID
   username: string
-  full_name: string
-  avatar_url: string
-  website: string
-  user_id: UUID
+  full_name?: string
+  icon: string
+  icon_color: string
+  color: string
 }
 
 interface ProcessMarkdownOptions {

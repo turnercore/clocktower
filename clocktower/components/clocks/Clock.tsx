@@ -134,7 +134,7 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [handleClockPayload, handleTowerClocksChanges])
 
   // Create the chart data, this is not used just to make the piechart work
   const chartData = Array.from({ length: clockData.segments }, (_, i) => ({

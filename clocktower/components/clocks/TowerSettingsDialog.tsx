@@ -1,11 +1,13 @@
+'use client'
 import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input } from "@/components/ui"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Label } from "@/components/ui"
 import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from '@/types'
+import { useRouter } from 'next/navigation'
 // Import other required components
 
 interface TowerSettingsDialogProps {
@@ -13,6 +15,7 @@ interface TowerSettingsDialogProps {
 }
 
 const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) => {
+  const router = useRouter()
   const [towerName, setTowerName] = useState(towerData.name)
   const [currentUserId, setCurrentUserId] = useState<UUID | null>(null) // Replace with your user type
   const [isOwner, setIsOwner] = useState<boolean>(false)
@@ -38,34 +41,55 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
     getCurrentUser()
   }, [])
 
-  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isOwner) {
-      // Update the name on the server
-      // setTowerName to the new name
+      const newName = event.target.value
+      try {
+        // Assume updateTowerName is a function to update the tower name on the server
+        const { error } = await supabase.from('towers').update({ name: newName }).eq('id', towerData.id)
+        if (error) throw error
+        setTowerName(newName)
+      } catch (error: any) {
+        console.error('Error updating tower name:', error.message || error)
+      }
     }
   }
 
   const handleLeaveTower = async () => {
-    if (isOwner) {
-      // Delete the tower
-    } else {
-      // Leave the tower
+    try {
+      if (isOwner) {
+        // Assume deleteTower is a function to delete the tower on the server
+        const { error } = await supabase.from('towers').delete().eq('id', towerData.id)
+        if (error) throw error
+      } else {
+        // Assume leaveTower is a function to remove the current user from the tower on the server
+        // Remove the user from the users array in the tower
+        const newUsersArray = towerData.users.filter((userId: UUID) => userId !== currentUserId)
+        const { error:usersArrayError } = await supabase.from('towers').update({ users: newUsersArray }).eq('id', towerData.id)
+        if (usersArrayError) throw usersArrayError
+        const { error:towersUsersError } = await supabase.from('towers_users').delete().eq('tower_id', towerData.id).eq('user_id', currentUserId)
+        if (towersUsersError) throw towersUsersError
+      }
+      // Redirect to the home page
+      router.push('/')
+    } catch (error: any) {
+      console.error('Error leaving/deleting tower:', error.message || error)
     }
   }
 
-  const handleDeleteTower = async () => {
-
-  }
-
-  const handleRemoveUser = async (userId: string) => {
+  const handleAddUser = async (userId: UUID) => {
     if (isOwner) {
-      // Remove the user from the tower
-    }
-  }
-
-  const handleAddUser = async (username: string) => {
-    if (isOwner) {
-      // Add the user to the tower
+      try {
+        // Add userId to the users array
+        const newUsersArray = [...towerData.users, userId]
+        const { error:updateUsersArrayError } = await supabase.from('towers').update({ users: newUsersArray }).eq('id', towerData.id)
+        if (updateUsersArrayError) throw updateUsersArrayError
+        // Assume addUser is a function to add a user to the tower on the server
+        const { error } = await supabase.from('towers_users').upsert({ tower_id: towerData.id, user_id: userId });
+        if (error) throw error;
+      } catch (error: any) {
+        console.error('Error adding user:', error.message || error);
+      }
     }
   }
 
@@ -81,8 +105,8 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
           <DialogTitle>Tower Settings</DialogTitle>
         </DialogHeader>
         <div className='flex flex-row space-y-2 items-center'>
-          <label>Tower Name: </label>
-          <Input type="text" value={towerName} disabled={!isOwner} onChange={handleNameChange} />
+          <Label htmlFor="name">Tower Name: </Label>
+          <Input defaultValue={towerName} disabled={!isOwner} onBlur={handleNameChange} />
         </div>
           <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -98,7 +122,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction className='vibrating-element bg-red-500' onClick={isOwner ? handleDeleteTower : handleLeaveTower}>
+              <AlertDialogAction className='vibrating-element bg-red-500' onClick={handleLeaveTower}>
                 { isOwner ? <GiDemolish className='w-full h-full'/>  : <FaPersonWalkingLuggage className='w-full h-full' /> }
                   </AlertDialogAction>
             </AlertDialogFooter>

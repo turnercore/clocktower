@@ -1,13 +1,12 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import Clock from './Clock'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Card, CardContent, CardTitle, Input, ScrollArea, ScrollBar, toast } from '@/components/ui'
-import { User, createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
 import { TbClockPlus } from 'react-icons/tb'
-import type { ClockData, ColorPaletteItem, TowerRowData, TowerRowInitialData} from '@/types'
-import { TbHttpDelete } from 'react-icons/tb'
+import type { ClockData, ColorPaletteItem, TowerRowInitialData} from '@/types'
 import { TiDelete } from 'react-icons/ti'
 
 interface TowerRowProps {
@@ -23,6 +22,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
   const rowId = initialData.id
   const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks)
   const [rowName, setRowName] = useState<string>(initialData.name || '')
+  const addedClockIdsRef = useRef<Set<UUID>>(new Set())
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -48,18 +48,23 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
   }
 
   // If server adds a clock, add it to the local state
-  const handleClockAdds = (payload: any) => {
+  const handleClockInsert = (payload: any) => {
     const data = payload.new
     if(data.row_id !== rowId) return
     const newClocks = [...clocks, data]
-    setClocks(sortClocks(newClocks))
+    // Check if the clock ID is in the ref before adding it to the local state
+    if (!addedClockIdsRef.current.has(data.id)) {
+      const newClocks = [...clocks, data]
+      setClocks(sortClocks(newClocks))
+      addedClockIdsRef.current.delete(data.id)
+    }
   }
 
   useEffect(() => {
     const subscription = supabase
     .channel(`tower_row_${rowId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'tower_rows', filter:`id=eq.${rowId}`}, handleTowerRowPayload)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clocks', filter:`row_id=eq.${rowId}`}, handleClockAdds)
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clocks', filter:`row_id=eq.${rowId}`}, handleClockInsert)
     .subscribe()
 
   
@@ -90,6 +95,8 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
       darken_intensity: 0.5,
       color: '#E38627', // Default color
     }
+    // Add the new clock ID to the ref
+    addedClockIdsRef.current.add(newClock.id);
     const oldClockData = clocks ? [...clocks] : []
     const updatedClocks = clocks ? [...clocks, newClock] : [newClock]
     setClocks(updatedClocks)

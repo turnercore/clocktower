@@ -18,6 +18,7 @@ import {
 import { isValidUUID } from "@/tools/isValidUUID"
 import { UUID } from "@/types"
 import { useParams, useRouter } from "next/navigation"
+import { GiWhiteTower } from "react-icons/gi"
 
 export function TowersDropdownComponent({ towers }: { towers: any[] }) {
   const router = useRouter()
@@ -53,8 +54,22 @@ export function TowersDropdownComponent({ towers }: { towers: any[] }) {
       <PopoverContent className="w-[200px] p-0">
         <Command>
           <CommandInput placeholder="Search Towers..." />
-          <CommandEmpty>No tower found. Perhaps you should Create a new one.</CommandEmpty>
+          
+          <CommandEmpty>
+            No tower found. Perhaps you should <br />
+           <Button>Create a new one.</Button>
+           </CommandEmpty>
           <CommandGroup>
+            <CommandItem
+                key='new'
+                onSelect={() => {
+                  setOpen(false)
+                  router.push('/tower/new')
+                }}
+              >
+                <Button className='mx-auto items-center' > New Tower </Button>
+
+            </CommandItem>
             {towers.map((tower) => (
               <CommandItem
                 key={tower.id}
@@ -65,12 +80,7 @@ export function TowersDropdownComponent({ towers }: { towers: any[] }) {
                   navigateToSelectedTower(tower.id)
                 }}
               >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === tower.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
+                <GiWhiteTower className="mr-2 h-4 w-4" />
                 {tower.name}
               </CommandItem>
             ))}

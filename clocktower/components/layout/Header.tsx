@@ -3,6 +3,7 @@ import { Button, ModeToggle } from "@/components/ui"
 import {TowersDropdown} from "./TowersDropdown"
 import { BsGear } from "react-icons/bs"
 import { TbUserShare } from "react-icons/tb"
+import ShareTowerPopover from "../clocks/ShareTowerPopover"
 
 export default function Header() {
   return (
@@ -12,9 +13,7 @@ export default function Header() {
         <div className="flex items-center mx-auto ml-5">
           <TowersDropdown />
         </div>
-        <Button title="Invite Users" variant={'ghost'} className="ml-2">
-          <TbUserShare className="h-5 w-5" />
-        </Button>
+        <ShareTowerPopover />
       </div>
       <div className='flex mt-1 mb-1'>
           <UserAvatar />
