@@ -14,7 +14,7 @@ export default function SignOutButton() {
     try {
       signOut()
     } catch (error) {
-        console.log(error)
+        console.error(error)
     }
   }
 

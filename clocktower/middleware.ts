@@ -47,7 +47,6 @@ export async function middleware(req: NextRequest) {
 
     if (!session || error) {
         if (isProtectedRoute(pathname)) {
-            console.log("going to protected route")
             return isApiRoute(pathname) ? handleUnauthenticatedApi()  : handleUnauthenticatedClient(req)
         }
     }

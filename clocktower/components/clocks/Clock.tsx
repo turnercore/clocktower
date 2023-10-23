@@ -3,7 +3,7 @@ import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
-import { toast } from '@/components/ui'
+import { Label, toast } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import type { ClockData, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
@@ -30,27 +30,28 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
   const supabase = createClientComponentClient()
 
   const handleClockPayload = (payload: any) => {
+    console.log('Received clock payload event:', payload)
     const eventType = payload.eventType
-    const data = payload.new
-    if(data.id !== clockId) return
+    const newData = payload.new
+    const oldData = payload.old
+    if(newData.id !== clockId && oldData.id !== clockId) return
 
     switch (eventType) {
       case 'UPDATE':
-        if(data !== clockData) {
-          setClockData(data)
+        if(newData !== clockData) {
+          setClockData(newData)
         }
         break
       case 'DELETE':
-        onDelete(clockId, true)
+        console.log('clock deleted')
+        onDelete(clockId)
         break
       default:
-        console.error('not valid eventType on payload')
+        return
     }
   }
-
-  const handleTowerClocksChanges = (payload: any) => {
-    console.log('Received clock event:', payload)
-  
+  // This is to update the color swatches when a color is changed in the tower
+  const handleTowerClocksChanges = (payload: any) => {  
     // Destructure eventType and clockId for easier reference
     const eventType = payload.eventType
     const clockId = payload.new?.id ?? payload.old?.id
@@ -61,7 +62,6 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
   
         if (newColor) {
           setColorPalette(prevPalette => {
-            console.log('prevPalette:', prevPalette)
             const updatedPalette = JSON.parse(JSON.stringify(prevPalette))
   
             // Find and remove clockId from old color
@@ -94,7 +94,7 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
       case 'DELETE':
         setColorPalette(prevPalette => {
           const updatedPalette = JSON.parse(JSON.stringify(prevPalette))
-  
+
           // Remove clockId from the deleted color
           const deletedColorItem = updatedPalette.find((item: ColorPaletteItem) => item.clocksUsing.includes(clockId))
           if (deletedColorItem) {
@@ -117,24 +117,19 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
         return
     }
   }
-  
-  //TESTING C OLOR CHANGES
-  useEffect(() => {
-    console.log('Updated colorPalette:', colorPalette)
-  }, [colorPalette])
 
 //Subscribe to changes in the clock on the server and handle them appropriately
   useEffect(() => {
-    const channel = supabase
+    const subscription = supabase
     .channel(`clock_${clockId}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`id=eq.${clockId}`}, handleClockPayload)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'clocks', filter:`tower_id=eq.${towerId}`}, handleTowerClocksChanges)
     .subscribe()
     // Cleanup function to unsubscribe from real-time updates
     return () => {
-      supabase.removeChannel(channel)
+      subscription.unsubscribe()
     }
-  }, [handleClockPayload, handleTowerClocksChanges])
+  }, [handleClockPayload, handleTowerClocksChanges, clockId, towerId, supabase])
 
   // Create the chart data, this is not used just to make the piechart work
   const chartData = Array.from({ length: clockData.segments }, (_, i) => ({
@@ -311,7 +306,8 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
       />
   )
   return (
-    <div className='flex-col relative'> 
+    <div className='flex flex-col relative items-center'> 
+      <h3 className='text-center'>{clockData.name}</h3>
       {configuredPieChart}
       <ClockSettingsDialog 
         configuredPieChart={configuredPieChart}

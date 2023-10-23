@@ -19,7 +19,6 @@ export default function LoginForm() {
   const path = usePathname()
   const url = new URL(path, domain)
   const theme = useTheme().resolvedTheme
-  console.log(domain + "/api/auth/callback")
 
   // see if user is logged in already
   //useEffect to see if the user is logged in 

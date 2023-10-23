@@ -30,7 +30,7 @@ function generateIndex(directoryPath) {
 
   //Check if directory is already indexed
   if (fs.existsSync(path.join(directoryPath, 'index.ts')) || fs.existsSync(path.join(directoryPath, 'index.js'))) {
-    console.log('An index.ts or index.js file already exists in the directory. Exiting.')
+    console.error('An index.ts or index.js file already exists in the directory. Exiting.')
     process.exit(1)
   }
 

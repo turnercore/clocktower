@@ -67,7 +67,7 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
 
   // Subscribe to changes on mount
   useEffect(() => {
-    const channel = supabase
+    const subscription = supabase
     .channel(`tower_${towerId}`)
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'tower_rows', filter:`tower_id=eq.${towerId}`}, handleInsertRow)
     .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'tower_rows', filter:`tower_id=eq.${towerId}`}, handleUpdateRow)
@@ -75,9 +75,9 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
     .subscribe()
     // Cleanup function to unsubscribe from real-time updates
     return () => {
-      supabase.removeChannel(channel)
+      subscription.unsubscribe()
     }
-  }, [])
+  }, [supabase, towerId])
 
   const handleAddRow = async () => {
     // Create new row data
@@ -144,8 +144,4 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
   )
 }
 
-export default Tower
-  function onEffect(arg0: () => React.JSX.Element) {
-    throw new Error('Function not implemented.')
-  }
-
+export default React.memo(Tower)
