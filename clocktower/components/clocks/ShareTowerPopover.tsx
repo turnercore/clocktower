@@ -60,7 +60,7 @@ export default function ShareTowerPopover() {
       // Add entry in the friends table
       const { error: friendsInsertError } = await supabase
         .from('friends')
-        .insert([{ user_id: userId, friend_id: invitedUserId }]);
+        .upsert([{ user_id: userId, friend_id: invitedUserId }]);
       
       if (friendsInsertError) throw friendsInsertError;
       
