@@ -25,6 +25,7 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
   const router = useRouter()
   const params = useParams()
   const supabase = createClientComponentClient()
+  const path = usePathname()
   const [open, setOpen] = React.useState(false)
   const [towers, setTowers] = React.useState(initialTowers)
   const selectedTowerName = towers.find((tower) => tower.id === params.id)?.name || ""
@@ -59,7 +60,7 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
     const newTowersList = towers.filter((tower) => tower.id !== towerId)
     setTowers(newTowersList)
     // If the user is on the tower page, redirect to the home page
-    if (usePathname().includes(towerId)) router.push('/')
+    if (path.includes(towerId)) router.push('/')
   }
 
   useEffect(() => {
