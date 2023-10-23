@@ -4,6 +4,7 @@ import Footer from '@/components/layout/Footer'
 import { ThemeProvider } from "@/components/layout/theme-provider"
 import type { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
+export const dynamic = 'force-dynamic'
  
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
