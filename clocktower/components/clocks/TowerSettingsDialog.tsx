@@ -55,41 +55,31 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
     }
   }
 
+  // Handle the user leaving the tower, if they are the owner then burn it down behind them.
   const handleLeaveTower = async () => {
     try {
+      // Check if the user is the owner of the tower
       if (isOwner) {
         // Assume deleteTower is a function to delete the tower on the server
-        const { error } = await supabase.from('towers').delete().eq('id', towerData.id)
-        if (error) throw error
+        const { error } = await supabase.from('towers').delete().eq('id', towerData.id);
+        if (error) throw error;
       } else {
-        // Assume leaveTower is a function to remove the current user from the tower on the server
-        // Remove the user from the users array in the tower
-        const newUsersArray = towerData.users.filter((userId: UUID) => userId !== currentUserId)
-        const { error:usersArrayError } = await supabase.from('towers').update({ users: newUsersArray }).eq('id', towerData.id)
-        if (usersArrayError) throw usersArrayError
-        const { error:towersUsersError } = await supabase.from('towers_users').delete().eq('tower_id', towerData.id).eq('user_id', currentUserId)
-        if (towersUsersError) throw towersUsersError
+        // Call the remove_user_from_tower function via the rpc method
+        const { data, error } = await supabase.rpc('remove_user_from_tower', {
+          tower: towerData.id,
+          userid: currentUserId,
+        });
+        // Check for errors
+        if (error) throw error;
+        // Optionally, check the result for any additional information
+        if (data && data.success !== true) {
+          throw new Error('Failed to remove user from tower');
+        }
       }
       // Redirect to the home page
-      router.push('/')
+      router.push('/');
     } catch (error: any) {
-      console.error('Error leaving/deleting tower:', error.message || error)
-    }
-  }
-
-  const handleAddUser = async (userId: UUID) => {
-    if (isOwner) {
-      try {
-        // Add userId to the users array
-        const newUsersArray = [...towerData.users, userId]
-        const { error:updateUsersArrayError } = await supabase.from('towers').update({ users: newUsersArray }).eq('id', towerData.id)
-        if (updateUsersArrayError) throw updateUsersArrayError
-        // Assume addUser is a function to add a user to the tower on the server
-        const { error } = await supabase.from('towers_users').upsert({ tower_id: towerData.id, user_id: userId });
-        if (error) throw error;
-      } catch (error: any) {
-        console.error('Error adding user:', error.message || error);
-      }
+      console.error('Error leaving/deleting tower:', error.message || error);
     }
   }
 
@@ -129,12 +119,6 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
           </AlertDialogContent>
         </AlertDialog>
           {/* Loop through users and display avatars */}
-          {/* Add AlertDialog for removing users if isOwner is true */}
-        {isOwner && (
-          <Button onClick={() => {/* Open dialog to add a user */}}>
-            Add User
-          </Button>
-        )}
       </DialogContent>
     </Dialog>
   )

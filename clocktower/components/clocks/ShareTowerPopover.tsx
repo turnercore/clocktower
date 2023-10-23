@@ -7,11 +7,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
+import { toast } from '../ui'
+import { UUID } from '@/types'
 
 export default function ShareTowerPopover() {
   const path = usePathname()
   const params = useParams<{ id: string }>()
-  const towerId = params.id
+  const towerId: UUID = params.id as UUID
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -33,78 +35,51 @@ export default function ShareTowerPopover() {
   }, [towerId, path])
 
   const handleInvite = async () => {
-    if (!username) return
-    setIsLoading(true)
+    if (!username || !towerId) return;
+    setIsLoading(true);
   
     try {
       // Check if the user with the entered username exists
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id')
-        .eq('username', username)
+        .ilike('username', username)
+        .single();
       
       // Error handling
-      if (profilesError || !profilesData) throw profilesError || new Error("Error fetching profiles data")
+      if (profilesError || !profilesData) throw profilesError || new Error("User not found.");
   
-      if (profilesData && profilesData.length > 0) {
-        const invitedUserId = profilesData[0].id
-        
-        // Get current users arrays from tower, clocks, and tower_rows
-        const { data: towerData, error: towerError } = await supabase
-          .from('towers')
-          .select('users, id')
-          .eq('id', towerId)
-        if (towerError || !towerData) throw towerError || new Error("Error fetching tower data")
-  
-        const { data: clocksData, error: clocksError } = await supabase
-          .from('clocks')
-          .select('users, id')
-          .eq('tower_id', towerId)
-        if (clocksError || !clocksData) throw clocksError || new Error("Error fetching clocks data")
-  
-        const { data: towerRowsData, error: towerRowsError } = await supabase
-          .from('tower_rows')
-          .select('users, id')
-          .eq('tower_id', towerId)
-        if (towerRowsError || !towerRowsData) throw towerRowsError || new Error("Error fetching tower rows data")
-  
-        // Function to update users array if the invitedUserId is not already present
-        const updateUserArray = async (table: string, recordId: string, usersArray: string[]) => {
-          if (!usersArray.includes(invitedUserId)) {
-            const updatedUsersArray = [...usersArray, invitedUserId]
-            await supabase
-              .from(table)
-              .update({ users: updatedUsersArray })
-              .eq('id', recordId)
-          }
-        }
-  
-        // Update the users array on the current tower
-        await updateUserArray('towers', towerId, towerData[0].users)
-  
-        // Update the users array on all rows and clocks related to the current tower
-        for (const row of towerRowsData) {
-          await updateUserArray('tower_rows', row.id, row.users)
-        }
-        for (const clock of clocksData) {
-          await updateUserArray('clocks', clock.id, clock.users)
-        }
-  
-        // Add entry in towers_users
-        await supabase
-          .from('towers_users')
-          .insert([{ tower_id: towerId, user_id: invitedUserId }])
-  
-        // Add entry in the friends table
-        await supabase
-          .from('friends')
-          .upsert([{ user_id: userId, friend_id: invitedUserId }])
-      }
-    } catch (error) {
-      console.error(error)
+      const invitedUserId = profilesData.id;
+      
+      // Call the add_user_to_tower function to handle the rest
+      const { error: addError } = await supabase
+        .rpc('add_user_to_tower', { tower: towerId, new_user_id: invitedUserId });
+      
+      if (addError) throw addError;
+      
+      // Add entry in the friends table
+      const { error: friendsInsertError } = await supabase
+        .from('friends')
+        .insert([{ user_id: userId, friend_id: invitedUserId }]);
+      
+      if (friendsInsertError) throw friendsInsertError;
+      
+      toast({
+        title: "User invited",
+        description: `User ${username} has been invited to the tower.`,
+      });
+    } catch (error: any) {
+      console.error(error);
+      toast({
+        title: `Unable to invite user "${username}"`,
+        description: error.message || "An unknown error occurred.",
+        variant: "destructive",
+      });
     }
-    setIsLoading(false)
+    setIsLoading(false);
+    setUsername('');
   }
+  
   
   return (
     ( isOnTowerPage && userId ) && (
