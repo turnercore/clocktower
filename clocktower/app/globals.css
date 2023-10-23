@@ -143,3 +143,29 @@
     background-position: 300px 300px;
   }
 }
+.picker {
+  width: 250px;
+  background: #f0f0f4;
+  border-radius: 9px;
+}
+
+.picker .react-colorful {
+  width: auto;
+}
+
+.picker__swatches {
+  display: flex;
+  padding: 12px;
+  flex-wrap: wrap;
+}
+
+.picker__swatch {
+  width: 24px;
+  height: 24px;
+  margin: 4px;
+  border: none;
+  padding: 0;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+}

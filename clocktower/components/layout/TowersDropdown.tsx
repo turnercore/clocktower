@@ -1,6 +1,7 @@
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs"
 import { cookies } from 'next/headers'
 import { TowersDropdownComponent } from "./TowersDropdownComponent"
+import type { UUID } from "@/types"
 export const dynamic = 'force-dynamic'
 
 export async function TowersDropdown() {
@@ -13,7 +14,7 @@ export async function TowersDropdown() {
     console.error(sessionError)
     return
   }
-  const userId = sessionData.session.user.id
+  const userId = sessionData.session.user.id as UUID
 
   // Fetch the towers the user has access to using the join table
   const { data: towerAccessData, error: towerAccessError } = await supabase.from('towers_users').select('tower_id').eq('user_id', userId)
@@ -35,6 +36,6 @@ export async function TowersDropdown() {
   const towers = towersData || []
 
   return (
-    <TowersDropdownComponent towers={towers} />
+    <TowersDropdownComponent initialTowers={towers} userId={userId}/>
   )
 }

@@ -1,7 +1,8 @@
 import type { ClockData, ColorPaletteItem } from '@/types'
 import React, { FC, ChangeEvent, useEffect } from 'react'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Slider } from "@/components/ui"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Label, Slider } from "@/components/ui"
 import { SketchPicker } from 'react-color'
+import { SwatchesPicker } from '@/components/ui/color-picker'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
@@ -112,21 +113,21 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               <label> Line Width </label>
               <Slider defaultValue={[clockData.line_width]} min={1} max={50} step={1} onValueCommit={(value) => handleLineWidthChange(value[0])} />
             </div>
+
             {/* Rounded Checkbox */}
             <div className='flex flex-row space-x-2 items-center'>
               <label className="flex items-center space-x-2"> Rounded </label>
               <Input type="checkbox" checked={clockData.rounded} onChange={handleIsRoundedChange} />
             </div>
+
             {/* Color */}
             <div className='flex flex-col space-y-2 w-full'>
-            <label> Color </label>
-            <SketchPicker
-              width="100%"
-              disableAlpha={true}
-              color={clockData.color}
-              presetColors={colorPaletteValues}
-              onChangeComplete={({ hex } : {hex: string}) => handleColorChange(hex)}
-            />
+              <Label> Color </Label>
+              <SwatchesPicker
+                color={clockData.color}
+                onChange={handleColorChange}
+                presetColors={colorPaletteValues}
+              />
           </div>
         </div>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 import * as React from "react"
-import { Check, ChevronsUpDown } from "lucide-react"
-import { cn } from "@/tools/utils"
+import { useEffect } from "react"
+import { ChevronsUpDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Command,
@@ -19,13 +19,57 @@ import { isValidUUID } from "@/tools/isValidUUID"
 import { UUID } from "@/types"
 import { useParams, useRouter } from "next/navigation"
 import { GiWhiteTower } from "react-icons/gi"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
-export function TowersDropdownComponent({ towers }: { towers: any[] }) {
+export function TowersDropdownComponent({ initialTowers, userId }: { initialTowers: any[], userId: UUID }) {
   const router = useRouter()
   const params = useParams()
-  const selectedTowerName = towers.find((tower) => tower.id === params.id)?.name || ""
+  const supabase = createClientComponentClient()
   const [open, setOpen] = React.useState(false)
+  const [towers, setTowers] = React.useState(initialTowers)
+  const selectedTowerName = towers.find((tower) => tower.id === params.id)?.name || ""
   const [value, setValue] = React.useState(selectedTowerName)
+
+  const handleInsertTower = async (payload: any) => {
+    // Check if the tower is already in the list, if it is ignore
+    if (towers.find((tower) => tower.id === payload.new.id)) return
+
+    // Get tower data from ID
+    const {data, error} = await supabase.from('towers').select('*').eq('id', payload.new.tower_id).single()
+    // Handle errors
+    if (error) {
+      console.error(error)
+      return
+    }
+
+    // Get the tower data
+    const newTower = data
+    // Add the tower to the list
+    const newTowerList = [...towers, newTower]
+    // Update the list
+    setTowers(newTowerList)
+    }
+
+  const handleDeleteTower = (payload: any) => {
+    // Remove the tower from the list
+    const newTowersList = towers.filter((tower) => tower.id !== payload.old.id)
+    // Update the list
+    setTowers(newTowersList)
+  }
+
+  useEffect(() => {
+    // Subscribe to changes 
+    const channel = supabase
+      .channel(`towers_users_${userId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'towers_users', filter:`user_id=eq.${userId}`}, handleInsertTower)
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'towers_users', filter:`user_id=eq.${userId}`}, handleDeleteTower)
+      .subscribe()
+
+    // Unsubscribe on unmount
+    return () => {
+      supabase.removeChannel(channel)
+    }
+    }, [handleInsertTower, handleDeleteTower, userId])
 
   const navigateToSelectedTower = (towerId: UUID) => {
     // If the value is not a valid UUID, do nothing
