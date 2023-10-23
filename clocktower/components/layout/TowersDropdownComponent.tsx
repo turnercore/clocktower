@@ -17,11 +17,12 @@ import {
 } from "@/components/ui/popover"
 import { isValidUUID } from "@/tools/isValidUUID"
 import { UUID } from "@/types"
-import { useParams, useRouter } from "next/navigation"
+import { useParams, usePathname, useRouter } from "next/navigation"
 import { GiWhiteTower } from "react-icons/gi"
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
-export function TowersDropdownComponent({ initialTowers, userId }: { initialTowers: any[], userId: UUID }) {
+export function TowersDropdownComponent({ initialTowers, userId }: { initialTowers: any[], userId: UUID | null }) {
+  if (!userId) return null
   const router = useRouter()
   const params = useParams()
   const supabase = createClientComponentClient()
@@ -51,10 +52,14 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
     }
 
   const handleDeleteTower = (payload: any) => {
+    console.log('tower was deleted')
+    console.log(payload)
+    const towerId = payload.old.tower_id
     // Remove the tower from the list
-    const newTowersList = towers.filter((tower) => tower.id !== payload.old.id)
-    // Update the list
+    const newTowersList = towers.filter((tower) => tower.id !== towerId)
     setTowers(newTowersList)
+    // If the user is on the tower page, redirect to the home page
+    if (usePathname().includes(towerId)) router.push('/')
   }
 
   useEffect(() => {
@@ -104,16 +109,7 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
            <Button>Create a new one.</Button>
            </CommandEmpty>
           <CommandGroup>
-            <CommandItem
-                key='new'
-                onSelect={() => {
-                  setOpen(false)
-                  router.push('/tower/new')
-                }}
-              >
-                <Button className='mx-auto items-center' > New Tower </Button>
 
-            </CommandItem>
             {towers.map((tower) => (
               <CommandItem
                 key={tower.id}
@@ -128,6 +124,16 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
                 {tower.name}
               </CommandItem>
             ))}
+            <CommandItem
+                key='new'
+                onSelect={() => {
+                  setOpen(false)
+                  router.push('/tower/new')
+                }}
+                className='p-1 pt-5'
+                >
+                <Button className='mx-auto items-center' > + New Tower </Button>
+            </CommandItem>
           </CommandGroup>
         </Command>
       </PopoverContent>
