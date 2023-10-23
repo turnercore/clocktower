@@ -30,7 +30,6 @@ export function TowersDropdownComponent({ initialTowers, userId }: { initialTowe
   const [towers, setTowers] = React.useState(initialTowers)
   const selectedTowerName = towers.find((tower) => tower.id === params.id)?.name || ""
   const [value, setValue] = React.useState(selectedTowerName)
-  if (!userId) return null
 
   const handleInsertTower = async (payload: any) => {
     // Check if the tower is already in the list, if it is ignore
