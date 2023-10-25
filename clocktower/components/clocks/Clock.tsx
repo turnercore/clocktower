@@ -184,6 +184,17 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
   const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
     // Check to see if the value is the same as the current value
     if (event.target.value === clockData.name) return
+
+    // Ensure the name is not empty and is less than 30 characters
+    if (event.target.value.length > 30) {
+      toast({
+        variant: 'destructive',
+        title: 'Invalid name',
+        description: 'Clock name must be shorter than 30 characters.',
+      })
+      return
+    }
+    
     updateClockData({name: event.target.value}, clockId)
   }
 
@@ -305,7 +316,7 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
         center={[55, 55]}  // Move the center of the chart
       />
   )
-  
+
   return (
     <div className='flex flex-col relative items-center'> 
       <h3 className='text-center'>{clockData.name}</h3>

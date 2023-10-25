@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Label } from "@/components/ui"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Input, Label, toast } from "@/components/ui"
 import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
@@ -44,6 +44,14 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({ towerData }) 
   const handleNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isOwner) {
       const newName = event.target.value
+      // Make sure name is less than 30 characters
+      if (newName.length > 30) {
+        return toast({
+          variant: 'destructive',
+          title: 'Name too long.',
+          description: 'Tower name must be less than 30 characters.'
+        })
+      }
       try {
         // Assume updateTowerName is a function to update the tower name on the server
         const { error } = await supabase.from('towers').update({ name: newName }).eq('id', towerData.id)

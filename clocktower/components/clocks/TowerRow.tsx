@@ -124,9 +124,19 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
 
   // Update the Row's name on the server and local states
   const handleRowNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newRowName = event.target.value
+    // Make sure newRowName is less than 30 characters
+    if (newRowName.length > 30) {
+      setRowName('')
+      toast({
+        variant: "destructive",
+        title: "Error updating row name",
+        description: "Row name must be less than 30 characters.",
+      })
+      return
+    }
     // Get old row name
     const oldRowName = rowName
-    const newRowName = sanitizeString(event.target.value);
     // Update local state
     setRowName(event.target.value);
     // Update the server
