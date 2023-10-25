@@ -3,7 +3,7 @@ import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
-import { Label, toast } from '@/components/ui'
+import {  toast } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import type { ClockData, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
@@ -305,6 +305,7 @@ const Clock: React.FC<ClockProps> = ({ initialData, initialUsedColors, towerId, 
         center={[55, 55]}  // Move the center of the chart
       />
   )
+  
   return (
     <div className='flex flex-col relative items-center'> 
       <h3 className='text-center'>{clockData.name}</h3>

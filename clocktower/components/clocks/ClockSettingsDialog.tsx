@@ -30,7 +30,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   handleColorChange,
   handleDelete,
 }) => {
-  const dotsCss = `absolute top-[3%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
+  const dotsCss = `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
   const [segmentsValue, setSegmentsValue] = React.useState<number | null>(clockData.segments)
   const [colorPaletteValues, setColorPaletteValues] = React.useState<string[]>(colorPalette.map((color) => color.hex))
 
