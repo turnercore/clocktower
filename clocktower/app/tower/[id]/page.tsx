@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ClockData, ColorPaletteItem, TowerData, TowerInitialData, TowerRowData, TowerRowInitialData, UUID } from '@/types'
-import Tower from '@/components/clocks/Tower'
+import Tower from '@/app/tower/components/Tower'
 import { isValidUUID } from '@/tools/isValidUUID'
 import { headers, cookies } from 'next/headers'
 import { redirect } from 'next/navigation'

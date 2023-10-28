@@ -144,4 +144,4 @@ const Tower: React.FC<TowerProps> = ({initialData, initialUsedColors, towerId })
   )
 }
 
-export default React.memo(Tower)
+export default Tower

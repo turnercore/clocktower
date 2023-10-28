@@ -3,7 +3,7 @@ import { Button, ModeToggle } from "@/components/ui"
 import {TowersDropdown} from "./TowersDropdown"
 import { BsGear } from "react-icons/bs"
 import { TbUserShare } from "react-icons/tb"
-import ShareTowerPopover from "../clocks/ShareTowerPopover"
+import ShareTowerPopover from "../../app/tower/components/ShareTowerPopover"
 
 export default function Header() {
   return (

@@ -1,110 +1,87 @@
-// UUID type imported from 'crypto' library
-import type { UUID as CryptoUUID } from 'crypto'
+import { z } from 'zod';
+import type { UUID as CryptoUUID } from 'crypto';
 
-export interface TowerData { 
-  id: UUID
-  name?: string
-  users: UUID[]
-}
+// UUID Schema and Type
+export const UUIDSchema = z.string().uuid();
+export type UUID = z.infer<typeof UUIDSchema>;
 
-export interface TowerInitialData extends TowerData {
-  rows: TowerRowInitialData[]
-}
+// TowerData Schema and Type
+export const TowerDataSchema = z.object({
+  id: UUIDSchema,
+  name: z.string().optional(),
+  users: z.array(UUIDSchema),
+});
+export type TowerData = z.infer<typeof TowerDataSchema>;
 
-export interface TowerRowData {
-  id: UUID
-  tower_id: UUID
-  name?: string
-  position: number
-  users: UUID[]
-}
+// HexColorCode Schema and Type
+export const HexColorCodeSchema = z.string().regex(/^#([0-9a-f]{3}){1,2}$/i);
+export type HexColorCode = z.infer<typeof HexColorCodeSchema>;
 
-export interface TowerRowInitialData extends TowerRowData {
-  clocks: ClockData[]
-}
+// TowerRowData Schema and Type
+export const TowerRowDataSchema = z.object({
+  id: UUIDSchema,
+  tower_id: UUIDSchema,
+  name: z.string().optional(),
+  position: z.number().default(0),
+  users: z.array(UUIDSchema),
+  colors: z.array(HexColorCodeSchema),
+});
+export type TowerRowData = z.infer<typeof TowerRowDataSchema>;
 
-// Define a type for the clock data
-export interface ClockData {
-  id: UUID
-  row_id: UUID
-  tower_id: UUID
-  name: string
-  segments: number
-  filled: number | null
-  rounded: boolean
-  line_width: number
-  lighten_intensity: number
-  darken_intensity: number
-  position: number
-  color: string // Assuming color is a string
-  users: UUID[]
-}
+// TowerRowInitialData Schema and Type
+export const TowerRowInitialDataSchema = TowerRowDataSchema.extend({
+  clocks: z.array(z.lazy(() => ClockDataSchema)),
+});
+export type TowerRowInitialData = z.infer<typeof TowerRowInitialDataSchema>;
 
-// Re-exporting the UUID type for use in this file
-export type UUID = CryptoUUID
+// TowerInitialData Schema and Type
+export const TowerInitialDataSchema = TowerDataSchema.extend({
+  rows: z.array(TowerRowInitialDataSchema),
+});
+export type TowerInitialData = z.infer<typeof TowerInitialDataSchema>;
 
-export type User = {
-    id: UUID
-    email: string
-    phone: string
-    provider: string
-    created_at: Date
-    last_sign_in: Date
-}
+// ClockData Schema and Type
+export const ClockDataSchema = z.object({
+  id: UUIDSchema,
+  row_id: UUIDSchema,
+  tower_id: UUIDSchema,
+  name: z.string(),
+  segments: z.number(),
+  filled: z.number().nullable(),
+  rounded: z.boolean(),
+  line_width: z.number(),
+  lighten_intensity: z.number(),
+  darken_intensity: z.number(),
+  position: z.number(),
+  color: z.string(),
+  users: z.array(UUIDSchema),
+});
+export type ClockData = z.infer<typeof ClockDataSchema>;
 
-export interface ColorPaletteItem {
-  clocksUsing: UUID[]
-  hex: string
-}
+// User Schema and Type
+export const UserSchema = z.object({
+  id: UUIDSchema,
+  email: z.string(),
+  provider: z.string().optional(),
+  created_at: z.instanceof(Date).optional(),
+  last_sign_in: z.instanceof(Date).optional(),
+});
+export type User = z.infer<typeof UserSchema>;
 
-export type RequestMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD' | 'CONNECT' | 'TRACE'
+// ColorPaletteItem Schema and Type
+export const ColorPaletteItemSchema = z.object({
+  clocksUsing: z.array(UUIDSchema),
+  hex: z.string(),
+});
+export type ColorPaletteItem = z.infer<typeof ColorPaletteItemSchema>;
 
-export type UserProfile = {
-    id?: UUID
-    name?: string
-    email?: string
-    username?: string
-    full_name?: string
-    avatar_url?: string
-    website?: string
-    stripe_customer_id?: string
-    openai_tokens_used?: number
-}
-
-export interface ServerError {
-    message: string
-    status: number
-}
-
-export interface StandardResponse {
-    error?: {
-      message: string
-      status: number
-    }
-    data?: any
-  }
-
-export interface Profile {
-  id: UUID
-  username: string
-  full_name?: string
-  icon: string
-  icon_color: string
-  color: string
-}
-
-interface ProcessMarkdownOptions {
-  overlap?: number
-  tokenLimit?: number
-  includeBreadcrumbs?: boolean
-  removeDecorators?: boolean
-  removeLinks?: boolean
-  removeImages?: boolean
-  removeCodeBlocks?: boolean
-  removeBlockquotes?: boolean
-  removeTables?: boolean
-  removeLists?: boolean
-  removeFootnotes?: boolean
-  removeAbbreviations?: boolean
-  removeEmojis?: boolean
-}
+// Profile Schema and Type
+export const ProfileSchema = z.object({
+  id: UUIDSchema,
+  username: z.string(),
+  full_name: z.string().optional(),
+  icon: z.string(),
+  icon_color: z.string(),
+  color: z.string(),
+});
+export type Profile = z.infer<typeof ProfileSchema>;
