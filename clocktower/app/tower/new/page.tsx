@@ -1,11 +1,14 @@
-import { Button } from '@/components/ui'
 import { createNewTower } from './actions/createNewTower'
-import { redirect,  } from 'next/navigation'
+import { redirect } from 'next/navigation'
 import RefreshButton from './components/RefreshButton'
 
 export default async function NewTowerPage() {
   // Create new tower and add it to the database
   const {data, error} = await createNewTower()
+
+  // Simulate a 10 second delay
+  await new Promise(resolve => setTimeout(resolve, 100000))
+
   // If there is an error report it
   if (error) {
     return (

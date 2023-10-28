@@ -1,7 +1,13 @@
-export const LoadingSpinner = () => {
-  return (<div className="flex items-center justify-center h-screen">
-    <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-gray-900"></div>
-  </div>)
+import './styles/LoadingSpinner.css';
+export const LoadingSpinner = ({ className }: { className: string }) => {
+  return (
+    <div className={className ? className : 'flex items-center justify-center h-screen'}>
+      <div className="clock-face">
+        <div className="hour-hand" />
+        <div className="minute-hand" />
+      </div>
+    </div>
+  );
 }
 
-export default LoadingSpinner
+export default LoadingSpinner;
