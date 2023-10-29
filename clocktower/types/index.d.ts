@@ -85,3 +85,18 @@ export const ProfileSchema = z.object({
   color: z.string(),
 });
 export type Profile = z.infer<typeof ProfileSchema>;
+
+
+// --- Prop Types --- \\
+
+export const EntityWithPositionEnum = z.enum(["row", "clock"])
+export type EntityWithPosition = z.infer<typeof EntityWithPositionEnum>;
+
+// Now, using EntityTypeSchema in your other schemas
+export const UpdateAndSyncPositionParamsSchema = z.object({
+  entityType: EntityWithPositionEnum,
+  entities: z.array(z.union([TowerRowDataSchema, ClockDataSchema])),
+});
+
+// Infer the type from the schema
+export type UpdateAndSyncPositionParams = z.infer<typeof UpdateAndSyncPositionSchema>;

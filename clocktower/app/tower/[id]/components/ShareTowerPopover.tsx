@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
-import { toast } from '../../../components/ui'
+import { toast } from '../../../../components/ui'
 import { UUID } from '@/types'
 
 export default function ShareTowerPopover() {

@@ -22,14 +22,14 @@
   width: 4px;
   height: 40px;
   background-color: #000;
-  animation: spinHour 2s linear infinite; /* Set the spin speed for the hour hand */
+  animation: spinHour 1.5s linear infinite; /* Set the spin speed for the hour hand */
 }
 
 .minute-hand {
   width: 2px;
   height: 50px;
   background-color: #000;
-  animation: spinMinute 1s linear infinite; /* Set the spin speed for the minute hand */
+  animation: spinMinute 0.5s linear infinite; /* Set the spin speed for the minute hand */
 }
 
 @keyframes spinHour {

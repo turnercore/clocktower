@@ -1,5 +1,9 @@
-import './styles/LoadingSpinner.css';
-export const LoadingSpinner = ({ className }: { className: string }) => {
+import './styles/LoadingSpinner.css'
+
+type LoadingSpinnerProps = {
+  className?: string
+}
+export const LoadingSpinner = ({ className }: LoadingSpinnerProps) => {
   return (
     <div className={className ? className : 'flex items-center justify-center h-screen'}>
       <div className="clock-face">
