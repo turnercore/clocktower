@@ -12,6 +12,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
 import { Button, toast } from '@/components/ui'
 import TowerSettingsDialog from './TowerSettingsDialog'
+import { Database } from '@/types/supabase'
 
 interface TowerProps {
   initialData: TowerInitialData
@@ -29,7 +30,7 @@ const Tower: React.FC<TowerProps> = ({
   const [rows, setRows] = useState<TowerRowInitialData[]>(initialData.rows)
   // Create a ref to keep track of row IDs that have been added locally
   const addedRowIdsRef = useRef<Set<UUID>>(new Set())
-  const supabase = createClientComponentClient()
+  const supabase = createClientComponentClient<Database>()
 
   // Functions to handle data changes from the server
   const handleInsertRow = (payload: any) => {

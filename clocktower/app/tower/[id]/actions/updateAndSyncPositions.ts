@@ -1,17 +1,18 @@
 'use server'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import {
   UpdateAndSyncPositionParamsSchema,
   type UpdateAndSyncPositionParams,
   type UUID,
 } from '@/types'
+import { Database } from '@/types/supabase'
 
 // Server action to update and sync positions of entities
 // works on rows and clocks
 // Is not async, it is fire and forget. If the database update fail, it will just continue,
 // the returned array will still be updated and sorted
-export async function updateAndSyncPositions(
+export default async function updateAndSyncPositions(
   params: UpdateAndSyncPositionParams,
 ) {
   try {
@@ -25,7 +26,7 @@ export async function updateAndSyncPositions(
       )
     }
     const { entityType, entities } = validatedParams.data
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = createServerActionClient<Database>({ cookies })
 
     const { data: sortedEntities, error: sortedError } =
       sortByPosition(entities) // Updated argument

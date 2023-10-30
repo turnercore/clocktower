@@ -3,7 +3,7 @@ import type { UUID } from '@/types'
 import { TowerDataSchema, UUIDSchema } from '@/types'
 import fetchTowerData from './actions/fetchTowerData'
 import setInitialData from './actions/setInitialData'
-import { updateAndSyncPositions } from './actions/updateAndSyncPositions'
+import updateAndSyncPositions from './actions/updateAndSyncPositions'
 import Tower from './components/Tower'
 import { z } from 'zod'
 

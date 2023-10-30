@@ -23,7 +23,7 @@ import {
 } from '@/components/ui'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
-import { sanitizeString } from '@/tools/sanitizeStrings'
+import { sanitizeString } from '@/lib/tools/sanitizeStrings'
 import { TbClockPlus } from 'react-icons/tb'
 import type { ClockData, ColorPaletteItem, TowerRowInitialData } from '@/types'
 import { TiDelete } from 'react-icons/ti'

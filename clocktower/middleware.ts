@@ -1,6 +1,7 @@
 import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { Database } from './types/supabase'
 
 // define routes that require authentication
 const protectedRoutes = ['/tower, /account']
@@ -40,7 +41,7 @@ function isApiRoute(pathname: string): boolean {
 //-------------- setup middleware ----------------- \\
 export async function middleware(req: NextRequest) {
     const res = NextResponse.next()
-    const supabase = createMiddlewareClient({ req, res })
+    const supabase = createMiddlewareClient<Database>({ req, res })
     const {data, error} = await supabase.auth.getSession()
     const session = data?.session
     const { pathname } = req.nextUrl

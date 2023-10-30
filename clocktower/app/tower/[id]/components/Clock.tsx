@@ -4,9 +4,10 @@ import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { toast } from '@/components/ui'
-import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
+import { lightenHexColor, darkenHexColor } from '@/lib/tools/changeHexColors'
 import type { ClockData, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
+import { Database } from '@/types/supabase'
 
 interface ClockProps {
   initialData: ClockData
@@ -36,7 +37,7 @@ const Clock: React.FC<ClockProps> = ({
     useState<ColorPaletteItem[]>(initialUsedColors)
 
   // Init supabase
-  const supabase = createClientComponentClient()
+  const supabase = createClientComponentClient<Database>()
 
   const handleClockPayload = (payload: any) => {
     console.log('Received clock payload event:', payload)

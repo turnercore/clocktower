@@ -1,37 +1,31 @@
 'use server'
 // dataUtilities.ts
-import { SupabaseClient } from '@supabase/supabase-js'
-import { z } from 'zod'
-import {
-  UUID,
-  TowerData,
-  TowerRowData,
-  ClockData,
-  TowerInitialData,
-} from '@/types'
-import { sortByPosition } from '@/tools/sortByPosition'
+import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { UUID, TowerData, UUIDSchema, ServerActionError } from '@/types'
+import { TowerDataSchema } from '@/types'
+import { Database } from '@/types/supabase'
+import { cookies } from 'next/headers'
 
-const TowerDataSchema = z.object({
-  // Define your schema based on the TowerData type
-})
+export default async function fetchTowerData(
+  inputTowerId: UUID,
+): Promise<TowerData | ServerActionError> {
+  try {
+    // Test the input with zod, if error, we're checking for errors anyway
+    const towerId = UUIDSchema.parse(inputTowerId)
 
-export const fetchTowerData = async (
-  supabase: SupabaseClient,
-  id: UUID,
-): Promise<TowerData> => {
-  const { data, error } = await supabase
-    .from('towers')
-    .select('*')
-    .eq('id', id)
-    .single()
-  if (error) return { error: error.message }
+    // Get the tower data from the database
+    const supabase = createServerActionClient<Database>({ cookies })
+    const { data, error } = await supabase
+      .from('towers')
+      .select('*')
+      .eq('id', towerId)
+      .single()
+    if (error) throw error
 
-  const validatedData = TowerDataSchema.safeParse(data)
-  if (!validatedData.success) return { error: 'Invalid tower data' }
-
-  return validatedData.data
+    return TowerDataSchema.parse(data)
+  } catch (error) {
+    return error instanceof Error
+      ? { error: error.message }
+      : { error: 'Unknown error from fetchTowerData.' }
+  }
 }
-
-// Similar validation and error handling for fetchRowData and fetchClockData
-
-// ... Other data manipulation functions
