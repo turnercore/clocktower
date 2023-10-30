@@ -6,7 +6,8 @@ export const lightenHexColor = (hex: string, factor: number): string => {
   const [r, g, b] = hex.match(/\w\w/g)!.map((x) => parseInt(x, 16))
 
   // Lighten each color component
-  const lighten = (color: number) => Math.min(255, Math.max(0, Math.floor(color + (255 - color) * factor)))
+  const lighten = (color: number) =>
+    Math.min(255, Math.max(0, Math.floor(color + (255 - color) * factor)))
 
   // Convert back to hex
   const componentToHex = (color: number) => {
@@ -14,7 +15,9 @@ export const lightenHexColor = (hex: string, factor: number): string => {
     return hex.length === 1 ? '0' + hex : hex
   }
 
-  return `#${componentToHex(lighten(r))}${componentToHex(lighten(g))}${componentToHex(lighten(b))}`
+  return `#${componentToHex(lighten(r))}${componentToHex(
+    lighten(g),
+  )}${componentToHex(lighten(b))}`
 }
 
 export const darkenHexColor = (hex: string, factor: number): string => {
@@ -25,7 +28,8 @@ export const darkenHexColor = (hex: string, factor: number): string => {
   const [r, g, b] = hex.match(/\w\w/g)!.map((x) => parseInt(x, 16))
 
   // Darken each color component
-  const darken = (color: number) => Math.min(255, Math.max(0, Math.floor(color * (1 - factor))))
+  const darken = (color: number) =>
+    Math.min(255, Math.max(0, Math.floor(color * (1 - factor))))
 
   // Convert back to hex
   const componentToHex = (color: number) => {
@@ -33,5 +37,7 @@ export const darkenHexColor = (hex: string, factor: number): string => {
     return hex.length === 1 ? '0' + hex : hex
   }
 
-  return `#${componentToHex(darken(r))}${componentToHex(darken(g))}${componentToHex(darken(b))}`
+  return `#${componentToHex(darken(r))}${componentToHex(
+    darken(g),
+  )}${componentToHex(darken(b))}`
 }

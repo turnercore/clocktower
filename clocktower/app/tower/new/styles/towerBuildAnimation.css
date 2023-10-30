@@ -32,70 +32,174 @@
 }
 
 /* Applying the animation to bricks with staggered delays */
-.row:nth-child(13) .brick:nth-child(1) { animation: buildIn 0.154s 0.05s forwards; }
-.row:nth-child(13) .brick:nth-child(2) { animation: buildIn 0.154s 0.1s forwards; }
-.row:nth-child(13) .brick:nth-child(3) { animation: buildIn 0.154s 0.15s forwards; }
-.row:nth-child(13) .brick:nth-child(4) { animation: buildIn 0.154s 0.2s forwards; }
+.row:nth-child(13) .brick:nth-child(1) {
+  animation: buildIn 0.154s 0.05s forwards;
+}
+.row:nth-child(13) .brick:nth-child(2) {
+  animation: buildIn 0.154s 0.1s forwards;
+}
+.row:nth-child(13) .brick:nth-child(3) {
+  animation: buildIn 0.154s 0.15s forwards;
+}
+.row:nth-child(13) .brick:nth-child(4) {
+  animation: buildIn 0.154s 0.2s forwards;
+}
 
-.row:nth-child(12) .brick:nth-child(1) { animation: buildIn 0.154s 0.25s forwards; }
-.row:nth-child(12) .brick:nth-child(2) { animation: buildIn 0.154s 0.3s forwards; }
-.row:nth-child(12) .brick:nth-child(3) { animation: buildIn 0.154s 0.35s forwards; }
-.row:nth-child(12) .brick:nth-child(4) { animation: buildIn 0.154s 0.4s forwards; }
+.row:nth-child(12) .brick:nth-child(1) {
+  animation: buildIn 0.154s 0.25s forwards;
+}
+.row:nth-child(12) .brick:nth-child(2) {
+  animation: buildIn 0.154s 0.3s forwards;
+}
+.row:nth-child(12) .brick:nth-child(3) {
+  animation: buildIn 0.154s 0.35s forwards;
+}
+.row:nth-child(12) .brick:nth-child(4) {
+  animation: buildIn 0.154s 0.4s forwards;
+}
 
-.row:nth-child(11) .brick:nth-child(1) { animation: buildIn 0.154s 0.45s forwards; }
-.row:nth-child(11) .brick:nth-child(2) { animation: buildIn 0.154s 0.5s forwards; }
-.row:nth-child(11) .brick:nth-child(3) { animation: buildIn 0.154s 0.55s forwards; }
-.row:nth-child(11) .brick:nth-child(4) { animation: buildIn 0.154s 0.6s forwards; }
+.row:nth-child(11) .brick:nth-child(1) {
+  animation: buildIn 0.154s 0.45s forwards;
+}
+.row:nth-child(11) .brick:nth-child(2) {
+  animation: buildIn 0.154s 0.5s forwards;
+}
+.row:nth-child(11) .brick:nth-child(3) {
+  animation: buildIn 0.154s 0.55s forwards;
+}
+.row:nth-child(11) .brick:nth-child(4) {
+  animation: buildIn 0.154s 0.6s forwards;
+}
 
-.row:nth-child(10) .brick:nth-child(1) { animation: buildIn 0.154s 0.65s forwards; }
-.row:nth-child(10) .brick:nth-child(2) { animation: buildIn 0.154s 0.7s forwards; }
-.row:nth-child(10) .brick:nth-child(3) { animation: buildIn 0.154s 0.75s forwards; }
-.row:nth-child(10) .brick:nth-child(4) { animation: buildIn 0.154s 0.8s forwards; }
+.row:nth-child(10) .brick:nth-child(1) {
+  animation: buildIn 0.154s 0.65s forwards;
+}
+.row:nth-child(10) .brick:nth-child(2) {
+  animation: buildIn 0.154s 0.7s forwards;
+}
+.row:nth-child(10) .brick:nth-child(3) {
+  animation: buildIn 0.154s 0.75s forwards;
+}
+.row:nth-child(10) .brick:nth-child(4) {
+  animation: buildIn 0.154s 0.8s forwards;
+}
 
-.row:nth-child(9) .brick:nth-child(1) { animation: buildIn 0.154s 0.85s forwards; }
-.row:nth-child(9) .brick:nth-child(2) { animation: buildIn 0.154s 0.9s forwards; }
-.row:nth-child(9) .brick:nth-child(3) { animation: buildIn 0.154s 0.95s forwards; }
-.row:nth-child(9) .brick:nth-child(4) { animation: buildIn 0.154s 1s forwards; }
+.row:nth-child(9) .brick:nth-child(1) {
+  animation: buildIn 0.154s 0.85s forwards;
+}
+.row:nth-child(9) .brick:nth-child(2) {
+  animation: buildIn 0.154s 0.9s forwards;
+}
+.row:nth-child(9) .brick:nth-child(3) {
+  animation: buildIn 0.154s 0.95s forwards;
+}
+.row:nth-child(9) .brick:nth-child(4) {
+  animation: buildIn 0.154s 1s forwards;
+}
 
-.row:nth-child(8) .brick:nth-child(1) { animation: buildIn 0.154s 1.05s forwards; }
-.row:nth-child(8) .brick:nth-child(2) { animation: buildIn 0.154s 1.1s forwards; }
-.row:nth-child(8) .brick:nth-child(3) { animation: buildIn 0.154s 1.15s forwards; }
-.row:nth-child(8) .brick:nth-child(4) { animation: buildIn 0.154s 1.2s forwards; }
+.row:nth-child(8) .brick:nth-child(1) {
+  animation: buildIn 0.154s 1.05s forwards;
+}
+.row:nth-child(8) .brick:nth-child(2) {
+  animation: buildIn 0.154s 1.1s forwards;
+}
+.row:nth-child(8) .brick:nth-child(3) {
+  animation: buildIn 0.154s 1.15s forwards;
+}
+.row:nth-child(8) .brick:nth-child(4) {
+  animation: buildIn 0.154s 1.2s forwards;
+}
 
-.row:nth-child(7) .brick:nth-child(1) { animation: buildIn 0.154s 1.25s forwards; }
-.row:nth-child(7) .brick:nth-child(2) { animation: buildIn 0.154s 1.3s forwards; }
-.row:nth-child(7) .brick:nth-child(3) { animation: buildIn 0.154s 1.35s forwards; }
-.row:nth-child(7) .brick:nth-child(4) { animation: buildIn 0.154s 1.4s forwards; }
+.row:nth-child(7) .brick:nth-child(1) {
+  animation: buildIn 0.154s 1.25s forwards;
+}
+.row:nth-child(7) .brick:nth-child(2) {
+  animation: buildIn 0.154s 1.3s forwards;
+}
+.row:nth-child(7) .brick:nth-child(3) {
+  animation: buildIn 0.154s 1.35s forwards;
+}
+.row:nth-child(7) .brick:nth-child(4) {
+  animation: buildIn 0.154s 1.4s forwards;
+}
 
-.row:nth-child(6) .brick:nth-child(1) { animation: buildIn 0.154s 1.45s forwards; }
-.row:nth-child(6) .brick:nth-child(2) { animation: buildIn 0.154s 1.5s forwards; }
-.row:nth-child(6) .brick:nth-child(3) { animation: buildIn 0.154s 1.55s forwards; }
-.row:nth-child(6) .brick:nth-child(4) { animation: buildIn 0.154s 1.6s forwards; }
+.row:nth-child(6) .brick:nth-child(1) {
+  animation: buildIn 0.154s 1.45s forwards;
+}
+.row:nth-child(6) .brick:nth-child(2) {
+  animation: buildIn 0.154s 1.5s forwards;
+}
+.row:nth-child(6) .brick:nth-child(3) {
+  animation: buildIn 0.154s 1.55s forwards;
+}
+.row:nth-child(6) .brick:nth-child(4) {
+  animation: buildIn 0.154s 1.6s forwards;
+}
 
-.row:nth-child(5) .brick:nth-child(1) { animation: buildIn 0.154s 1.65s forwards; }
-.row:nth-child(5) .brick:nth-child(2) { animation: buildIn 0.154s 1.7s forwards; }
-.row:nth-child(5) .brick:nth-child(3) { animation: buildIn 0.154s 1.75s forwards; }
-.row:nth-child(5) .brick:nth-child(4) { animation: buildIn 0.154s 1.8s forwards; }
+.row:nth-child(5) .brick:nth-child(1) {
+  animation: buildIn 0.154s 1.65s forwards;
+}
+.row:nth-child(5) .brick:nth-child(2) {
+  animation: buildIn 0.154s 1.7s forwards;
+}
+.row:nth-child(5) .brick:nth-child(3) {
+  animation: buildIn 0.154s 1.75s forwards;
+}
+.row:nth-child(5) .brick:nth-child(4) {
+  animation: buildIn 0.154s 1.8s forwards;
+}
 
-.row:nth-child(4) .brick:nth-child(1) { animation: buildIn 0.154s 1.85s forwards; }
-.row:nth-child(4) .brick:nth-child(2) { animation: buildIn 0.154s 1.9s forwards; }
-.row:nth-child(4) .brick:nth-child(3) { animation: buildIn 0.154s 1.95s forwards; }
-.row:nth-child(4) .brick:nth-child(4) { animation: buildIn 0.154s 2s forwards; }
+.row:nth-child(4) .brick:nth-child(1) {
+  animation: buildIn 0.154s 1.85s forwards;
+}
+.row:nth-child(4) .brick:nth-child(2) {
+  animation: buildIn 0.154s 1.9s forwards;
+}
+.row:nth-child(4) .brick:nth-child(3) {
+  animation: buildIn 0.154s 1.95s forwards;
+}
+.row:nth-child(4) .brick:nth-child(4) {
+  animation: buildIn 0.154s 2s forwards;
+}
 
-.row:nth-child(3) .brick:nth-child(1) { animation: buildIn 0.154s 2.05s forwards; }
-.row:nth-child(3) .brick:nth-child(2) { animation: buildIn 0.154s 2.1s forwards; }
-.row:nth-child(3) .brick:nth-child(3) { animation: buildIn 0.154s 2.15s forwards; }
-.row:nth-child(3) .brick:nth-child(4) { animation: buildIn 0.154s 2.2s forwards; }
+.row:nth-child(3) .brick:nth-child(1) {
+  animation: buildIn 0.154s 2.05s forwards;
+}
+.row:nth-child(3) .brick:nth-child(2) {
+  animation: buildIn 0.154s 2.1s forwards;
+}
+.row:nth-child(3) .brick:nth-child(3) {
+  animation: buildIn 0.154s 2.15s forwards;
+}
+.row:nth-child(3) .brick:nth-child(4) {
+  animation: buildIn 0.154s 2.2s forwards;
+}
 
-.row:nth-child(2) .brick:nth-child(1) { animation: buildIn 0.154s 2.25s forwards; }
-.row:nth-child(2) .brick:nth-child(2) { animation: buildIn 0.154s 2.3s forwards; }
-.row:nth-child(2) .brick:nth-child(3) { animation: buildIn 0.154s 2.35s forwards; }
-.row:nth-child(2) .brick:nth-child(4) { animation: buildIn 0.154s 2.4s forwards; }
+.row:nth-child(2) .brick:nth-child(1) {
+  animation: buildIn 0.154s 2.25s forwards;
+}
+.row:nth-child(2) .brick:nth-child(2) {
+  animation: buildIn 0.154s 2.3s forwards;
+}
+.row:nth-child(2) .brick:nth-child(3) {
+  animation: buildIn 0.154s 2.35s forwards;
+}
+.row:nth-child(2) .brick:nth-child(4) {
+  animation: buildIn 0.154s 2.4s forwards;
+}
 
-.row:nth-child(1) .brick:nth-child(1) { animation: buildIn 0.154s 2.45s forwards; }
-.row:nth-child(1) .brick:nth-child(2) { animation: buildIn 0.154s 2.5s forwards; }
-.row:nth-child(1) .brick:nth-child(3) { animation: buildIn 0.154s 2.55s forwards; }
-.row:nth-child(1) .brick:nth-child(4) { animation: buildIn 0.154s 2.6s forwards; }
+.row:nth-child(1) .brick:nth-child(1) {
+  animation: buildIn 0.154s 2.45s forwards;
+}
+.row:nth-child(1) .brick:nth-child(2) {
+  animation: buildIn 0.154s 2.5s forwards;
+}
+.row:nth-child(1) .brick:nth-child(3) {
+  animation: buildIn 0.154s 2.55s forwards;
+}
+.row:nth-child(1) .brick:nth-child(4) {
+  animation: buildIn 0.154s 2.6s forwards;
+}
 
 .clock-tower-face {
   opacity: 0;

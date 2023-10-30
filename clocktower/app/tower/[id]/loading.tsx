@@ -1,10 +1,7 @@
-import LoadingSpinner from "@/components/loading/LoadingSpinner"
+import LoadingSpinner from '@/components/loading/LoadingSpinner'
 
 const LoadingPage = () => {
-  return (
-    <LoadingSpinner />
-
-  )
+  return <LoadingSpinner />
 }
 
-export default LoadingPage;
+export default LoadingPage

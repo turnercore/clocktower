@@ -1,9 +1,13 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
@@ -35,77 +39,81 @@ export default function ShareTowerPopover() {
   }, [towerId, path])
 
   const handleInvite = async () => {
-    if (!username || !towerId) return;
-    setIsLoading(true);
-  
+    if (!username || !towerId) return
+    setIsLoading(true)
+
     try {
       // Check if the user with the entered username exists
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id')
         .ilike('username', username)
-        .single();
-      
+        .single()
+
       // Error handling
-      if (profilesError || !profilesData) throw profilesError || new Error("User not found.");
-  
-      const invitedUserId = profilesData.id;
-      
+      if (profilesError || !profilesData)
+        throw profilesError || new Error('User not found.')
+
+      const invitedUserId = profilesData.id
+
       // Call the add_user_to_tower function to handle the rest
-      const { error: addError } = await supabase
-        .rpc('add_user_to_tower', { tower: towerId, new_user_id: invitedUserId });
-      
-      if (addError) throw addError;
-      
+      const { error: addError } = await supabase.rpc('add_user_to_tower', {
+        tower: towerId,
+        new_user_id: invitedUserId,
+      })
+
+      if (addError) throw addError
+
       // Add entry in the friends table
       const { error: friendsInsertError } = await supabase
         .from('friends')
-        .upsert([{ user_id: userId, friend_id: invitedUserId }]);
-      
-      if (friendsInsertError) throw friendsInsertError;
-      
+        .upsert([{ user_id: userId, friend_id: invitedUserId }])
+
+      if (friendsInsertError) throw friendsInsertError
+
       toast({
-        title: "User invited",
+        title: 'User invited',
         description: `User ${username} has been invited to the tower.`,
-      });
+      })
     } catch (error: any) {
-      console.error(error);
+      console.error(error)
       toast({
         title: `Unable to invite user "${username}"`,
-        description: error.message || "An unknown error occurred.",
-        variant: "destructive",
-      });
+        description: error.message || 'An unknown error occurred.',
+        variant: 'destructive',
+      })
     }
-    setIsLoading(false);
-    setUsername('');
+    setIsLoading(false)
+    setUsername('')
   }
-  
-  
+
   return (
-    ( isOnTowerPage && userId ) && (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button title="Invite Users" variant={'ghost'} className="ml-2">
-          <TbUserShare className="h-5 w-5" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80">
-        <div className="grid gap-4">
-          <div className="space-y-2">
-            <h4 className="font-medium leading-none">Invite User</h4>
-            <div className="grid grid-cols-3 items-center gap-4">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="col-span-2 h-8"
-              />
+    isOnTowerPage &&
+    userId && (
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button title='Invite Users' variant={'ghost'} className='ml-2'>
+            <TbUserShare className='h-5 w-5' />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className='w-80'>
+          <div className='grid gap-4'>
+            <div className='space-y-2'>
+              <h4 className='font-medium leading-none'>Invite User</h4>
+              <div className='grid grid-cols-3 items-center gap-4'>
+                <Label htmlFor='username'>Username</Label>
+                <Input
+                  id='username'
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className='col-span-2 h-8'
+                />
+              </div>
+              <Button onClick={handleInvite}>Invite</Button>
             </div>
-            <Button onClick={handleInvite}>Invite</Button>
           </div>
-        </div>
-      </PopoverContent>
-    </Popover>
-  ) )
+        </PopoverContent>
+      </Popover>
+    )
+  )
 }

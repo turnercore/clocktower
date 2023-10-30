@@ -1,13 +1,31 @@
-
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import Clock from './Clock'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger, Button, Card, CardContent, CardTitle, Input, Label, ScrollArea, ScrollBar, toast } from '@/components/ui'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+  Button,
+  Card,
+  CardContent,
+  CardTitle,
+  Input,
+  Label,
+  ScrollArea,
+  ScrollBar,
+  toast,
+} from '@/components/ui'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { sanitizeString } from '@/tools/sanitizeStrings'
 import { TbClockPlus } from 'react-icons/tb'
-import type { ClockData, ColorPaletteItem, TowerRowInitialData} from '@/types'
+import type { ClockData, ColorPaletteItem, TowerRowInitialData } from '@/types'
 import { TiDelete } from 'react-icons/ti'
 
 interface TowerRowProps {
@@ -19,7 +37,13 @@ interface TowerRowProps {
   onRowDelete: (rowId: UUID) => void
 }
 
-const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, towerId, users, onRowDelete }) => {
+const TowerRow: React.FC<TowerRowProps> = ({
+  initialData,
+  initialUsedColors,
+  towerId,
+  users,
+  onRowDelete,
+}) => {
   const rowId = initialData.id
   const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks || [])
   const [rowName, setRowName] = useState<string>(initialData.name || '')
@@ -32,14 +56,14 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
     const eventType = payload.eventType
     const newData = payload.new
     const oldData = payload.old
-    
-    if( newData.id !== rowId && oldData.id !== rowId) return 
+
+    if (newData.id !== rowId && oldData.id !== rowId) return
 
     switch (eventType) {
       case 'UPDATE':
         // Handle Row Name Change
-        if(newData.name !== rowName) {
-         setRowName(newData.name)
+        if (newData.name !== rowName) {
+          setRowName(newData.name)
         }
         break
       case 'DELETE':
@@ -59,7 +83,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
     // Check if the clock ID is in the ref before adding it to the local state
     if (!addedClockIds.current.has(newData.id)) {
       console.log('Current clocks:', clocks)
-      setClocks(prevClocks => {
+      setClocks((prevClocks) => {
         const newClocks = [...prevClocks, newData]
         console.log('New clocks:', newClocks)
         return newClocks
@@ -67,17 +91,33 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
       addedClockIds.current.add(newData.id)
     }
   }
-  
 
   useEffect(() => {
     console.log('subscribing to channel: ', `tower_row_${rowId}`)
     const subscription = supabase
-    .channel(`tower_row_${rowId}`)
-    .on('postgres_changes', { event: '*', schema: 'public', table: 'tower_rows', filter:`id=eq.${rowId}`}, handleTowerRowPayload)
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'clocks', filter:`row_id=eq.${rowId}`}, handleClockInsert)
-    .subscribe()
+      .channel(`tower_row_${rowId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'tower_rows',
+          filter: `id=eq.${rowId}`,
+        },
+        handleTowerRowPayload,
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'clocks',
+          filter: `row_id=eq.${rowId}`,
+        },
+        handleClockInsert,
+      )
+      .subscribe()
 
-  
     // Cleanup function to unsubscribe from real-time updates
     return () => {
       subscription.unsubscribe()
@@ -100,7 +140,7 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
       darken_intensity: 0.5,
       color: '#E38627', // Default color
     }
-    
+
     // Update local state
     const oldClockData = clocks ? [...clocks] : []
     const updatedClocks = clocks ? [...clocks, newClock] : [newClock]
@@ -110,10 +150,10 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
     const { error } = await supabase.from('clocks').insert(newClock)
     // Handle Errors
     if (error) {
-      console.error(error);
+      console.error(error)
       toast({
-        variant: "destructive",
-        title: "Error adding new clock",
+        variant: 'destructive',
+        title: 'Error adding new clock',
         description: error.message,
       })
       // Revert if error
@@ -123,30 +163,36 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
   }
 
   // Update the Row's name on the server and local states
-  const handleRowNameChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRowNameChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     const newRowName = event.target.value
     // Make sure newRowName is less than 30 characters
     if (newRowName.length > 30) {
       setRowName('')
       toast({
-        variant: "destructive",
-        title: "Error updating row name",
-        description: "Row name must be less than 30 characters.",
+        variant: 'destructive',
+        title: 'Error updating row name',
+        description: 'Row name must be less than 30 characters.',
       })
       return
     }
     // Get old row name
     const oldRowName = rowName
     // Update local state
-    setRowName(event.target.value);
+    setRowName(event.target.value)
     // Update the server
-    const { error, data } = await supabase.from('tower_rows').update({ name: newRowName }).eq('id', rowId).single()
+    const { error, data } = await supabase
+      .from('tower_rows')
+      .update({ name: newRowName })
+      .eq('id', rowId)
+      .single()
     // Handle Errors
     if (error) {
-      console.error(error);
+      console.error(error)
       toast({
-        variant: "destructive",
-        title: "Error updating row name",
+        variant: 'destructive',
+        title: 'Error updating row name',
         description: error.message,
       })
       // Revert if error
@@ -157,7 +203,11 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
   // Update the server and delete the row
   const handleRowDelete = async () => {
     // Delete from the server
-    const { error } = await supabase.from('tower_rows').delete().eq('id', rowId).single()
+    const { error } = await supabase
+      .from('tower_rows')
+      .delete()
+      .eq('id', rowId)
+      .single()
     if (error) {
       console.error(error)
       return
@@ -173,55 +223,73 @@ const TowerRow: React.FC<TowerRowProps> = ({ initialData, initialUsedColors, tow
     setClocks(updatedClocks)
   }
 
-
-
   return (
     <Card className='flex flex-col space-y-2 mr-10 ml-2'>
       {/* Row Name and Settings*/}
       <CardTitle className='flex flex-row space-x-2 space-y-2 items-center mx-8 mt-3'>
-        <Input 
+        <Input
           id='rowName'
           name='rowName'
           className='w-[200px] mt-2'
-          placeholder="Row" 
-          defaultValue={rowName} 
-          onBlur={handleRowNameChange} />
-      <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant='outline' ><TiDelete className='w-full h-full' /></Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Row{rowName ? " " + rowName : ''}?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This will delete the row and all clocks contained within.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className='vibrating-element bg-red-500' onClick={handleRowDelete}>Delete</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          placeholder='Row'
+          defaultValue={rowName}
+          onBlur={handleRowNameChange}
+        />
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant='outline'>
+              <TiDelete className='w-full h-full' />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                Delete Row{rowName ? ' ' + rowName : ''}?
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                This will delete the row and all clocks contained within.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                className='vibrating-element bg-red-500'
+                onClick={handleRowDelete}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardTitle>
       {/* Clocks */}
       <CardContent>
-      <ScrollArea className='overflow-auto'>
-        <div className='flex flex-row width-full items-center space-x-4'>
-        {clocks && clocks.length > 0 && clocks.map((clock) => (
-          <div key={clock.id} className='min-w-[150px] flex flex-col'>
-            <Clock initialData={clock} initialUsedColors={initialUsedColors} key={clock.id} towerId={towerId} rowId={rowId} onDelete={handleClockDelete}/>
+        <ScrollArea className='overflow-auto'>
+          <div className='flex flex-row width-full items-center space-x-4'>
+            {clocks &&
+              clocks.length > 0 &&
+              clocks.map((clock) => (
+                <div key={clock.id} className='min-w-[150px] flex flex-col'>
+                  <Clock
+                    initialData={clock}
+                    initialUsedColors={initialUsedColors}
+                    key={clock.id}
+                    towerId={towerId}
+                    rowId={rowId}
+                    onDelete={handleClockDelete}
+                  />
+                </div>
+              ))}
+            <Button variant='ghost' className='h-24 w-24' onClick={addClock}>
+              <TbClockPlus className='ml-1 h-8 w-8' />
+            </Button>
           </div>
-        ))}
-        <Button variant='ghost'className='h-24 w-24' onClick={addClock}><TbClockPlus className='ml-1 h-8 w-8'/></Button>
-        </div>
-        <br />
-        <ScrollBar orientation='horizontal' className='w-full' />
-        </ScrollArea> 
+          <br />
+          <ScrollBar orientation='horizontal' className='w-full' />
+        </ScrollArea>
       </CardContent>
     </Card>
   )
 }
-
 
 export default React.memo(TowerRow)
