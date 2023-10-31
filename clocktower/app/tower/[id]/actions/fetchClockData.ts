@@ -3,17 +3,17 @@
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import {
   UUID,
-  ClockData,
+  Clock,
   UUIDSchema,
   ServerActionError,
-  ClockDataSchema,
+  ClockSchema,
 } from '@/types'
 import { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
 
 export default async function fetchClockData(
   inputClockId: UUID,
-): Promise<ClockData | ServerActionError> {
+): Promise<{ data: Clock } | ServerActionError> {
   try {
     // Test the input with zod, if error, we're checking for errors anyway
     const clockId = UUIDSchema.parse(inputClockId)
@@ -27,7 +27,7 @@ export default async function fetchClockData(
       .single()
     if (error) throw error
 
-    return ClockDataSchema.parse(data)
+    return { data: ClockSchema.parse(data) }
   } catch (error) {
     return error instanceof Error
       ? { error: error.message }

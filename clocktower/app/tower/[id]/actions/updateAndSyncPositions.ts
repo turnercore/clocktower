@@ -3,8 +3,10 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import {
   UpdateAndSyncPositionParamsSchema,
-  type UpdateAndSyncPositionParams,
-  type UUID,
+  UpdateAndSyncPositionParams,
+  ServerActionError,
+  SortableEntity,
+  SortableEntitySchema,
 } from '@/types'
 import { Database } from '@/types/supabase'
 
@@ -14,7 +16,7 @@ import { Database } from '@/types/supabase'
 // the returned array will still be updated and sorted
 export default async function updateAndSyncPositions(
   params: UpdateAndSyncPositionParams,
-) {
+): Promise<{ data: SortableEntity[] } | ServerActionError> {
   try {
     const validatedParams = UpdateAndSyncPositionParamsSchema.safeParse(params)
     if (!validatedParams.success) {
@@ -28,10 +30,9 @@ export default async function updateAndSyncPositions(
     const { entityType, entities } = validatedParams.data
     const supabase = createServerActionClient<Database>({ cookies })
 
-    const { data: sortedEntities, error: sortedError } =
-      sortByPosition(entities) // Updated argument
-    if (sortedError) throw sortedError
-    if (!sortedEntities) throw new Error('No data returned from sortByPosition')
+    const sortResult = sortByPosition(entities)
+    if ('error' in sortResult) throw new Error(sortResult.error)
+    const sortedEntities = sortResult.data
 
     const tableName = entityType === 'row' ? 'tower_rows' : 'clocks' // Updated comparison
     sortedEntities.forEach((sortedEntity, index) => {
@@ -50,6 +51,7 @@ export default async function updateAndSyncPositions(
                 `Failed to update position for ${entityType} with id ${sortedEntity.id}`,
                 error,
               )
+              throw error
             }
           })
       }
@@ -57,52 +59,60 @@ export default async function updateAndSyncPositions(
 
     return { data: sortedEntities }
   } catch (error) {
-    if (error instanceof Error) return { error: error.message }
-    else console.error(error)
+    return error instanceof Error
+      ? { error: error.message ? error.message : 'Unknown error' }
+      : { error: 'Unknown error from fetchClockData.' }
   }
 }
 
-type SortableEntity = {
-  id: UUID
-  position?: number
-  [key: string]: unknown
-}
+type SortResult = { data: SortableEntity[] } | ServerActionError
 
-function sortByPosition(entities: SortableEntity[]): {
-  data?: SortableEntity[]
-  error?: Error
-} {
+function sortByPosition(entities: SortableEntity[]): SortResult {
   try {
-    // Ensure all entities have a position field, using array index if necessary
-    const entitiesWithPositions: {
-      id: UUID
-      position: number
-      [key: string]: unknown
-    }[] = entities.map((entity, index) => {
-      return {
-        ...entity,
-        position: entity.position !== undefined ? entity.position : index,
-      }
+    // Ensure valid input data
+    let errorInValidatingEntities
+    const validatedEntities = entities.map((entity) => {
+      const safeParseResult = SortableEntitySchema.safeParse(entity)
+      if (safeParseResult.success) return safeParseResult.data
+      else errorInValidatingEntities = safeParseResult.error
     })
 
+    // Error out if there was an issue
+    if (errorInValidatingEntities) {
+      throw new Error(
+        `Invalid entities array in sortByPosition: ${errorInValidatingEntities}`,
+      )
+    }
+
+    // At this point all entities have a position field or their position was set to 100 by zod
     // Sort the entities based on the position field, using input array index as tie-breaker
-    entitiesWithPositions.sort((a, b) => {
+    if (validatedEntities.length === 0) throw new Error('No entities to sort')
+
+    if (validatedEntities.length === 1)
+      return { data: validatedEntities as SortableEntity[] }
+
+    const entitiesWithPositions = validatedEntities.sort((a, b) => {
+      if (!a || !b) throw new Error('Missing entity in sortByPosition')
       if (a.position === b.position) return 0
+      if (a.position === 100) return 1
+      if (b.position === 100) return -1
       return a.position - b.position
     })
 
     // Update the position field to match the index in the sorted array
-    const sortedArray = entitiesWithPositions.map((entity, index) => {
-      return {
-        ...entity,
-        position: index,
-      }
-    })
+    const sortedArray: SortableEntity[] = entitiesWithPositions.map(
+      (object, index) => {
+        const entity = { ...object }
+        entity.position = index
+        entity.id = entity.id ? entity.id : 'unknownId'
+        return entity
+      },
+    ) as SortableEntity[]
 
     return { data: sortedArray }
   } catch (error) {
-    if (error instanceof Error) return { error }
-    console.error(error)
-    return { error: new Error('An unexpected error occurred') }
+    return error instanceof Error
+      ? { error: error.message }
+      : { error: 'Unknown error from fetchTowerRowData.' }
   }
 }

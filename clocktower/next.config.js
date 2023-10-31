@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    taint: true,
+  },
   async rewrites() {
     return [
       {
@@ -9,8 +12,8 @@ const nextConfig = {
       {
         source: '/towers/new',
         destination: '/tower/new',
-      }
-    ];
+      },
+    ]
   },
 }
 
