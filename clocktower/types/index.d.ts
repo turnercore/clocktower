@@ -34,14 +34,14 @@ export const FriendsListSchema = z.array(UUIDSchema)
 export type FriendsList = z.infer<typeof FriendsListSchema>
 // TowerData Schema and Type
 export const TowerDataSchema = z.object({
-  id: UUIDSchema,
+  id: UUIDSchema as UUID,
   name: z
     .string()
     .max(30, { message: 'Name is too long.' })
     .strip()
     .default(''),
-  users: z.array(UUIDSchema),
-  owner: UUIDSchema,
+  users: z.array(UUIDSchema as UUID),
+  owner: UUIDSchema as UUID,
   colors: z.array(HexColorCodeSchema),
 })
 
@@ -51,15 +51,15 @@ export const TowerSchema = TowerDataSchema.extend({
   rows: z.array(TowerRowSchema).default([]),
 })
 
-export type Tower = z.infer<typeof TowerSchema>
-// export type Tower = {
-//   id: UUID
-//   name: string
-//   users: UUID[]
-//   colors: HexColorCode[]
-//   rows: TowerRow[]
-//   owner: UUID
-// }
+// export type Tower = z.infer<typeof TowerSchema>
+export type Tower = {
+  id: UUID
+  name: string
+  users: UUID[]
+  colors: HexColorCode[]
+  rows: TowerRow[]
+  owner: UUID
+}
 
 export const TowerRowRowSchema = z.object({
   id: UUIDSchema,
@@ -170,7 +170,10 @@ export const ServerActionReturnSchema = <T>() =>
   ])
 
 // Now define a generic type based on the generic schema function:
-export type ServerActionReturn<T> = z.infer<typeof ServerActionReturnSchema<T>>
+export type ServerActionReturn<T> = {
+  error?: string
+  data?: T
+}
 
 // Schema for Sortable Entities (database objects with position filed)
 export const SortableEntitySchema = z

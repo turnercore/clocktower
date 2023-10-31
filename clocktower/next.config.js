@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: {
-    taint: true,
+    taint: false,
   },
   async rewrites() {
     return [

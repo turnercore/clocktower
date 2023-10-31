@@ -28,10 +28,11 @@ export default async function fetchCompleteTowerData(
 
     // Fetch the tower data
     const supabase = createServerActionClient<Database>({ cookies })
-    const towerDataFetchResult = await fetchTowerData(towerId)
+    const { data: towerDataFetchResult, error: towerDataFetchResultError } =
+      await fetchTowerData(towerId)
 
-    if (towerDataFetchResult) throw towerDataFetchResult
-    const towerData = towerDataFetchResult.data
+    if (towerDataFetchResultError) throw towerDataFetchResult
+    const towerData = towerDataFetchResult
 
     // Get all rows in the tower
     const { data: towerRows, error: rowError } = await fetchAllRowsInTower(
@@ -81,7 +82,10 @@ export default async function fetchCompleteTowerData(
     }
 
     // Check to see if it passes zod validation, if it does, return it
-    return TowerSchema.parse(towerReturn) as Tower
+    const validatedTower = TowerSchema.parse(towerReturn) as Tower
+    return validatedTower
+      ? { data: validatedTower }
+      : { error: 'Unknown error from fetchCompleteTowerData.' }
   } catch (error: unknown) {
     return error instanceof Error
       ? { error: error.message }

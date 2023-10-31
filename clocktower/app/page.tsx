@@ -1,6 +1,19 @@
 import Link from 'next/link'
 
 const Home: React.FC = () => {
+  // return (
+  //   <>
+  //     <form action={addSupabaseMockData}>
+  //       <Button type='submit'> Setup Supabase </Button>
+  //     </form>
+  //     <form action={testSupabaseMockData}>
+  //       <Button type='submit'> Test Supabase Setup </Button>
+  //     </form>
+  //     <form action={clearSupabaseMockData}>
+  //       <Button type='submit'> Clear Supabase Setup</Button>
+  //     </form>
+  //   </>
+  // )
   return (
     <div className='flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 text-white'>
       <div className='text-center'>
