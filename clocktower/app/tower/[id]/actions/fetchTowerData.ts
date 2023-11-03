@@ -3,8 +3,8 @@
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import {
   UUID,
-  TowerData,
-  TowerDataSchema,
+  TowerDatabaseType,
+  TowerDatabaseSchema,
   UUIDSchema,
   ServerActionReturn,
 } from '@/types'
@@ -13,7 +13,7 @@ import { cookies } from 'next/headers'
 
 export default async function fetchTowerData(
   inputTowerId: UUID,
-): Promise<ServerActionReturn<TowerData>> {
+): Promise<ServerActionReturn<TowerDatabaseType>> {
   try {
     // Test the input with zod, if error, we're checking for errors anyway
     const towerId: UUID = UUIDSchema.parse(inputTowerId) as UUID
@@ -26,7 +26,7 @@ export default async function fetchTowerData(
       .eq('id', towerId)
       .single()
     if (error) throw error
-    return { data: TowerDataSchema.parse(data) }
+    return { data: TowerDatabaseSchema.parse(data) as TowerDatabaseType }
   } catch (error) {
     return error instanceof Error
       ? { error: error.message }

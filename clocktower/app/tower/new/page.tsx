@@ -1,4 +1,4 @@
-import { createNewTower } from '../../../lib/actions/createNewTower'
+import { createNewTower } from '@/lib/actions/createNewTower'
 import { redirect } from 'next/navigation'
 import RefreshButton from './components/RefreshButton'
 

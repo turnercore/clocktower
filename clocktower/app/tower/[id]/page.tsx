@@ -1,52 +1,36 @@
-// Import necessary types and functions
-import type { UUID } from '@/types'
-import { TowerDataSchema, TowerSchema, UUIDSchema } from '@/types'
+import { UUIDSchema, UUID } from '@/types'
 import fetchCompleteTowerData from './actions/fetchCompleteTowerData'
-import updateAndSyncPositions from './actions/updateAndSyncPositions'
 import Tower from './components/Tower'
 import { z } from 'zod'
 
-// Define the TowerPage component
 export default async function TowerPage({ params }: { params: unknown }) {
   try {
     // 1. Validate the incoming params with Zod
     const validatedParams = z.object({ id: UUIDSchema }).parse(params)
-    const { id } = validatedParams
+    const { id } = validatedParams as { id: UUID }
 
     // 2. Fetch and set up the tower data
-    const { data: towerData, error: fetchError } = await fetchCompleteTowerData(
-      id,
-    )
-    if (fetchError) throw fetchError // If there's an error in fetching, throw it
-    // 2a. Validate the fetched data with Zod
-    const tower = TowerSchema.parse(towerData)
+    const { data: tower, error: fetchError } = await fetchCompleteTowerData(id)
+    if (fetchError) throw new Error(fetchError) // If there's an error in fetching, throw it
+    if (!tower) throw new Error('Tower not found') // If there's no tower, throw an error
 
-    // 3. Update and sync positions of rows
-    const { error: updateError } = updateAndSyncPositions({
-      entityType: 'row',
-      entities: tower.rows!,
-    })
-    if (updateError) throw updateError // If there's an error in updating positions, throw it
-
-    // Loop through each row and update and sync positions of clocks
-    const { error: syncError } = updateAndSyncPositions(
-      'clock',
-      initialData.rows,
-    )
-    if (syncError) throw syncError // If there's an error in syncing positions, throw it
-
-    // 3a. Render the Tower component with the populated data
+    // 3. Render the tower rows with the fetched data
     return (
-      <div className='flex flex-col'>
-        <Tower initialData={initialData} towerId={id} />
+      <div>
+        <Tower towerId={tower.id} initialData={tower} />
       </div>
     )
   } catch (error) {
     // 3b. Catch and display errors
     console.error(error)
+    // Validate Error Message
+    const errorMessage: string =
+      error instanceof z.ZodError || error instanceof Error
+        ? error.message
+        : 'An unknown error occurred.'
     return (
       <div className='flex flex-col'>
-        <p>There was an error: {error.message}</p>
+        <p>There was an error: {errorMessage}</p>
       </div>
     )
   }

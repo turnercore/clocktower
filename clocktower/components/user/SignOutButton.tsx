@@ -1,7 +1,7 @@
 'use client'
 import { Button } from '@/components/ui'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import signOut from '@/lib/actions/signOut'
+import signOut from '@/actions/signOut'
 import { Database } from '@/types/supabase'
 import { useRouter } from 'next/navigation'
 

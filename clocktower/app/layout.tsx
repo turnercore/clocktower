@@ -1,9 +1,10 @@
-import '@/app/globals.css'
+import '@/styles/globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import type { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
+import { GeistSans, GeistMono } from 'geist/font'
 import { Button } from '@/components/ui'
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,7 @@ export default function RootLayout({
   const isDark = false
 
   return (
-    <html lang='en'>
+    <html lang='en' className={GeistSans.className}>
       <head>
         <link rel='stylesheet' href='https://use.typekit.net/ckd1nmz.css' />
       </head>

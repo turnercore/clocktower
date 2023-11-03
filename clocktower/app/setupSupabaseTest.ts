@@ -1,5 +1,12 @@
 'use server'
-import { Clock, Tower, TowerRow, UUID } from '@/types'
+import {
+  ClockType,
+  TowerType,
+  TowerRowType,
+  UUID,
+  UserType,
+  TowerDatabaseType,
+} from '@/types'
 import { Database } from '@/types/supabase'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
@@ -20,7 +27,7 @@ const TEST_CLOCK_ID3: UUID = '77777777-7777-4777-8777-77777777beef'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ''
 // Create the fake tower data:
-const mockClock1: Clock = {
+const mockClock1: ClockType = {
   id: TEST_CLOCK_ID,
   name: 'Clock 1',
   segments: 6,
@@ -35,7 +42,7 @@ const mockClock1: Clock = {
   tower_id: TEST_TOWER_ID,
   users: [TEST_USER_ID, TEST_USER_ID2],
 }
-const mockClock2: Clock = {
+const mockClock2: ClockType = {
   id: TEST_CLOCK_ID2,
   name: 'Clock 2',
   segments: 12,
@@ -50,7 +57,7 @@ const mockClock2: Clock = {
   tower_id: TEST_TOWER_ID,
   users: [TEST_USER_ID, TEST_USER_ID2],
 }
-const mockClock3: Clock = {
+const mockClock3: ClockType = {
   id: TEST_CLOCK_ID3,
   name: 'Clock 3',
   segments: 12,
@@ -65,7 +72,7 @@ const mockClock3: Clock = {
   tower_id: TEST_TOWER_ID,
   users: [TEST_USER_ID, TEST_USER_ID2],
 }
-const mockRow1: TowerRow = {
+const mockRow1: TowerRowType = {
   id: TEST_ROW_ID,
   tower_id: TEST_TOWER_ID,
   name: 'Row 1',
@@ -73,7 +80,7 @@ const mockRow1: TowerRow = {
   users: [TEST_USER_ID, TEST_USER_ID2],
   clocks: [mockClock1, mockClock2],
 }
-const mockRow2: TowerRow = {
+const mockRow2: TowerRowType = {
   id: TEST_ROW_ID2,
   tower_id: TEST_TOWER_ID,
   name: 'Row 2',
@@ -81,7 +88,7 @@ const mockRow2: TowerRow = {
   users: [TEST_USER_ID, TEST_USER_ID2],
   clocks: [mockClock3],
 }
-const mockRow3: TowerRow = {
+const mockRow3: TowerRowType = {
   id: TEST_ROW_ID3,
   tower_id: TEST_TOWER_ID,
   name: 'Row 3',
@@ -90,23 +97,35 @@ const mockRow3: TowerRow = {
   clocks: [],
 }
 
-const mockTower: Tower = {
+const mockTower: TowerType = {
   id: TEST_TOWER_ID,
   name: 'Test Tower',
   users: [TEST_USER_ID, TEST_USER_ID2],
   owner: TEST_USER_ID,
-  colors: ['#000000', '#ffffff'],
+  colors: [
+    {
+      clocksUsing: [mockClock1.id],
+      hex: mockClock1.color,
+    },
+    {
+      clocksUsing: [mockClock2.id],
+      hex: mockClock2.color,
+    },
+    {
+      clocksUsing: [mockClock3.id],
+      hex: mockClock3.color,
+    },
+  ],
   rows: [mockRow1, mockRow2, mockRow3],
 }
 
 // Create fake profiles for users
-const user1Profile = {
+const user1Profile: UserType = {
   id: TEST_USER_ID,
   username: 'testuser1',
   icon: 'D20',
   icon_color: '#000000',
   bg_color: '#ffffff',
-  color: '#000000',
 }
 const user2Profile = {
   id: TEST_USER_ID2,
@@ -114,7 +133,6 @@ const user2Profile = {
   icon: 'D20',
   icon_color: '#000000',
   bg_color: '#ffffff',
-  color: '#000000',
 }
 
 export const addSupabaseMockData = async (): Promise<{
@@ -127,10 +145,7 @@ export const addSupabaseMockData = async (): Promise<{
       throw new Error('Missing env vars')
     }
 
-    const supabase = new SupabaseClient<Database>(
-      supabaseUrl,
-      supabaseServiceKey,
-    )
+    const supabase = new SupabaseClient(supabaseUrl, supabaseServiceKey)
     console.log('Supabase client initialized.')
 
     // See if the tower data has been added to the database already
@@ -143,20 +158,7 @@ export const addSupabaseMockData = async (): Promise<{
     console.log('Fetched towers:', towers)
     console.log('Towers fetch error:', towersError)
 
-    // if (towers) {
-    //   console.log('Test data exists')
-    //   return { success: true }
-    // }
-
-    type SupabaseTowerType = {
-      id?: string | undefined
-      name?: string | null | undefined
-      users?: string[] | null | undefined
-      owner?: string | null | undefined
-      colors?: string[] | null | undefined
-    }
-
-    const supabaseTower: SupabaseTowerType = {
+    const supabaseTower: TowerDatabaseType = {
       id: mockTower.id,
       name: mockTower.name,
       users: mockTower.users,

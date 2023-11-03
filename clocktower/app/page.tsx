@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import PublicClock from '@/components/homepage/PublicClock'
 
 const Home: React.FC = () => {
   // return (
@@ -14,12 +15,16 @@ const Home: React.FC = () => {
   //     </form>
   //   </>
   // )
+
   return (
-    <div className='flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-purple-500 text-white'>
-      <div className='text-center'>
-        <h1 className='text-6xl font-bold mb-4'>Clocktower</h1>
-        <p className='text-2xl mb-8'>Real-time sharable game clocks.</p>
-        <Link href='/login'> Login or Create an account to get started.</Link>
+    <div className='flex flex-col text-center items-center'>
+      <h1 className='text-9xl mt-6 mb-4 tracking-tighter leading-tight font-extrabold'>
+        Clocktower
+      </h1>
+      <p className='text-2xl mb-2'>Realtime sharable game clocks.</p>
+      <Link href='/login'> Login to get started.</Link>
+      <div className='h-[250px] w-[250px] items-center flex-col'>
+        <PublicClock />
       </div>
     </div>
   )

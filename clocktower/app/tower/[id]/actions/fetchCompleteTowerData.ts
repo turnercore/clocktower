@@ -8,16 +8,16 @@ import { Database } from '@/types/supabase'
 import {
   ClockSchema,
   ServerActionReturn,
-  Tower,
   TowerSchema,
+  TowerType,
   UUID,
   UUIDSchema,
 } from '@/types'
-import isUserAuthenticated from '@/lib/tools/isUserAuthenticated'
+import isUserAuthenticated from '@/tools/isUserAuthenticated'
 
 export default async function fetchCompleteTowerData(
   inputTowerId: UUID,
-): Promise<ServerActionReturn<Tower>> {
+): Promise<ServerActionReturn<TowerType>> {
   // Protected Server Action
   const userCheck = await isUserAuthenticated()
   if (!userCheck) return { error: 'User is not authenticated.' }
@@ -82,7 +82,7 @@ export default async function fetchCompleteTowerData(
     }
 
     // Check to see if it passes zod validation, if it does, return it
-    const validatedTower = TowerSchema.parse(towerReturn) as Tower
+    const validatedTower = TowerSchema.parse(towerReturn) as TowerType
     return validatedTower
       ? { data: validatedTower }
       : { error: 'Unknown error from fetchCompleteTowerData.' }

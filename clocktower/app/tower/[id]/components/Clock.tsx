@@ -4,13 +4,13 @@ import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { UUID } from 'crypto'
 import { toast } from '@/components/ui'
-import { lightenHexColor, darkenHexColor } from '@/lib/tools/changeHexColors'
-import type { ClockData, ColorPaletteItem } from '@/types'
+import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
+import { ClockType, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
 import { Database } from '@/types/supabase'
 
 interface ClockProps {
-  initialData: ClockData
+  initialData: ClockType
   initialUsedColors: ColorPaletteItem[]
   towerId: UUID
   rowId: UUID
@@ -25,9 +25,9 @@ const Clock: React.FC<ClockProps> = ({
   rowId,
   onDelete,
 }) => {
-  const clockId = initialData.id
+  const clockId = initialData.id as UUID
   // Create state variables
-  const [clockData, setClockData] = useState<ClockData>(initialData)
+  const [clockData, setClockData] = useState<ClockType>(initialData)
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(
     null,
   )
@@ -183,18 +183,18 @@ const Clock: React.FC<ClockProps> = ({
       console.error(error)
       return
     }
-    onDelete(clockId)
+    onDelete(clockId as UUID)
   }
 
   // General function for updating clock data
   const updateClockData = async (
-    updatedData: Partial<ClockData>,
+    updatedData: Partial<ClockType>,
     clockId: UUID,
   ) => {
     // Capture the old state for possible rollback
-    const oldClockData: Partial<ClockData> = {}
+    const oldClockData: Partial<ClockType> = {}
     Object.keys(updatedData).forEach((key) => {
-      const castedKey = key as keyof ClockData // TypeScript cast
+      const castedKey = key as keyof ClockType // TypeScript cast
       oldClockData[castedKey] = clockData[castedKey] as any // Type assertion here
     })
 
@@ -298,10 +298,10 @@ const Clock: React.FC<ClockProps> = ({
     ) {
       updateClockData(
         { filled: dataIndex === 0 ? null : dataIndex - 1 },
-        clockData.id,
+        clockData.id as UUID,
       )
     } else {
-      updateClockData({ filled: dataIndex }, clockData.id)
+      updateClockData({ filled: dataIndex }, clockData.id as UUID)
     }
   }
 

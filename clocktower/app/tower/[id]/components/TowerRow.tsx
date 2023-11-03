@@ -16,20 +16,27 @@ import {
   CardContent,
   CardTitle,
   Input,
-  Label,
   ScrollArea,
   ScrollBar,
   toast,
 } from '@/components/ui'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { UUID } from 'crypto'
-import { sanitizeString } from '@/lib/tools/sanitizeStrings'
 import { TbClockPlus } from 'react-icons/tb'
-import type { ClockData, ColorPaletteItem, TowerRowInitialData } from '@/types'
+import {
+  UUID,
+  ClockType,
+  ColorPaletteItem,
+  TowerRowType,
+  TowerRowRow,
+} from '@/types'
 import { TiDelete } from 'react-icons/ti'
+import {
+  RealtimePostgresDeletePayload,
+  RealtimePostgresUpdatePayload,
+} from '@supabase/supabase-js'
 
-interface TowerRowProps {
-  initialData: TowerRowInitialData
+type TowerRowProps = {
+  initialData: TowerRowType
   initialUsedColors: ColorPaletteItem[]
   rowId: UUID
   towerId: UUID
@@ -44,34 +51,38 @@ const TowerRow: React.FC<TowerRowProps> = ({
   users,
   onRowDelete,
 }) => {
-  const rowId = initialData.id
-  const [clocks, setClocks] = useState<ClockData[]>(initialData.clocks || [])
+  const rowId = initialData.id as UUID
+  const [clocks, setClocks] = useState<ClockType[]>(initialData.clocks || [])
   const [rowName, setRowName] = useState<string>(initialData.name || '')
   const supabase = createClientComponentClient()
   const addedClockIds = useRef<Set<UUID>>(new Set())
 
   // Update self when a server payload is received
-  const handleTowerRowPayload = (payload: any) => {
-    console.log('Received payload event:', payload)
+  const handleTowerRowUpdate = (
+    payload: RealtimePostgresUpdatePayload<TowerRowRow>,
+  ) => {
     const eventType = payload.eventType
+    if (eventType !== 'UPDATE') return
     const newData = payload.new
-    const oldData = payload.old
+    // Make sure it pertains to this row
+    if (newData.id !== rowId) return
 
-    if (newData.id !== rowId && oldData.id !== rowId) return
-
-    switch (eventType) {
-      case 'UPDATE':
-        // Handle Row Name Change
-        if (newData.name !== rowName) {
-          setRowName(newData.name)
-        }
-        break
-      case 'DELETE':
-        onRowDelete(rowId)
-        break
-      default:
-        console.error('not valid eventType on payload')
+    if (newData.name !== rowName) {
+      setRowName(newData.name || '')
     }
+  }
+
+  const handleTowerRowDelete = (
+    payload: RealtimePostgresDeletePayload<TowerRowRow>,
+  ) => {
+    const eventType = payload.eventType
+    if (eventType !== 'DELETE') return
+    const oldData = payload.old
+    // Make sure it pertains to this row
+    if (oldData.id !== rowId) return
+
+    // Delete local state and update the tower
+    onRowDelete(rowId)
   }
 
   const handleClockInsert = (payload: any) => {
@@ -99,12 +110,22 @@ const TowerRow: React.FC<TowerRowProps> = ({
       .on(
         'postgres_changes',
         {
-          event: '*',
+          event: 'UPDATE',
           schema: 'public',
           table: 'tower_rows',
           filter: `id=eq.${rowId}`,
         },
-        handleTowerRowPayload,
+        handleTowerRowUpdate,
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'DELETE',
+          schema: 'public',
+          table: 'tower_rows',
+          filter: `id=eq.${rowId}`,
+        },
+        handleTowerRowDelete,
       )
       .on(
         'postgres_changes',
@@ -125,7 +146,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
   }, [supabase, rowId])
 
   const addClock = async () => {
-    const newClock: ClockData = {
+    const newClock: ClockType = {
       id: crypto.randomUUID() as UUID,
       position: clocks.length || 0,
       name: '',
@@ -145,7 +166,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
     const oldClockData = clocks ? [...clocks] : []
     const updatedClocks = clocks ? [...clocks, newClock] : [newClock]
     setClocks(updatedClocks)
-    addedClockIds.current.add(newClock.id)
+    addedClockIds.current.add(newClock.id as UUID)
     // Update the server
     const { error } = await supabase.from('clocks').insert(newClock)
     // Handle Errors

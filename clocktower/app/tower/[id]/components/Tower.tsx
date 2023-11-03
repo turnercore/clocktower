@@ -1,11 +1,9 @@
 'use client'
 import type {
-  TowerData,
   UUID,
-  TowerRowInitialData,
-  TowerInitialData,
-  TowerRowData,
   ColorPaletteItem,
+  TowerRowType,
+  TowerType,
 } from '@/types'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -15,19 +13,17 @@ import TowerSettingsDialog from './TowerSettingsDialog'
 import { Database } from '@/types/supabase'
 
 interface TowerProps {
-  initialData: TowerInitialData
-  initialUsedColors: ColorPaletteItem[]
+  initialData: TowerType
   towerId: UUID
 }
 
-const Tower: React.FC<TowerProps> = ({
-  initialData,
-  initialUsedColors,
-  towerId,
-}) => {
+const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
   // Initialize state variables with initialData
-  const [towerData, setTowerData] = useState<TowerData>(initialData)
-  const [rows, setRows] = useState<TowerRowInitialData[]>(initialData.rows)
+  const [towerData, setTowerData] = useState<TowerType>(initialData)
+  const [rows, setRows] = useState<TowerRowType[]>(initialData.rows)
+  const [usedColors, setUsedColors] = useState<ColorPaletteItem[]>(
+    initialData.colors,
+  )
   // Create a ref to keep track of row IDs that have been added locally
   const addedRowIdsRef = useRef<Set<UUID>>(new Set())
   const supabase = createClientComponentClient<Database>()
@@ -118,7 +114,7 @@ const Tower: React.FC<TowerProps> = ({
 
   const handleAddRow = async () => {
     // Create new row data
-    const newRow: TowerRowData = {
+    const newRow = {
       id: crypto.randomUUID() as UUID,
       tower_id: towerData.id,
       name: '',
@@ -127,7 +123,7 @@ const Tower: React.FC<TowerProps> = ({
     }
 
     // Insert the new row into the database
-    const { error } = await supabase.from('tower_rows').insert([newRow])
+    const { error } = await supabase.from('tower_rows').insert(newRow)
     if (error) {
       toast({
         title: 'Failed to add new row.',
@@ -136,12 +132,12 @@ const Tower: React.FC<TowerProps> = ({
       })
       return
     }
-    const newRowWithInitialData: TowerRowInitialData = {
+    const newRowWithInitialData: TowerRowType = {
       ...newRow,
       clocks: [],
     }
     // Update the local state
-    addedRowIdsRef.current.add(newRow.id)
+    addedRowIdsRef.current.add(newRow.id as UUID)
     setRows((prevRows) => [...prevRows, newRowWithInitialData])
   }
 
@@ -169,11 +165,11 @@ const Tower: React.FC<TowerProps> = ({
         <TowerRow
           key={rowData.id}
           initialData={rowData}
-          initialUsedColors={initialUsedColors}
-          rowId={rowData.id}
-          towerId={towerId}
-          users={towerData?.users || []}
           onRowDelete={handleRowDelete}
+          towerId={towerId}
+          users={towerData.users}
+          rowId={rowData.id as UUID}
+          initialUsedColors={usedColors}
         />
       ))}
       <Button

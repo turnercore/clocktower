@@ -7,6 +7,7 @@ import {
   ServerActionError,
   SortableEntity,
   SortableEntitySchema,
+  ServerActionReturn,
 } from '@/types'
 import { Database } from '@/types/supabase'
 
@@ -16,8 +17,10 @@ import { Database } from '@/types/supabase'
 // the returned array will still be updated and sorted
 export default async function updateAndSyncPositions(
   params: UpdateAndSyncPositionParams,
-): Promise<{ data: SortableEntity[] } | ServerActionError> {
+): Promise<ServerActionReturn<SortableEntity[]>> {
   try {
+    // If entities is empty, return empty array
+    if (params.entities.length === 0) return { data: [] }
     const validatedParams = UpdateAndSyncPositionParamsSchema.safeParse(params)
     if (!validatedParams.success) {
       const errorMessages = validatedParams.error.errors

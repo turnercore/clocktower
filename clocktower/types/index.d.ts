@@ -4,6 +4,7 @@ import type { Database } from './supabase'
 
 // Create TowerSchema based on the Database type of the towers table
 import { z } from 'zod'
+import { generateUsername } from '@/tools/generateUsername'
 
 export const ProfileRowSchema = z.object({
   bg_color: z.string().nullable(),
@@ -33,40 +34,51 @@ export const FriendsListSchema = z.array(UUIDSchema)
 
 export type FriendsList = z.infer<typeof FriendsListSchema>
 // TowerData Schema and Type
-export const TowerDataSchema = z.object({
+export const TowerDatabaseSchema = z.object({
   id: UUIDSchema as UUID,
   name: z
     .string()
     .max(30, { message: 'Name is too long.' })
     .strip()
-    .default(''),
+    .default('') as string,
   users: z.array(UUIDSchema as UUID),
   owner: UUIDSchema as UUID,
-  colors: z.array(HexColorCodeSchema),
+  colors: z.array(ColorPaletteItemSchema),
 })
 
-export type TowerData = z.infer<typeof TowerDataSchema>
-
-export const TowerSchema = TowerDataSchema.extend({
-  rows: z.array(TowerRowSchema).default([]),
-})
-
-// export type Tower = z.infer<typeof TowerSchema>
-export type Tower = {
+export type TowerDatabaseType = {
   id: UUID
   name: string
   users: UUID[]
-  colors: HexColorCode[]
-  rows: TowerRow[]
   owner: UUID
+  colors: ColorPaletteItem[]
+}
+
+export const TowerSchema = z.object({
+  id: UUIDSchema as UUID,
+  name: z
+    .string()
+    .max(30, { message: 'Name is too long.' })
+    .strip()
+    .default('') as string,
+  users: z.array(UUIDSchema as UUID),
+  owner: UUIDSchema as UUID,
+  colors: z.array(ColorPaletteItemSchema),
+  rows: z.array(TowerRowSchema).default([]),
+})
+
+// Extend towerdatabse to add rows
+export type TowerType = TowerDatabaseType & {
+  rows: TowerRowType[]
 }
 
 export const TowerRowRowSchema = z.object({
-  id: UUIDSchema,
+  id: UUIDSchema as UUID,
   name: z.string().nullable(),
-  tower_id: UUIDSchema,
+  tower_id: UUIDSchema as UUID,
   position: z.number().min(0).default(0),
-  users: z.array(UUIDSchema).nullable(),
+  users: z.array(UUIDSchema as UUID).nullable(),
+  color: HexColorCodeSchema.default('#FFA500'),
 })
 
 export type TowerRowRow = z.infer<typeof TowerRowRowSchema>
@@ -75,7 +87,7 @@ export const TowerRowSchema = TowerRowRowSchema.extend({
   clocks: z.array(ClockSchema),
 })
 
-export type TowerRow = z.infer<typeof TowerRowSchema>
+export type TowerRowType = z.infer<typeof TowerRowSchema>
 
 // This is just a join table for towers and users
 export const TowersUsersRowSchema = z.object({
@@ -109,7 +121,7 @@ export type ClockRowData = z.infer<typeof ClockRowSchema>
 
 export const ClockSchema = ClockRowSchema
 
-export type Clock = z.infer<typeof ClockSchema>
+export type ClockType = z.infer<typeof ClockSchema>
 
 // UUID Schema and Type
 export const UUIDSchema = z.string().uuid()
@@ -122,14 +134,18 @@ export const HexColorCodeSchema = z
   .trim()
 export type HexColorCode = z.infer<typeof HexColorCodeSchema>
 
-// User Schema and Type
+// User Schema and Type TODO:
 export const UserSchema = z.object({
   id: UUIDSchema,
-  email: z.string().email(),
+  email: z.string().email().optional(),
   provider: z.string().optional(),
   last_sign_in: z.instanceof(Date).optional(),
+  username: z.string().default(generateUsername()),
+  icon: z.string().nullable(),
+  icon_color: HexColorCodeSchema.nullable(),
+  bg_color: HexColorCodeSchema.nullable(),
 })
-export type User = z.infer<typeof UserSchema>
+export type UserType = z.infer<typeof UserSchema>
 
 // ColorPaletteItem Schema and Type
 export const ColorPaletteItemSchema = z.object({
@@ -152,7 +168,7 @@ export const UpdateAndSyncPositionParamsSchema = z.object({
 // Define the type from the Schema, infer failed
 export type UpdateAndSyncPositionParams = {
   entityType: EntityWithPosition
-  entities: (TowerRowData | ClockData)[]
+  entities: SortableEntity[]
 }
 
 // Server Action Error return type

@@ -24,7 +24,7 @@ import Link from 'next/link'
 import SignOutButton from './SignOutButton'
 import { useEffect, useState } from 'react'
 import type { Profile, UUID } from '@/types'
-import { generateUsername } from '@/lib/tools/generateUsername'
+import { generateUsername } from '@/tools/generateUsername'
 import { UserIcon } from '@/components/user/UserIcon'
 import { GiMeeple } from 'react-icons/gi'
 import {
