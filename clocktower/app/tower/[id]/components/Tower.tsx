@@ -1,16 +1,14 @@
 'use client'
-import type {
-  UUID,
-  ColorPaletteItem,
-  TowerRowType,
-  TowerType,
-} from '@/types'
+import type { UUID, ColorPaletteItem, TowerRowType, TowerType } from '@/types'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
 import { Button, toast } from '@/components/ui'
 import TowerSettingsDialog from './TowerSettingsDialog'
 import { Database } from '@/types/supabase'
+import insertNewTowerRow from '../actions/insertNewTowerRow'
+import deleteTowerRow from '../actions/deleteTowerRow'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
 interface TowerProps {
   initialData: TowerType
@@ -122,37 +120,37 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
       users: towerData.users,
     }
 
-    // Insert the new row into the database
-    const { error } = await supabase.from('tower_rows').insert(newRow)
-    if (error) {
+    try {
+      await insertNewTowerRow(newRow)
+      const newRowWithInitialData: TowerRowType = {
+        ...newRow,
+        clocks: [],
+      }
+      // Update the local state
+      addedRowIdsRef.current.add(newRow.id as UUID)
+      setRows((prevRows) => [...prevRows, newRowWithInitialData])
+    } catch (error) {
       toast({
         title: 'Failed to add new row.',
-        description: error.message,
+        description: extractErrorMessage(error),
         variant: 'destructive',
       })
-      return
     }
-    const newRowWithInitialData: TowerRowType = {
-      ...newRow,
-      clocks: [],
-    }
-    // Update the local state
-    addedRowIdsRef.current.add(newRow.id as UUID)
-    setRows((prevRows) => [...prevRows, newRowWithInitialData])
   }
 
   const handleRowDelete = async (rowId: UUID) => {
-    // Delete the row from the database
-    const { error } = await supabase.from('tower_rows').delete().eq('id', rowId)
-    if (error) {
+    try {
+      const { error } = await deleteTowerRow(rowId)
+      if (error) throw new Error(error)
+      // Update the local state
+      setRows((prevRows) => prevRows.filter((row) => row.id !== rowId))
+    } catch (error) {
       toast({
         title: 'Error',
-        description: error.message,
+        description: extractErrorMessage(error),
         variant: 'destructive',
       })
     }
-    // Update the local state
-    setRows((prevRows) => prevRows.filter((row) => row.id !== rowId))
   }
 
   return (

@@ -81,7 +81,14 @@ export const TowerRowRowSchema = z.object({
   color: HexColorCodeSchema.default('#FFA500'),
 })
 
-export type TowerRowRow = z.infer<typeof TowerRowRowSchema>
+export type TowerRowRow = {
+  id: UUID
+  name: string | null
+  tower_id: UUID
+  position: number
+  users: UUID[] | null
+  color: HexColorCode
+}
 
 export const TowerRowSchema = TowerRowRowSchema.extend({
   clocks: z.array(ClockSchema),
