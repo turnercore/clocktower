@@ -63,8 +63,6 @@ export function TowersDropdownComponent({
   }
 
   const handleDeleteTower = (payload: any) => {
-    console.log('tower was deleted')
-    console.log(payload)
     const towerId = payload.old.tower_id
     // Remove the tower from the list
     const newTowersList = towers.filter((tower) => tower.id !== towerId)

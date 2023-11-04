@@ -18,7 +18,6 @@ export default async function fetchTowerData(
   try {
     // Test the input with zod, if error, we're checking for errors anyway
     const towerId = UUIDSchema.parse(inputTowerId)
-    console.log('towerId', towerId)
 
     // Get the tower data from the database
     const supabase = createServerActionClient<Database>({ cookies })

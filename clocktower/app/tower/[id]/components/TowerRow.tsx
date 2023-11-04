@@ -94,7 +94,6 @@ const TowerRow: React.FC<TowerRowProps> = ({
   const handleRealtimeClockInsert = (
     payload: RealtimePostgresInsertPayload<ClockRowData>,
   ) => {
-    console.log('Received payload event for clock insert:', payload)
     const newData = payload.new
     // Parse the UUID from the payload
     const parsePayload = UUIDSchema.safeParse(newData.id)
@@ -108,10 +107,8 @@ const TowerRow: React.FC<TowerRowProps> = ({
     if (newData.row_id !== rowId) return
     // Check if the clock ID is in the ref before adding it to the local state
     if (!addedClockIds.current.has(uuid)) {
-      console.log('Current clocks:', clocks)
       setClocks((prevClocks) => {
         const newClocks = [...prevClocks, newData]
-        console.log('New clocks:', newClocks)
         return newClocks
       })
       addedClockIds.current.add(uuid)
@@ -119,7 +116,6 @@ const TowerRow: React.FC<TowerRowProps> = ({
   }
 
   useEffect(() => {
-    console.log('subscribing to channel: ', `tower_row_${rowId}`)
     const subscription = supabase
       .channel(`tower_row_${rowId}`)
       .on(

@@ -83,8 +83,6 @@ export default async function fetchCompleteTowerData(
           : [],
     }
     // Check to see if it passes zod validation, if it does, return it
-    console.log('about to validate towerReturn')
-    console.log(towerReturn)
     return { data: TowerSchema.parse(towerReturn) }
   } catch (error) {
     return {

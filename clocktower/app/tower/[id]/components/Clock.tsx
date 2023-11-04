@@ -2,10 +2,9 @@
 import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { UUID } from 'crypto'
 import { toast } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
-import { ClockType, ColorPaletteItem } from '@/types/schemas'
+import { ClockType, ColorPaletteItem, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
 import { Database } from '@/types/supabase'
 import deleteClock from '../actions/deleteClock'
@@ -43,7 +42,6 @@ const Clock: React.FC<ClockProps> = ({
 
   // These payload anys probably need to be converted into seprate functions that handle each type
   const handleClockPayload = (payload: any) => {
-    console.log('Received clock payload event:', payload)
     const eventType = payload.eventType
     const newData = payload.new
     const oldData = payload.old
@@ -56,7 +54,6 @@ const Clock: React.FC<ClockProps> = ({
         }
         break
       case 'DELETE':
-        console.log('clock deleted')
         onDelete(clockId)
         break
       default:
