@@ -1,4 +1,4 @@
-import type { ClockData, ColorPaletteItem } from '@/types'
+import type { ClockType, ColorPaletteItem } from '@/types'
 import React, { FC, ChangeEvent, useEffect } from 'react'
 import {
   AlertDialog,
@@ -29,7 +29,7 @@ import { BsTrash3Fill } from 'react-icons/bs'
 interface ClockSettingsDialogProps {
   configuredPieChart: JSX.Element
   colorPalette: ColorPaletteItem[]
-  clockData: ClockData
+  clockData: ClockType
   handleNameChange: (event: ChangeEvent<HTMLInputElement>) => void
   handleSegmentsChange: (value: number) => void
   handleIsRoundedChange: (event: ChangeEvent<HTMLInputElement>) => void
