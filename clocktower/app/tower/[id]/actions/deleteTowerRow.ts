@@ -2,7 +2,7 @@
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
-import { ServerActionReturn, UUID, UUIDSchema } from '@/types'
+import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
 const deleteTowerRow = async (

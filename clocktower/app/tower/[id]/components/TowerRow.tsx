@@ -30,7 +30,7 @@ import {
   TowerRowRow,
   ClockRowData,
   UUIDSchema,
-} from '@/types'
+} from '@/types/schemas'
 import { TiDelete } from 'react-icons/ti'
 import {
   RealtimePostgresDeletePayload,

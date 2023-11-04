@@ -5,7 +5,7 @@ import {
   ServerActionReturn,
   TowerRowRow,
   TowerRowRowSchema,
-} from '@/types'
+} from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
@@ -18,13 +18,13 @@ import { cookies } from 'next/headers'
  */
 // This function is called from the client to insert a new tower row into the database.
 const insertNewTowerRowServerAction = async (
-  newRow: TowerRowType,
+  newRow: TowerRowRow | TowerRowType,
 ): Promise<ServerActionReturn<TowerRowRow>> => {
   try {
     // Create a client object that has the current user's cookies.
     const supabase = createServerActionClient<Database>({ cookies })
+    const row = TowerRowRowSchema.parse(newRow) as TowerRowRow // this will just drop the clocks property if it's there
     // Parse the new row into the expected format.
-    const row = TowerRowRowSchema.parse(newRow) as TowerRowRow
     // Insert the new row into the database.
     const { error } = await supabase.from('tower_rows').insert(row)
     // If there was an error inserting the row, throw the error.

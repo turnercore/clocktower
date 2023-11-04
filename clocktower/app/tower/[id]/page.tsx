@@ -1,4 +1,5 @@
-import { UUID } from '@/types'
+import { UUID } from '@/types/schemas'
+// import { UUID } from 'crypto'
 import fetchCompleteTowerData from './actions/fetchCompleteTowerData'
 import Tower from './components/Tower'
 import extractErrorMessage from '@/tools/extractErrorMessage'
@@ -22,11 +23,7 @@ export default async function TowerPage({
     if (!tower) throw new Error('Tower not found') // If there's no tower, throw an error
 
     // 3. Render the tower rows with the fetched data
-    return (
-      <div>
-        <Tower towerId={tower.id} initialData={tower} />
-      </div>
-    )
+    return <div>{/* <Tower towerId={tower.id} initialData={tower} /> */}</div>
   } catch (error) {
     // 3b. Catch and display errors
     console.error(error)

@@ -26,7 +26,7 @@ import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { UUID } from '@/types'
+import { UUID } from '@/types/schemas'
 import { useRouter } from 'next/navigation'
 // Import other required components
 

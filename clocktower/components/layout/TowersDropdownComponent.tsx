@@ -16,7 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { isValidUUID } from '@/tools/isValidUUID'
-import { UUID } from '@/types'
+import { UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'

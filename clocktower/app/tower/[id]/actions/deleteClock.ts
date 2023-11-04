@@ -1,7 +1,7 @@
 'use server'
 // deleteCLock.ts
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ServerActionReturn, UUID } from '@/types'
+import { ServerActionReturn, UUID } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'

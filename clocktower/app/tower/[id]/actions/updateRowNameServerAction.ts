@@ -7,7 +7,7 @@ import {
   ServerActionReturn,
   TowerRowRow,
   TowerRowRowSchema,
-} from '@/types'
+} from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
 

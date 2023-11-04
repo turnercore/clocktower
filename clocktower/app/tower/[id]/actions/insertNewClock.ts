@@ -5,8 +5,8 @@ import {
   ClockType,
   ServerActionReturn,
   ClockRowData,
-  ClockRowSchema,
-} from '@/types'
+  ClockDatabaseSchema,
+} from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
@@ -25,7 +25,7 @@ const insertNewClock = async (
     // Create a client object that has the current user's cookies.
     const supabase = createServerActionClient<Database>({ cookies })
     // Validate Data and Parse the new row into the expected format with zod.
-    const row = ClockRowSchema.parse(newRow) as ClockRowData
+    const row = ClockDatabaseSchema.parse(newRow) as ClockRowData
     // Insert the new row into the database with supabase.
     const { data, error } = await supabase
       .from('clocks')

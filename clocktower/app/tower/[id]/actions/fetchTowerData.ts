@@ -7,7 +7,7 @@ import {
   TowerDatabaseSchema,
   UUIDSchema,
   ServerActionReturn,
-} from '@/types'
+} from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
 

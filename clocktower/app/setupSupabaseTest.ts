@@ -6,7 +6,7 @@ import {
   UUID,
   UserType,
   TowerDatabaseType,
-} from '@/types'
+} from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { SupabaseClient } from '@supabase/supabase-js'
 import { revalidatePath } from 'next/cache'
@@ -79,6 +79,7 @@ const mockRow1: TowerRowType = {
   position: 0,
   users: [TEST_USER_ID, TEST_USER_ID2],
   clocks: [mockClock1, mockClock2],
+  color: '#000000',
 }
 const mockRow2: TowerRowType = {
   id: TEST_ROW_ID2,
@@ -87,6 +88,7 @@ const mockRow2: TowerRowType = {
   position: 1,
   users: [TEST_USER_ID, TEST_USER_ID2],
   clocks: [mockClock3],
+  color: '#000000',
 }
 const mockRow3: TowerRowType = {
   id: TEST_ROW_ID3,
@@ -95,6 +97,7 @@ const mockRow3: TowerRowType = {
   position: 2,
   users: [TEST_USER_ID, TEST_USER_ID2],
   clocks: [],
+  color: '#000000',
 }
 
 const mockTower: TowerType = {

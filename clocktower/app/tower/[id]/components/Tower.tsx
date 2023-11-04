@@ -1,5 +1,11 @@
 'use client'
-import { UUID, ColorPaletteItem, TowerRowType, TowerType } from '@/types'
+import {
+  UUID,
+  ColorPaletteItem,
+  TowerRowType,
+  TowerType,
+  TowerRowRow,
+} from '@/types/schemas'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
@@ -112,12 +118,13 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
 
   const handleAddRow = async () => {
     // Create a new row object with initial data
-    const newRow = {
+    const newRow: TowerRowRow = {
       id: crypto.randomUUID() as UUID, // Generate a unique ID for the new row
       tower_id: towerData.id, // Associate the new row with the current tower
       name: '', // Initialize name as an empty string
       position: rows.length, // Set the position to be at the end of the current rows array
       users: towerData.users, // Copy the users from the tower data to the new row
+      color: '#FFFFFF', // Set the color to white
     }
 
     try {

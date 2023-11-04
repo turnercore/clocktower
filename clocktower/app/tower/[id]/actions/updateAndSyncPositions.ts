@@ -8,7 +8,7 @@ import {
   SortableEntity,
   SortableEntitySchema,
   ServerActionReturn,
-} from '@/types'
+} from '@/types/schemas'
 import { Database } from '@/types/supabase'
 
 // Server action to update and sync positions of entities

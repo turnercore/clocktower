@@ -12,7 +12,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
 import { toast } from '../../../../components/ui'
-import { UUID } from '@/types'
+import { UUID } from '@/types/schemas'
 
 export default function ShareTowerPopover() {
   const path = usePathname()

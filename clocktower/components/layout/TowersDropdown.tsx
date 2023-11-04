@@ -1,7 +1,7 @@
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { TowersDropdownComponent } from './TowersDropdownComponent'
-import { UUID } from '@/types'
+import { UUID } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 export const dynamic = 'force-dynamic'
 

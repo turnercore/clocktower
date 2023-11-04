@@ -1,4 +1,4 @@
-import { ClockType, ColorPaletteItem } from '@/types'
+import { ClockType, ColorPaletteItem } from '@/types/schemas'
 import React, { FC, ChangeEvent, useEffect } from 'react'
 import {
   AlertDialog,

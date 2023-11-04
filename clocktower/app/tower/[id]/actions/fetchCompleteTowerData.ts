@@ -13,7 +13,7 @@ import {
   TowerType,
   UUID,
   UUIDSchema,
-} from '@/types'
+} from '@/types/schemas'
 import isUserAuthenticated from '@/tools/isUserAuthenticated'
 
 export default async function fetchCompleteTowerData(

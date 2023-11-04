@@ -6,9 +6,9 @@ import {
   UUID,
   ServerActionReturn,
   ClockRowData,
-  ClockRowSchema,
+  ClockDatabaseSchema,
   ClockType,
-} from '@/types'
+} from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
 
@@ -33,7 +33,7 @@ const updateClockDataServerAction = async (
     if (error) throw error
 
     //LOOK AT We're varifying the data here with zod, but I'm not sure if it's necessary
-    const validatedData = ClockRowSchema.parse(data) as ClockRowData
+    const validatedData = ClockDatabaseSchema.parse(data) as ClockRowData
     // 5. If there was no error, return the data
     return { data: validatedData }
   } catch (error) {
