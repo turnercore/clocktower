@@ -1,5 +1,7 @@
-import { ClockType, ColorPaletteItem } from '@/types/schemas'
-import React, { FC, ChangeEvent, useEffect } from 'react'
+'use client'
+import updateTowerColorsServerAction from '../actions/updateTowerColorsServerAction'
+import { ClockType, ColorPaletteType, HexColorCode } from '@/types/schemas'
+import React, { FC, ChangeEvent, useCallback, useMemo } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +16,7 @@ import {
   Input,
   Label,
   Slider,
+  toast,
 } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
 import {
@@ -25,62 +28,224 @@ import {
 } from '@/components/ui/dialog'
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
+import objectToFormData from '@/tools/objectToFormData'
+import updateClockDataServerAction from '../actions/updateClockDataServerAction'
+import deleteClockServerAction from '../actions/deleteClockServerAction'
 
-interface ClockSettingsDialogProps {
+type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
-  colorPalette: ColorPaletteItem[]
+  colorPaletteValues: Array<keyof ColorPaletteType>
   clockData: ClockType
-  handleNameChange: (event: ChangeEvent<HTMLInputElement>) => void
-  handleSegmentsChange: (value: number) => void
-  handleIsRoundedChange: (event: ChangeEvent<HTMLInputElement>) => void
-  handleLineWidthChange: (value: number) => void
-  handleColorChange: (hex: string) => void
-  handleDelete: () => void
+  onStateChange: (key: keyof ClockType, value: any) => void
+  onDelete: () => void
 }
 
 const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   configuredPieChart,
   clockData,
-  colorPalette,
-  handleNameChange,
-  handleSegmentsChange,
-  handleIsRoundedChange,
-  handleLineWidthChange,
-  handleColorChange,
-  handleDelete,
+  colorPaletteValues,
+  onStateChange,
+  onDelete,
 }) => {
-  const dotsCss = `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
-  const [segmentsValue, setSegmentsValue] = React.useState<number | null>(
-    clockData.segments,
-  )
-  const [colorPaletteValues, setColorPaletteValues] = React.useState<string[]>(
-    colorPalette.map((color) => color.hex),
+  const dotsCss = useMemo(
+    () =>
+      `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`,
+    [clockData.color],
   )
 
-  // Update colorPaletteValues when colorPalette changes
-  useEffect(() => {
-    setColorPaletteValues(colorPalette.map((color) => color.hex))
-  }, [colorPalette])
+  const handleColorChange = useCallback(async (hex: HexColorCode) => {
+    // Optomistic Update
+    const oldColor = clockData.color
+    const newColor = hex
 
-  // const modifiedPieChart = React.cloneElement(configuredPieChart, {color: localColorValue})
+    // Update local state
+    onStateChange('color', newColor)
 
-  const handleSegmentInputChange = (
-    event: ChangeEvent<HTMLInputElement> | null = null,
-    segments: number | null = null,
-  ) => {
-    const value = event ? Number(event.target.value || event) : segments
-    if (value === null) return setSegmentsValue(null)
-    // Ensure value is a number
-    if (isNaN(value)) return setSegmentsValue(null)
-    // Ensure value is an integer
-    if (!Number.isInteger(value)) return setSegmentsValue(null)
-    // Clamp value between 1 - 100
-    if (value < 1) setSegmentsValue(1)
-    else if (value > 100) setSegmentsValue(100)
-    else setSegmentsValue(value)
+    // Call the server action to update the tower colors
+    const response = await updateTowerColorsServerAction(
+      objectToFormData({
+        towerId: 'your_tower_id',
+        entityId: clockData.id,
+        color: hex,
+      }),
+    )
 
-    handleSegmentsChange(value)
-  }
+    if (response.error) {
+      console.error('Failed to update tower colors:', response.error)
+      toast({
+        title: 'Failed to update tower colors',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert the local state
+      onStateChange('color', oldColor)
+    }
+  }, [])
+
+  const handleSegmentsChange = useCallback(
+    async (
+      event: ChangeEvent<HTMLInputElement> | null = null,
+      segments: number | null = null,
+    ) => {
+      const value = event ? Number(event.target.value || event) : segments
+      if (value === null || isNaN(value) || !Number.isInteger(value)) {
+        return onStateChange('segments', 1)
+      }
+
+      const validValue = Math.min(Math.max(value, 1), 100) // Clamp the value between 1 and 100
+
+      // Optimistic Update
+      const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
+      onStateChange('segments', validValue)
+
+      // Assume updateSegmentsServerAction is your function to update the segments on the server
+      const response = await updateClockDataServerAction(
+        objectToFormData({
+          clockId: clockData.id,
+          newClockData: {
+            segments: validValue,
+          },
+        }),
+      )
+
+      if (response.error) {
+        console.error('Failed to update segments:', response.error)
+        toast({
+          title: 'Failed to update segments',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Revert to the old segments value
+        onStateChange('segments', oldSegmentsValue)
+      }
+    },
+    [],
+  )
+
+  const handleDelete = useCallback(
+    async (event: React.MouseEvent<HTMLButtonElement>) => {
+      // This might not be an optimistic update since deletion could be critical.
+      // However, if you want to implement it similarly, you'd revert the delete on error.
+      const response = await deleteClockServerAction(
+        objectToFormData({
+          clockId: clockData.id,
+        }),
+      )
+
+      if (response.error) {
+        console.error('Failed to delete:', response.error)
+        toast({
+          title: 'Failed to delete',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Code to revert the deletion
+      } else {
+        // Successfully deleted, so we call the onDelete prop to update the parent state
+        onDelete()
+      }
+    },
+    [clockData.id, onDelete],
+  )
+
+  const handleNameChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const newName = event.target.value
+      const oldName = clockData.name
+
+      // Optimistic Update
+      onStateChange('name', newName)
+
+      const response = await updateClockDataServerAction(
+        objectToFormData({
+          clockId: clockData.id,
+          newClockData: {
+            name: newName,
+          },
+        }),
+      )
+
+      if (response.error) {
+        console.error('Failed to update name:', response.error)
+        toast({
+          title: 'Failed to update name',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Revert the local state
+        onStateChange('name', oldName)
+      }
+    },
+    [clockData.id, clockData.name, onStateChange],
+  )
+
+  const handleIsRoundedChange = useCallback(
+    async (event: ChangeEvent<HTMLInputElement>) => {
+      const newIsRounded = event.target.checked
+      const oldIsRounded = clockData.rounded
+
+      // Optimistic Update
+      onStateChange('rounded', newIsRounded)
+
+      const response = await updateClockDataServerAction(
+        objectToFormData({
+          clockId: clockData.id,
+          newClockData: {
+            rounded: newIsRounded,
+          },
+        }),
+      )
+
+      if (response.error) {
+        console.error('Failed to update rounded setting:', response.error)
+        toast({
+          title: 'Failed to update rounded setting',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Revert the local state
+        onStateChange('rounded', oldIsRounded)
+      }
+    },
+    [clockData.id, clockData.rounded, onStateChange],
+  )
+
+  const handleLineWidthChange = useCallback(
+    async (value: number) => {
+      const newLineWidth = value
+      const oldLineWidth = clockData.line_width
+
+      // Optimistic Update
+      onStateChange('line_width', newLineWidth)
+
+      const response = await updateClockDataServerAction(
+        objectToFormData({
+          clockId: clockData.id,
+          newClockData: {
+            line_width: newLineWidth,
+          },
+        }),
+      )
+
+      if (response.error) {
+        console.error('Failed to update line width:', response.error)
+        toast({
+          title: 'Failed to update line width',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Revert the local state
+        onStateChange('line_width', oldLineWidth)
+      }
+    },
+    [clockData.id, clockData.line_width, onStateChange],
+  )
 
   return (
     <Dialog>
@@ -95,9 +260,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
             Clock Settings
           </DialogTitle>
         </DialogHeader>
-        {/* Name */}
         <div className='flex flex-row space-x-2 items-center w-full'>
-          <label> Name: </label>
+          <Label> Name: </Label>
           <Input
             type='text'
             placeholder='Clock Name'
@@ -106,10 +270,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           />
         </div>
         <div className='flex flex-row'>
-          {/* Current Clock */}
           <div className='w-2/3 flex flex-col items-center'>
             {configuredPieChart}
-            {/* Delete Button */}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant='destructive' className='w-1/2 text-center'>
@@ -135,34 +297,22 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               </AlertDialogContent>
             </AlertDialog>
           </div>
-
-          {/* Settings */}
           <div className='w-1/2 flex flex-col space-y-6 mx-5'>
-            {/* Number of Segments */}
             <div className='flex flex-col space-y-2 w-full'>
-              <label> Segments </label>
+              <Label> Segments </Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
-                  defaultValue={[segmentsValue || 1]}
+                  value={[clockData.segments || 1]}
                   min={1}
-                  max={12}
-                  onValueChange={(value) => setSegmentsValue(value[0])}
+                  max={30}
                   onValueCommit={(value) =>
-                    handleSegmentInputChange(null, value[0])
+                    handleSegmentsChange(null, value[0])
                   }
-                />
-                <Input
-                  className='max-w-[70px]'
-                  type='number'
-                  value={segmentsValue || undefined}
-                  onChange={handleSegmentInputChange}
                 />
               </div>
             </div>
-
-            {/* Line Width */}
             <div className='flex flex-col space-y-2 w-full'>
-              <label> Line Width </label>
+              <Label> Line Width </Label>
               <Slider
                 defaultValue={[clockData.line_width]}
                 min={1}
@@ -171,18 +321,14 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
                 onValueCommit={(value) => handleLineWidthChange(value[0])}
               />
             </div>
-
-            {/* Rounded Checkbox */}
             <div className='flex flex-row space-x-2 items-center'>
-              <label className='flex items-center space-x-2'> Rounded </label>
+              <Label className='flex items-center space-x-2'> Rounded </Label>
               <Input
                 type='checkbox'
                 checked={clockData.rounded}
                 onChange={handleIsRoundedChange}
               />
             </div>
-
-            {/* Color */}
             <div className='flex flex-col space-y-2 w-full'>
               <Label> Color </Label>
               <SwatchesPicker

@@ -16,16 +16,22 @@ import {
 } from '@/types/schemas'
 import isUserAuthenticated from '@/tools/isUserAuthenticated'
 import extractErrorMessage from '@/tools/extractErrorMessage'
+import { z } from 'zod'
 
-export default async function fetchCompleteTowerData(
-  inputTowerId: UUID,
-): Promise<ServerActionReturn<TowerType>> {
+// zod schema
+const inputSchema = z.object({
+  towerId: UUIDSchema,
+})
+
+const fetchCompleteTowerData = async (
+  formData: FormData,
+): Promise<ServerActionReturn<TowerType>> => {
   try {
-    const userCheck = await isUserAuthenticated()
-    if (!userCheck) throw new Error('User is not authenticated.')
+    // Get the form data into a javascript object
+    const form = Object.fromEntries(formData.entries())
 
     // validate input
-    const towerId: UUID = UUIDSchema.parse(inputTowerId) as UUID
+    const { towerId } = inputSchema.parse(form)
 
     // Fetch the tower data
     const supabase = createServerActionClient<Database>({ cookies })
@@ -115,3 +121,5 @@ const fetchAllClocksInTower = async (
     .eq('tower_id', towerId)
   return { data, error }
 }
+
+export default fetchCompleteTowerData

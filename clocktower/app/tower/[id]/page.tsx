@@ -3,6 +3,7 @@ import { UUID } from '@/types/schemas'
 import fetchCompleteTowerData from './actions/fetchCompleteTowerData'
 import Tower from './components/Tower'
 import extractErrorMessage from '@/tools/extractErrorMessage'
+import objectToFormData from '@/tools/objectToFormData'
 
 type ExpectedParams = {
   id: UUID
@@ -18,14 +19,16 @@ export default async function TowerPage({
     const { id } = params
     if (!id) throw new Error('No tower ID provided')
     // 2. Fetch and set up the tower data
-    const { data: tower, error: fetchError } = await fetchCompleteTowerData(id)
+    const { data: tower, error: fetchError } = await fetchCompleteTowerData(
+      objectToFormData({ towerId: id }),
+    )
     if (fetchError) throw new Error(fetchError) // If there's an error in fetching, throw it
     if (!tower) throw new Error('Tower not found') // If there's no tower, throw an error
 
     // 3. Render the tower rows with the fetched data
     return (
       <div>
-        <Tower towerId={tower.id} initialData={tower} />
+        <Tower tower={tower} />
       </div>
     )
   } catch (error) {

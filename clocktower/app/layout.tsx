@@ -5,7 +5,7 @@ import { ThemeProvider } from '@/components/layout/theme-provider'
 import { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans, GeistMono } from 'geist/font'
-import { Button } from '@/components/ui'
+import { Suspense } from 'react'
 export const dynamic = 'force-dynamic'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
@@ -36,14 +36,14 @@ export default function RootLayout({
   const isDark = false
 
   return (
-    <html lang='en' className={GeistSans.className}>
+    <html lang='en'>
       <head>
         <link rel='stylesheet' href='https://use.typekit.net/ckd1nmz.css' />
       </head>
-      <body>
+      <body className={GeistSans.className}>
         <ThemeProvider attribute='class' defaultTheme='system' enableSystem>
           <div className='flex flex-col min-h-screen'>
-            <Header />
+            {/* <Header /> */}
             <div className='flex-1 mt-3 mb-3'>{children}</div>
             <div className='background'></div>
             <Toaster />

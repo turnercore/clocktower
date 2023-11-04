@@ -1,10 +1,11 @@
 'use client'
 import {
   UUID,
-  ColorPaletteItem,
   TowerRowType,
   TowerType,
   TowerRowRow,
+  ColorPaletteType,
+  TowerDatabaseType,
 } from '@/types/schemas'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -15,19 +16,20 @@ import { Database } from '@/types/supabase'
 import insertNewTowerRowServerAction from '../actions/insertNewTowerRowServerAction'
 import deleteTowerRow from '../actions/deleteTowerRow'
 import extractErrorMessage from '@/tools/extractErrorMessage'
+import { RealtimePostgresUpdatePayload } from '@supabase/supabase-js'
 
 interface TowerProps {
-  initialData: TowerType
-  towerId: UUID
+  tower: TowerType
 }
 
-const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
+const Tower: React.FC<TowerProps> = ({ tower }) => {
   // Initialize state variables with initialData
-  const [towerData, setTowerData] = useState<TowerType>(initialData)
-  const [rows, setRows] = useState<TowerRowType[]>(initialData.rows || [])
-  const [usedColors, setUsedColors] = useState<ColorPaletteItem[]>(
-    initialData.colors || [],
-  )
+  const [towerData, setTowerData] = useState<TowerType>(tower)
+  const [rows, setRows] = useState<TowerRowType[]>(tower.rows || [])
+  const [colorPaletteValues, setColorPaletteValues] =
+    useState<ColorPaletteType>(tower.colors || {})
+  const towerId = tower.id
+
   // Create a ref to keep track of row IDs that have been added locally
   const addedRowIdsRef = useRef<Set<UUID>>(new Set())
   const supabase = createClientComponentClient<Database>()
@@ -62,16 +64,19 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
     }
   }
 
-  const handleUpdateTower = (payload: any) => {
-    if (payload.new.id !== towerId) return
-    // Handle the name change
-    if (payload.new.name !== towerData.name) {
-      setTowerData(payload.new)
+  const handleUpdateTower = (
+    payload: RealtimePostgresUpdatePayload<TowerDatabaseType>,
+  ) => {
+    const updatedTower = payload.new
+    if (updatedTower.id !== towerId) return
+    // Handle a name change
+    if (updatedTower.name !== towerData.name) {
+      handleNameChange(updatedTower.name)
     }
 
     // Handle users array change
     if (payload.new.users !== towerData.users) {
-      setTowerData(payload.new)
+      handleUsersChange(updatedTower.users)
     }
   }
 
@@ -165,6 +170,14 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
     }
   }
 
+  const handleNameChange = (newName: string) => {
+    setTowerData((prevData) => ({ ...prevData, name: newName }))
+  }
+
+  const handleUsersChange = (newUsers: string[]) => {
+    setTowerData((prevData) => ({ ...prevData, users: newUsers }))
+  }
+
   return (
     <div className='flex flex-col space-y-4'>
       <div className='flex flex-row items-center mx-auto space-x-5'>
@@ -179,7 +192,7 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
           towerId={towerId}
           users={towerData.users}
           rowId={rowData.id as UUID}
-          initialUsedColors={usedColors}
+          colorPalette={colorPaletteValues}
         />
       ))}
       <Button

@@ -3,21 +3,31 @@
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/types/supabase'
 import {
-  UUID,
   ServerActionReturn,
   ClockRowData,
   ClockDatabaseSchema,
-  ClockType,
+  UUIDSchema,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
 
-// 1. Define the function's arguments and return types
+// Define the function's arguments and return types
+
+const inputSchema = z.object({
+  clockId: UUIDSchema,
+  newClockData: ClockDatabaseSchema.partial(),
+})
+
 const updateClockDataServerAction = async (
-  newClockData: Partial<ClockType>,
-  rowId: UUID,
+  FormData: FormData,
 ): Promise<ServerActionReturn<ClockRowData>> => {
   try {
+    // Extract form data into a javascript object
+    const form = Object.fromEntries(FormData.entries())
+    // Validate form data with zod
+    const { clockId, newClockData } = inputSchema.parse(form)
+
     // 2. Get the user's cookies and create a Supabase client
     const supabase = createServerActionClient<Database>({ cookies })
 
@@ -25,7 +35,7 @@ const updateClockDataServerAction = async (
     const { data, error } = await supabase
       .from('clocks')
       .update(newClockData)
-      .eq('id', rowId)
+      .eq('id', clockId)
       .select('*')
       .single()
     // 4. If there was an error, throw it
@@ -35,6 +45,11 @@ const updateClockDataServerAction = async (
     }
 
     const validatedData = ClockDatabaseSchema.parse(data) as ClockRowData
+
+    // If the data that changed was or includes the color field, update the tower colors array as well
+    // 1. Check to see if the color field was changed
+    // 2. If it was call the updateTowerColorsServerAction
+
     // 5. If there was no error, return the data
     return { data: validatedData }
   } catch (error) {

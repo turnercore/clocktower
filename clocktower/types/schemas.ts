@@ -24,11 +24,17 @@ export const ProfileRowSchema = z
   .strip()
 
 // ColorPaletteItem Schema and Type
-export const ColorPaletteItemSchema = z.object({
-  clocksUsing: z.array(UUIDSchema),
-  hex: z.string(),
-})
-export type ColorPaletteItem = z.infer<typeof ColorPaletteItemSchema>
+export const ColorPaletteSchema = z.record(z.array(UUIDSchema)).refine(
+  (obj) => {
+    return Object.keys(obj).every(
+      (key) => HexColorCodeSchema.safeParse(key).success,
+    )
+  },
+  {
+    message: 'All keys must be valid hex color codes',
+  },
+)
+export type ColorPaletteType = z.infer<typeof ColorPaletteSchema>
 
 export type ProfileRow = z.infer<typeof ProfileRowSchema>
 
@@ -136,7 +142,7 @@ export const TowerDatabaseSchema = z
       .default(''),
     users: z.array(UUIDSchema).default([]),
     owner: UUIDSchema,
-    colors: z.array(ColorPaletteItemSchema).default([]).nullable(),
+    colors: ColorPaletteSchema.nullable().default({}),
   })
   .strip()
 export type TowerDatabaseType = z.infer<typeof TowerDatabaseSchema>
@@ -146,7 +152,7 @@ export const TowerSchema = z.object({
   name: z.string().trim().max(30, { message: 'Name is too long.' }).default(''),
   users: z.array(UUIDSchema),
   owner: UUIDSchema,
-  colors: z.array(ColorPaletteItemSchema).nullable().default([]),
+  colors: ColorPaletteSchema.nullable().default({}),
   rows: z.array(TowerRowSchema).nullable().default([]),
 })
 

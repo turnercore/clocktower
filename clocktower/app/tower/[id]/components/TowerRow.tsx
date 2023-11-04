@@ -25,11 +25,11 @@ import { TbClockPlus } from 'react-icons/tb'
 import {
   UUID,
   ClockType,
-  ColorPaletteItem,
   TowerRowType,
   TowerRowRow,
   ClockRowData,
   UUIDSchema,
+  ColorPaletteType,
 } from '@/types/schemas'
 import { TiDelete } from 'react-icons/ti'
 import {
@@ -43,7 +43,7 @@ import deleteTowerRow from '../actions/deleteTowerRow'
 
 type TowerRowProps = {
   initialData: TowerRowType
-  initialUsedColors: ColorPaletteItem[]
+  colorPalette: ColorPaletteType
   rowId: UUID
   towerId: UUID
   users: UUID[]
@@ -52,7 +52,7 @@ type TowerRowProps = {
 
 const TowerRow: React.FC<TowerRowProps> = ({
   initialData,
-  initialUsedColors,
+  colorPalette,
   towerId,
   users,
   onDelete,
@@ -60,6 +60,8 @@ const TowerRow: React.FC<TowerRowProps> = ({
   const rowId = initialData.id as UUID
   const [clocks, setClocks] = useState<ClockType[]>(initialData.clocks || [])
   const [rowName, setRowName] = useState<string>(initialData.name || '')
+  const [colorPaletteValues, setColorPaletteValues] =
+    useState<ColorPaletteType>(colorPalette || {})
   const supabase = createClientComponentClient()
   const addedClockIds = useRef<Set<UUID>>(new Set())
 
@@ -300,7 +302,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
                 <div key={clock.id} className='min-w-[150px] flex flex-col'>
                   <Clock
                     initialData={clock}
-                    initialUsedColors={initialUsedColors}
+                    colorPalette={colorPaletteValues}
                     key={clock.id}
                     towerId={towerId}
                     onDelete={handleClockDelete}

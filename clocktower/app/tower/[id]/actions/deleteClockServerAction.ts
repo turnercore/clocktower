@@ -1,22 +1,25 @@
 'use server'
 // deleteCLock.ts
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ServerActionReturn, UUID } from '@/types/schemas'
+import { ServerActionReturn, UUIDSchema } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { z } from 'zod'
 
-// Helper functions to handle database interactions and data modifications
-/**
- * Deletes a row from the "clocks" table in the database.
- * @param clockId The id of the clock to be deleted.
- * @returns A promise that resolves to a `ServerActionReturn` object containing the deleted row data, or an error message if the deletion fails.
- */
-// This function is called from the client to delete a clock from the database.
-const deleteClock = async (
-  clockId: UUID,
+// Define the function's arguments and return types
+const inputSchema = z.object({
+  clockId: UUIDSchema,
+})
+
+const deleteClockServerAction = async (
+  formData: FormData,
 ): Promise<ServerActionReturn<{ success: true }>> => {
   try {
+    // Extract form data into a javascript object
+    const form = Object.fromEntries(formData.entries())
+    // Validate form data with zod
+    const { clockId } = inputSchema.parse(form)
     // Create a client object that has the current user's cookies.
     const supabase = createServerActionClient<Database>({ cookies })
     // Delete the clock from the database with supabase.
@@ -33,4 +36,4 @@ const deleteClock = async (
   }
 }
 
-export default deleteClock
+export default deleteClockServerAction
