@@ -8,6 +8,8 @@ import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import { ClockType, ColorPaletteItem } from '@/types'
 import ClockSettingsDialog from './ClockSettingsDialog'
 import { Database } from '@/types/supabase'
+import deleteClock from '../actions/deleteClock'
+import updateClockDataServerAction from '../actions/updateClockDataServerAction'
 
 interface ClockProps {
   initialData: ClockType
@@ -39,6 +41,7 @@ const Clock: React.FC<ClockProps> = ({
   // Init supabase
   const supabase = createClientComponentClient<Database>()
 
+  // These payload anys probably need to be converted into seprate functions that handle each type
   const handleClockPayload = (payload: any) => {
     console.log('Received clock payload event:', payload)
     const eventType = payload.eventType
@@ -60,6 +63,7 @@ const Clock: React.FC<ClockProps> = ({
         return
     }
   }
+
   // This is to update the color swatches when a color is changed in the tower
   const handleTowerClocksChanges = (payload: any) => {
     // Destructure eventType and clockId for easier reference
@@ -178,9 +182,13 @@ const Clock: React.FC<ClockProps> = ({
 
   // Delete the clock
   const handleDelete = async () => {
-    const { error } = await supabase.from('clocks').delete().eq('id', clockId)
+    const { error } = await deleteClock(clockId)
     if (error) {
-      console.error(error)
+      toast({
+        variant: 'destructive',
+        title: 'Error deleting clock',
+        description: error,
+      })
       return
     }
     onDelete(clockId as UUID)
@@ -202,19 +210,14 @@ const Clock: React.FC<ClockProps> = ({
     setClockData((prevState) => ({ ...prevState, ...updatedData }))
 
     // Update the server
-    const { error } = await supabase
-      .from('clocks')
-      .update(updatedData)
-      .eq('id', clockId)
-      .single()
-
+    const { error } = await updateClockDataServerAction(updatedData, clockId)
     // If the update failed, revert the state
     if (error) {
       console.error(error)
       toast({
         variant: 'destructive',
         title: 'Error updating clock',
-        description: error.message,
+        description: error,
       })
       // Revert to the old state
       setClockData((prevState) => ({ ...prevState, ...oldClockData }))

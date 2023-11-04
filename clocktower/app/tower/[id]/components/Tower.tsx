@@ -6,7 +6,7 @@ import TowerRow from './TowerRow'
 import { Button, toast } from '@/components/ui'
 import TowerSettingsDialog from './TowerSettingsDialog'
 import { Database } from '@/types/supabase'
-import insertNewTowerRow from '../actions/insertNewTowerRow'
+import insertNewTowerRowServerAction from '../actions/insertNewTowerRowServerAction'
 import deleteTowerRow from '../actions/deleteTowerRow'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
@@ -111,28 +111,33 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
   }, [supabase, towerId])
 
   const handleAddRow = async () => {
-    // Create new row data
+    // Create a new row object with initial data
     const newRow = {
-      id: crypto.randomUUID() as UUID,
-      tower_id: towerData.id,
-      name: '',
-      position: rows.length,
-      users: towerData.users,
+      id: crypto.randomUUID() as UUID, // Generate a unique ID for the new row
+      tower_id: towerData.id, // Associate the new row with the current tower
+      name: '', // Initialize name as an empty string
+      position: rows.length, // Set the position to be at the end of the current rows array
+      users: towerData.users, // Copy the users from the tower data to the new row
     }
 
     try {
-      await insertNewTowerRow(newRow)
+      // Attempt to insert the new row into the server
+      const { error } = await insertNewTowerRowServerAction(newRow)
+      if (error) throw new Error(error) // If there's an error, throw it to be caught in the catch block
+
       const newRowWithInitialData: TowerRowType = {
         ...newRow,
-        clocks: [],
+        clocks: [], // Initialize an empty clocks array for the new row
       }
-      // Update the local state
-      addedRowIdsRef.current.add(newRow.id as UUID)
-      setRows((prevRows) => [...prevRows, newRowWithInitialData])
+
+      // If the server action was successful, update the local state to reflect the new row
+      addedRowIdsRef.current.add(newRow.id as UUID) // Keep track of the newly added row ID
+      setRows((prevRows) => [...prevRows, newRowWithInitialData]) // Append the new row to the rows state
     } catch (error) {
+      // If there was an error during any of the above steps, show a toast notification to inform the user
       toast({
         title: 'Failed to add new row.',
-        description: extractErrorMessage(error),
+        description: extractErrorMessage(error), // Extract and show the error message from the error object
         variant: 'destructive',
       })
     }
@@ -163,7 +168,7 @@ const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
         <TowerRow
           key={rowData.id}
           initialData={rowData}
-          onRowDelete={handleRowDelete}
+          onDelete={handleRowDelete}
           towerId={towerId}
           users={towerData.users}
           rowId={rowData.id as UUID}

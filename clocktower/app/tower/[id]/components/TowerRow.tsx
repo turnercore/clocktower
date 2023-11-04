@@ -28,12 +28,18 @@ import {
   ColorPaletteItem,
   TowerRowType,
   TowerRowRow,
+  ClockRowData,
+  UUIDSchema,
 } from '@/types'
 import { TiDelete } from 'react-icons/ti'
 import {
   RealtimePostgresDeletePayload,
+  RealtimePostgresInsertPayload,
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js'
+import insertNewClock from '../actions/insertNewClock'
+import updateRowNameServerAction from '../actions/updateRowNameServerAction'
+import deleteTowerRow from '../actions/deleteTowerRow'
 
 type TowerRowProps = {
   initialData: TowerRowType
@@ -41,7 +47,7 @@ type TowerRowProps = {
   rowId: UUID
   towerId: UUID
   users: UUID[]
-  onRowDelete: (rowId: UUID) => void
+  onDelete: (rowId: UUID) => void
 }
 
 const TowerRow: React.FC<TowerRowProps> = ({
@@ -49,7 +55,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
   initialUsedColors,
   towerId,
   users,
-  onRowDelete,
+  onDelete,
 }) => {
   const rowId = initialData.id as UUID
   const [clocks, setClocks] = useState<ClockType[]>(initialData.clocks || [])
@@ -58,7 +64,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
   const addedClockIds = useRef<Set<UUID>>(new Set())
 
   // Update self when a server payload is received
-  const handleTowerRowUpdate = (
+  const handleRealtimeTowerRowUpdate = (
     payload: RealtimePostgresUpdatePayload<TowerRowRow>,
   ) => {
     const eventType = payload.eventType
@@ -72,7 +78,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
     }
   }
 
-  const handleTowerRowDelete = (
+  const handleRealtimeTowerRowDelete = (
     payload: RealtimePostgresDeletePayload<TowerRowRow>,
   ) => {
     const eventType = payload.eventType
@@ -82,24 +88,33 @@ const TowerRow: React.FC<TowerRowProps> = ({
     if (oldData.id !== rowId) return
 
     // Delete local state and update the tower
-    onRowDelete(rowId)
+    onDelete(rowId)
   }
 
-  const handleClockInsert = (payload: any) => {
+  const handleRealtimeClockInsert = (
+    payload: RealtimePostgresInsertPayload<ClockRowData>,
+  ) => {
     console.log('Received payload event for clock insert:', payload)
     const newData = payload.new
+    // Parse the UUID from the payload
+    const parsePayload = UUIDSchema.safeParse(newData.id)
+    // Handle errors
+    if (!parsePayload.success) return parsePayload.error
+    // Get the UUID
+    const uuid = parsePayload.data as UUID
+
     // Make sure it pertains to this row
     if (newData.tower_id !== towerId) return
     if (newData.row_id !== rowId) return
     // Check if the clock ID is in the ref before adding it to the local state
-    if (!addedClockIds.current.has(newData.id)) {
+    if (!addedClockIds.current.has(uuid)) {
       console.log('Current clocks:', clocks)
       setClocks((prevClocks) => {
         const newClocks = [...prevClocks, newData]
         console.log('New clocks:', newClocks)
         return newClocks
       })
-      addedClockIds.current.add(newData.id)
+      addedClockIds.current.add(uuid)
     }
   }
 
@@ -115,7 +130,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
           table: 'tower_rows',
           filter: `id=eq.${rowId}`,
         },
-        handleTowerRowUpdate,
+        handleRealtimeTowerRowUpdate,
       )
       .on(
         'postgres_changes',
@@ -125,7 +140,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
           table: 'tower_rows',
           filter: `id=eq.${rowId}`,
         },
-        handleTowerRowDelete,
+        handleRealtimeTowerRowDelete,
       )
       .on(
         'postgres_changes',
@@ -135,7 +150,7 @@ const TowerRow: React.FC<TowerRowProps> = ({
           table: 'clocks',
           filter: `row_id=eq.${rowId}`,
         },
-        handleClockInsert,
+        handleRealtimeClockInsert,
       )
       .subscribe()
 
@@ -168,14 +183,14 @@ const TowerRow: React.FC<TowerRowProps> = ({
     setClocks(updatedClocks)
     addedClockIds.current.add(newClock.id as UUID)
     // Update the server
-    const { error } = await supabase.from('clocks').insert(newClock)
+    const { error } = await insertNewClock(newClock)
     // Handle Errors
     if (error) {
       console.error(error)
       toast({
         variant: 'destructive',
         title: 'Error adding new clock',
-        description: error.message,
+        description: error,
       })
       // Revert if error
       setClocks(oldClockData)
@@ -203,18 +218,14 @@ const TowerRow: React.FC<TowerRowProps> = ({
     // Update local state
     setRowName(event.target.value)
     // Update the server
-    const { error, data } = await supabase
-      .from('tower_rows')
-      .update({ name: newRowName })
-      .eq('id', rowId)
-      .single()
+    const { error } = await updateRowNameServerAction(rowId, newRowName)
     // Handle Errors
     if (error) {
       console.error(error)
       toast({
         variant: 'destructive',
         title: 'Error updating row name',
-        description: error.message,
+        description: error,
       })
       // Revert if error
       setRowName(oldRowName)
@@ -224,17 +235,17 @@ const TowerRow: React.FC<TowerRowProps> = ({
   // Update the server and delete the row
   const handleRowDelete = async () => {
     // Delete from the server
-    const { error } = await supabase
-      .from('tower_rows')
-      .delete()
-      .eq('id', rowId)
-      .single()
+    const { error } = await deleteTowerRow(rowId)
     if (error) {
-      console.error(error)
+      toast({
+        variant: 'destructive',
+        title: 'Error deleting row',
+        description: error,
+      })
       return
     }
     // Delete local state and update the tower
-    onRowDelete(rowId)
+    onDelete(rowId)
   }
 
   // Update local and server state when a clock is deleted tower_row.clocks should be updated
