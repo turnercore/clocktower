@@ -1,9 +1,6 @@
 import { z } from 'zod'
-import type { UUID as CryptoUUID } from 'crypto'
-import type { Database } from './supabase'
-
-// Create TowerSchema based on the Database type of the towers table
-import { z } from 'zod'
+import { UUID as CryptoUUID } from 'crypto'
+import { Database } from './supabase'
 import { generateUsername } from '@/tools/generateUsername'
 
 export const ProfileRowSchema = z.object({

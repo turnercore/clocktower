@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es6",
+    "baseUrl": ".",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -19,8 +20,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
-      "@/types": ["./types"]
+      "@/*": ["/*"]
     }
   },
   "include": [
@@ -30,6 +30,5 @@
     ".next/types/**/*.ts",
     "jest.config.js"
   ],
-  "exclude": ["node_modules"],
-  "baseUrl": "."
+  "exclude": ["node_modules"]
 }

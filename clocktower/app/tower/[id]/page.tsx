@@ -1,14 +1,21 @@
-import { UUIDSchema, UUID } from '@/types'
+import { UUID } from '@/types'
 import fetchCompleteTowerData from './actions/fetchCompleteTowerData'
 import Tower from './components/Tower'
-import { z } from 'zod'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
-export default async function TowerPage({ params }: { params: unknown }) {
+type ExpectedParams = {
+  id: UUID
+}
+
+export default async function TowerPage({
+  params,
+}: {
+  params: ExpectedParams
+}) {
   try {
-    // 1. Validate the incoming params with Zod
-    const validatedParams = z.object({ id: UUIDSchema }).parse(params)
-    const { id } = validatedParams as { id: UUID }
-
+    // 1. Validate the incoming params
+    const { id } = params
+    if (!id) throw new Error('No tower ID provided')
     // 2. Fetch and set up the tower data
     const { data: tower, error: fetchError } = await fetchCompleteTowerData(id)
     if (fetchError) throw new Error(fetchError) // If there's an error in fetching, throw it
@@ -24,13 +31,9 @@ export default async function TowerPage({ params }: { params: unknown }) {
     // 3b. Catch and display errors
     console.error(error)
     // Validate Error Message
-    const errorMessage: string =
-      error instanceof z.ZodError || error instanceof Error
-        ? error.message
-        : 'An unknown error occurred.'
     return (
       <div className='flex flex-col'>
-        <p>There was an error: {errorMessage}</p>
+        <p>There was an error: {extractErrorMessage(error)}</p>
       </div>
     )
   }

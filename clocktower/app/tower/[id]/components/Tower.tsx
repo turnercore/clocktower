@@ -1,5 +1,5 @@
 'use client'
-import type { UUID, ColorPaletteItem, TowerRowType, TowerType } from '@/types'
+import { UUID, ColorPaletteItem, TowerRowType, TowerType } from '@/types'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import TowerRow from './TowerRow'
