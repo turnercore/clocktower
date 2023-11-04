@@ -14,7 +14,6 @@ interface ClockProps {
   initialData: ClockType
   initialUsedColors: ColorPaletteItem[]
   towerId: UUID
-  rowId: UUID
   onDelete: (clockId: UUID, skipServer?: boolean) => void
 }
 
@@ -23,7 +22,6 @@ const Clock: React.FC<ClockProps> = ({
   initialData,
   initialUsedColors,
   towerId,
-  rowId,
   onDelete,
 }) => {
   const clockId = initialData.id as UUID

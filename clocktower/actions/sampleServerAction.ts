@@ -5,6 +5,7 @@ import { z } from 'zod'
 export default async function serverActionOnFormData(formData: FormData) {
   // Get the form data into a javascript object
   const form = Object.fromEntries(formData.entries())
+
   // Validate input with zod by passing the form object to the schema
   const inputSchema = z.object({
     id: z.string().uuid(),

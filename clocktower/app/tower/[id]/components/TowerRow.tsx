@@ -303,7 +303,6 @@ const TowerRow: React.FC<TowerRowProps> = ({
                     initialUsedColors={initialUsedColors}
                     key={clock.id}
                     towerId={towerId}
-                    rowId={rowId}
                     onDelete={handleClockDelete}
                   />
                 </div>
