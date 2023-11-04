@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "tests": "jest",
-    "update-types": "npx supabase gen types typescript --project-id \"estelamtbxdegwijmyha\" > types/supabase.ts"
+    "update-types": "npx supabase gen types typescript --project-id \"estelamtbxdegwijmyha\" > types/supabase.ts" 
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.2",

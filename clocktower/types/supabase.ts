@@ -62,12 +62,14 @@ export interface Database {
           {
             foreignKeyName: "clocks_row_id_fkey"
             columns: ["row_id"]
+            isOneToOne: false
             referencedRelation: "tower_rows"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "clocks_tower_id_fkey"
             columns: ["tower_id"]
+            isOneToOne: false
             referencedRelation: "towers"
             referencedColumns: ["id"]
           }
@@ -90,12 +92,14 @@ export interface Database {
           {
             foreignKeyName: "friends_friend_id_fkey"
             columns: ["friend_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "friends_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -105,7 +109,6 @@ export interface Database {
         Row: {
           bg_color: string
           color: string | null
-          full_name: string | null
           icon: string | null
           icon_color: string | null
           id: string
@@ -114,7 +117,6 @@ export interface Database {
         Insert: {
           bg_color?: string
           color?: string | null
-          full_name?: string | null
           icon?: string | null
           icon_color?: string | null
           id?: string
@@ -123,7 +125,6 @@ export interface Database {
         Update: {
           bg_color?: string
           color?: string | null
-          full_name?: string | null
           icon?: string | null
           icon_color?: string | null
           id?: string
@@ -133,6 +134,7 @@ export interface Database {
           {
             foreignKeyName: "profiles_id_fkey"
             columns: ["id"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -140,6 +142,7 @@ export interface Database {
       }
       tower_rows: {
         Row: {
+          color: string | null
           created_at: string
           id: string
           name: string | null
@@ -148,6 +151,7 @@ export interface Database {
           users: string[] | null
         }
         Insert: {
+          color?: string | null
           created_at?: string
           id?: string
           name?: string | null
@@ -156,6 +160,7 @@ export interface Database {
           users?: string[] | null
         }
         Update: {
+          color?: string | null
           created_at?: string
           id?: string
           name?: string | null
@@ -167,6 +172,7 @@ export interface Database {
           {
             foreignKeyName: "tower_rows_tower_id_fkey"
             columns: ["tower_id"]
+            isOneToOne: false
             referencedRelation: "towers"
             referencedColumns: ["id"]
           }
@@ -174,7 +180,7 @@ export interface Database {
       }
       towers: {
         Row: {
-          colors: string[] | null
+          colors: Json | null
           created_at: string
           id: string
           name: string | null
@@ -182,7 +188,7 @@ export interface Database {
           users: string[] | null
         }
         Insert: {
-          colors?: string[] | null
+          colors?: Json | null
           created_at?: string
           id?: string
           name?: string | null
@@ -190,7 +196,7 @@ export interface Database {
           users?: string[] | null
         }
         Update: {
-          colors?: string[] | null
+          colors?: Json | null
           created_at?: string
           id?: string
           name?: string | null
@@ -201,6 +207,7 @@ export interface Database {
           {
             foreignKeyName: "towers_owner_fkey"
             columns: ["owner"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }
@@ -226,12 +233,14 @@ export interface Database {
           {
             foreignKeyName: "towers_users_tower_id_fkey"
             columns: ["tower_id"]
+            isOneToOne: false
             referencedRelation: "towers"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "towers_users_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           }

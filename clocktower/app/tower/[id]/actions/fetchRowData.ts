@@ -27,7 +27,7 @@ export default async function fetchTowerRowData(
       .single()
     if (error) throw error
 
-    return { data: TowerRowRowSchema.parse(data) }
+    return { data: TowerRowRowSchema.parse(data) as TowerRowRow }
   } catch (error) {
     return error instanceof Error
       ? { error: error.message }

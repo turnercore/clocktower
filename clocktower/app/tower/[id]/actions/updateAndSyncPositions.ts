@@ -68,6 +68,14 @@ export default async function updateAndSyncPositions(
   }
 }
 
+// This function sorts an array of objects based on their position field,
+// which is defined in the SortableEntitySchema. If the position field is
+// undefined or null, it will be set to 100, which will cause it to be sorted
+// to the end of the array. If the position field is not a number, it will be
+// set to 100, which will cause it to be sorted to the end of the array.
+// If there is a tie in the position field, the object whose position field is
+// defined first in the array will be sorted first.
+
 type SortResult = { data: SortableEntity[] } | ServerActionError
 
 function sortByPosition(entities: SortableEntity[]): SortResult {
