@@ -15,15 +15,15 @@ import {
   UUIDSchema,
 } from '@/types/schemas'
 import isUserAuthenticated from '@/tools/isUserAuthenticated'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
 export default async function fetchCompleteTowerData(
   inputTowerId: UUID,
 ): Promise<ServerActionReturn<TowerType>> {
-  // Protected Server Action
-  const userCheck = await isUserAuthenticated()
-  if (!userCheck) return { error: 'User is not authenticated.' }
-
   try {
+    const userCheck = await isUserAuthenticated()
+    if (!userCheck) throw new Error('User is not authenticated.')
+
     // validate input
     const towerId: UUID = UUIDSchema.parse(inputTowerId) as UUID
 
@@ -32,7 +32,7 @@ export default async function fetchCompleteTowerData(
     const { data: towerDataFetchResult, error: towerDataFetchResultError } =
       await fetchTowerData(towerId)
 
-    if (towerDataFetchResultError) throw towerDataFetchResult
+    if (towerDataFetchResultError) throw new Error(towerDataFetchResultError)
     const towerData = towerDataFetchResult
 
     // Get all rows in the tower
@@ -40,6 +40,7 @@ export default async function fetchCompleteTowerData(
       towerId,
       supabase,
     )
+
     if (rowError) throw rowError
 
     // Get all clocks in the tower
@@ -81,16 +82,17 @@ export default async function fetchCompleteTowerData(
             })
           : [],
     }
-
     // Check to see if it passes zod validation, if it does, return it
-    const validatedTower = TowerSchema.parse(towerReturn) as TowerType
-    return validatedTower
-      ? { data: validatedTower }
-      : { error: 'Unknown error from fetchCompleteTowerData.' }
-  } catch (error: unknown) {
-    return error instanceof Error
-      ? { error: error.message }
-      : { error: 'Unknown error from fetchCompleteTowerData.' }
+    console.log('about to validate towerReturn')
+    console.log(towerReturn)
+    return { data: TowerSchema.parse(towerReturn) }
+  } catch (error) {
+    return {
+      error: extractErrorMessage(
+        error,
+        'Unknown error from fetchCompleteTowerData!!',
+      ),
+    }
   }
 }
 

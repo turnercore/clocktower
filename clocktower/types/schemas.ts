@@ -8,8 +8,8 @@ export type UUID = z.infer<typeof UUIDSchema>
 // HexColorCode Schema and Type
 export const HexColorCodeSchema = z
   .string()
-  .regex(/^#([0-9a-f]{3}){1,2}$/i)
   .trim()
+  .regex(/^#([0-9a-f]{3}){1,2}$/i)
 export type HexColorCode = z.infer<typeof HexColorCodeSchema>
 
 export const ProfileRowSchema = z
@@ -19,7 +19,7 @@ export const ProfileRowSchema = z
     icon_color: z.string().nullable(),
     id: z.string(),
     username: z.string().nullable(),
-    color: z.string().nullable(),
+    color: HexColorCodeSchema.nullable(),
   })
   .strip()
 
@@ -77,21 +77,6 @@ export const ClockSchema = ClockDatabaseSchema
 
 export type ClockType = z.infer<typeof ClockSchema>
 
-// TowerData Schema and Type
-export const TowerDatabaseSchema = z
-  .object({
-    id: UUIDSchema,
-    name: z
-      .string()
-      .max(30, { message: 'Name is too long.' })
-      .trim()
-      .default(''),
-    users: z.array(UUIDSchema),
-    owner: UUIDSchema,
-    colors: z.array(ColorPaletteItemSchema),
-  })
-  .strip()
-
 export const TowerRowRowSchema = z
   .object({
     id: UUIDSchema,
@@ -102,22 +87,23 @@ export const TowerRowRowSchema = z
       .default(''),
     tower_id: UUIDSchema,
     position: z.number().min(0).default(0),
-    users: z.array(UUIDSchema).nullable(),
-    color: HexColorCodeSchema.default('#FFA500'),
+    users: z.array(UUIDSchema).nullable().default([]),
+    color: HexColorCodeSchema.nullable().default('#FFA500'),
   })
   .strip()
 
-export type TowerRowRow = {
-  id: UUID
-  name: string
-  tower_id: UUID
-  position: number
-  users: UUID[]
-  color: HexColorCode
-}
+export type TowerRowRow = z.infer<typeof TowerRowRowSchema>
+// export type TowerRowRow = {
+//   id: UUID
+//   name: string
+//   tower_id: UUID
+//   position: number
+//   users: UUID[]
+//   color: HexColorCode
+// }
 
 export const TowerRowSchema = TowerRowRowSchema.extend({
-  clocks: z.array(ClockSchema),
+  clocks: z.array(ClockSchema).default([]),
 })
 
 export type TowerRowType = z.infer<typeof TowerRowSchema>
@@ -132,27 +118,43 @@ export const TowersUsersRowSchema = z
 
 export type TowersUsersRow = z.infer<typeof TowersUsersRowSchema>
 
-export type TowerDatabaseType = {
-  id: UUID
-  name: string
-  users: UUID[]
-  owner: UUID
-  colors: ColorPaletteItem[]
-}
+// export type TowerDatabaseType = {
+//   id: UUID
+//   name: string
+//   users: UUID[]
+//   owner: UUID
+//   colors: ColorPaletteItem[]
+// }
+// TowerData Schema and Type
+export const TowerDatabaseSchema = z
+  .object({
+    id: UUIDSchema,
+    name: z
+      .string()
+      .max(30, { message: 'Name is too long.' })
+      .trim()
+      .default(''),
+    users: z.array(UUIDSchema).default([]),
+    owner: UUIDSchema,
+    colors: z.array(ColorPaletteItemSchema).default([]).nullable(),
+  })
+  .strip()
+export type TowerDatabaseType = z.infer<typeof TowerDatabaseSchema>
 
 export const TowerSchema = z.object({
   id: UUIDSchema,
   name: z.string().trim().max(30, { message: 'Name is too long.' }).default(''),
   users: z.array(UUIDSchema),
   owner: UUIDSchema,
-  colors: z.array(ColorPaletteItemSchema),
-  rows: z.array(TowerRowSchema).default([]),
+  colors: z.array(ColorPaletteItemSchema).nullable().default([]),
+  rows: z.array(TowerRowSchema).nullable().default([]),
 })
 
 // Extend towerdatabse to add rows
-export type TowerType = TowerDatabaseType & {
-  rows: TowerRowType[]
-}
+// export type TowerType = TowerDatabaseType & {
+//   rows: TowerRowType[]
+// }
+export type TowerType = z.infer<typeof TowerSchema>
 
 // User Schema and Type TODO:
 export const UserSchema = z.object({
@@ -161,9 +163,9 @@ export const UserSchema = z.object({
   provider: z.string().optional(),
   last_sign_in: z.instanceof(Date).optional(),
   username: z.string().default(generateUsername()),
-  icon: z.string().nullable(),
-  icon_color: HexColorCodeSchema.nullable(),
-  bg_color: HexColorCodeSchema.nullable(),
+  icon: z.string().nullable().default('D20'),
+  icon_color: HexColorCodeSchema.nullable().default('#000000'),
+  bg_color: HexColorCodeSchema.nullable().default('#FFFFFF'),
 })
 export type UserType = z.infer<typeof UserSchema>
 

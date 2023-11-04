@@ -24,9 +24,9 @@ interface TowerProps {
 const Tower: React.FC<TowerProps> = ({ initialData, towerId }) => {
   // Initialize state variables with initialData
   const [towerData, setTowerData] = useState<TowerType>(initialData)
-  const [rows, setRows] = useState<TowerRowType[]>(initialData.rows)
+  const [rows, setRows] = useState<TowerRowType[]>(initialData.rows || [])
   const [usedColors, setUsedColors] = useState<ColorPaletteItem[]>(
-    initialData.colors,
+    initialData.colors || [],
   )
   // Create a ref to keep track of row IDs that have been added locally
   const addedRowIdsRef = useRef<Set<UUID>>(new Set())

@@ -181,7 +181,7 @@ export const addSupabaseMockData = async (): Promise<{
 
     // Upsert rows
     // Remove the 'clocks' field from the rows
-    const rowsWithoutClocks = mockTower.rows.map((row) => {
+    const rowsWithoutClocks = mockTower.rows?.map((row) => {
       const { clocks, ...rowWithoutClocks } = row
       return rowWithoutClocks
     })
@@ -276,7 +276,7 @@ export const testSupabaseMockData = async (): Promise<boolean> => {
       .from('tower_rows')
       .select('*')
       .eq('tower_id', TEST_TOWER_ID)
-    if (!towerRows || towerRows.length !== mockTower.rows.length) {
+    if (!towerRows || towerRows.length !== mockTower.rows?.length) {
       console.error('Tower rows test failed.')
       console.log('Tower rows:', towerRows)
       return false

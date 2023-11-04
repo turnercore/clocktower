@@ -10,13 +10,15 @@ import {
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
 export default async function fetchTowerData(
   inputTowerId: UUID,
 ): Promise<ServerActionReturn<TowerDatabaseType>> {
   try {
     // Test the input with zod, if error, we're checking for errors anyway
-    const towerId: UUID = UUIDSchema.parse(inputTowerId) as UUID
+    const towerId = UUIDSchema.parse(inputTowerId)
+    console.log('towerId', towerId)
 
     // Get the tower data from the database
     const supabase = createServerActionClient<Database>({ cookies })
@@ -26,10 +28,12 @@ export default async function fetchTowerData(
       .eq('id', towerId)
       .single()
     if (error) throw error
+    // Convert colors from a jsonb to an array of objects
+    data.colors = JSON.parse(JSON.stringify(data.colors))
     return { data: TowerDatabaseSchema.parse(data) as TowerDatabaseType }
   } catch (error) {
-    return error instanceof Error
-      ? { error: error.message }
-      : { error: 'Unknown error from fetchTowerData.' }
+    return {
+      error: extractErrorMessage(error, 'Unknown error from fetchTowerData.'),
+    }
   }
 }
