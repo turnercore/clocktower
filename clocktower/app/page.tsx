@@ -9,9 +9,11 @@ const Home: React.FC = () => {
       </h1>
       <p className='text-2xl mb-2'>Realtime sharable game clocks.</p>
       <Link href='/login'> Login to get started.</Link>
-      <div className='h-[250px] w-[250px] items-center flex-col'>
+      <div className='max-h-[500px] w-[500px] flex items-center flex-col mt-10'>
         <PublicClock />
       </div>
     </div>
   )
 }
+
+export default Home
