@@ -32,7 +32,7 @@ export default async function Header() {
           </Link>
         )}
       </div>
-      {isUserLoggedIn && <UserAvatar className='flex justify-end flex-1' />}
+      {isUserLoggedIn && <UserAvatar />}
       <HeaderTriangleDecoration />
     </header>
   )

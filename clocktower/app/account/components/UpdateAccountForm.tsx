@@ -321,7 +321,10 @@ const UpdateAccountForm = ({
       <CardContent className=' space-y-3'>
         <div className='flex flex-col items-center mx-auto min-h-[200px] min-y-[200px] mb-4'>
           <Avatar className='h-fit w-fit'>
-            <AvatarImage src='https://robohash.org/WOOO' />
+            <AvatarImage
+              style={{ backgroundColor: profile.color || '#FFFFFF' }}
+              src={`https://robohash.org/${currentUsername}`}
+            />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
           <h1 className='text-center font-mono text-4xl mb-4 mt-2'>
