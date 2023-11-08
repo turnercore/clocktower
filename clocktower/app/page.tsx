@@ -5,16 +5,18 @@ import { Suspense } from 'react'
 
 const Home: React.FC = () => {
   return (
-    <div className='relative flex flex-col text-center items-center min-h-screen'>
-      <h1 className='text-9xl mt-3 mb-2 tracking-tighter leading-tight font-extrabold'>
+    <div className='relative flex flex-col text-center items-center'>
+      <h1 className=' text-[11rem] mt-4 mb-2 tracking-tighter leading-tight font-extrabold'>
         Clocktower
       </h1>
-      <p className='text-2xl mb-4'>Shared game clocks for tabletop RPGs</p>
-      <Link href='/login'>
-        {' '}
-        <Button variant='outline'> Login </Button> to make some clocks{' '}
-      </Link>
-      <div className='max-h-[500px] w-[500px] flex items-center flex-col mt-10'>
+      <div className=' mb-16'>
+        <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
+        <Link href='/login'>
+          <Button variant='outline'> Login </Button>
+        </Link>
+        to make some clocks
+      </div>
+      <div className='max-h-[500px] w-[500px] flex items-center flex-col'>
         <Suspense fallback={<p>🕘</p>}>
           <PublicClock />
         </Suspense>

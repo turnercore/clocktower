@@ -319,9 +319,10 @@ const UpdateAccountForm = ({
         </CardDescription>
       </CardHeader>
       <CardContent className=' space-y-3'>
-        <div className='flex flex-col items-center mx-auto min-h-[200px] min-y-[200px] mb-4'>
+        <div className='flex flex-col items-center mx-auto min-h-[200px] min-y-[250px] mb-6'>
           <Avatar className='h-fit w-fit'>
             <AvatarImage
+              className='shadow-inner shadow-ring rounded-full'
               style={{ backgroundColor: profile.color || '#FFFFFF' }}
               src={`https://robohash.org/${currentUsername}`}
             />
@@ -349,22 +350,27 @@ const UpdateAccountForm = ({
                     <Input placeholder='New Username' {...field} />
                   </FormControl>
                   <FormDescription>
-                    This is your public display name.
+                    This is your public display name for getting invited to
+                    towers. <br /> It also controls your avatar. Have fun.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <p> Current Email: {userEmail}</p>
             <FormField
               control={form.control}
               name='email'
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Change Email</FormLabel>
+                  <FormLabel>New Email</FormLabel>
                   <FormControl>
                     <Input placeholder='New Email' {...field} />
                   </FormControl>
+                  <FormDescription>
+                    Your email address for logging in is private and will not be
+                    shared with anyone. <br /> Your current email is:{' '}
+                    {userEmail}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -400,6 +406,10 @@ const UpdateAccountForm = ({
                       {...field}
                     />
                   </FormControl>
+                  <FormDescription>
+                    Add or change your password. You can still log in with magic
+                    links without one.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -456,40 +466,40 @@ const UpdateAccountForm = ({
               >
                 Reset
               </Button>
+              {/* Delete Account Dialog */}
+              <div className='w-full' />
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant='destructive'
+                    disabled={isSubmitting}
+                    className=' text-center opacity-20 hover:opacity-100'
+                  >
+                    <BsTrash3Fill className='w-full h-full' />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Yourself?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure? You'll continue existing in the real world,
+                      but your account will be deleted along with all your data.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>🙅‍♀️ Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className='vibrating-element bg-red-500'
+                      onClick={handleDelete}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </form>
         </Form>
-        <CardFooter className='flex flex-col items-end'>
-          {/* Delete Account Dialog */}
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant='destructive'
-                className='w-1/10 text-sm text-center opacity-20 hover:opacity-100'
-              >
-                <BsTrash3Fill className='w-full h-full' />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Yourself?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure? You'll continue existing in the real world, but
-                  your account will be deleted along with all your data.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>🙅‍♀️ Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  className='vibrating-element bg-red-500'
-                  onClick={handleDelete}
-                >
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </CardFooter>
       </CardContent>
     </Card>
   )
