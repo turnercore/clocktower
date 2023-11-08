@@ -27,7 +27,7 @@ export default async function TowerPage({
 
     // 3. Render the tower rows with the fetched data
     return (
-      <div>
+      <div className='mb-[250px]'>
         <Tower tower={tower} />
       </div>
     )

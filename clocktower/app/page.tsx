@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import PublicClock from '@/components/homepage/PublicClock'
 import { Button } from '@/components/ui'
+import { Suspense } from 'react'
 
 const Home: React.FC = () => {
   return (
@@ -14,7 +15,9 @@ const Home: React.FC = () => {
         <Button variant='outline'> Login </Button> to make some clocks{' '}
       </Link>
       <div className='max-h-[500px] w-[500px] flex items-center flex-col mt-10'>
-        <PublicClock />
+        <Suspense fallback={<p>🕘</p>}>
+          <PublicClock />
+        </Suspense>
       </div>
     </div>
   )

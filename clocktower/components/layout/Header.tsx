@@ -15,28 +15,31 @@ export default async function Header() {
 
   const { data, error } = await supabase.auth.getSession()
   const isUserLoggedIn = !error && data?.session?.user ? true : false
-  console.log('isUserLoggedIn', isUserLoggedIn)
+  const isOnTowerPage = true
+
   return (
-    <header className='bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full h-[50px] flex justify-between items-center p-4'>
+    <header className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4'>
       <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
-      <div className='flex flex-row items-center'>
-        <div className='flex items-center mx-auto mr-5'>
-          {isUserLoggedIn && (
-            <div className='flex flex-row space-x-2'>
-              <TowersDropdown />
-              <ShareTowerPopover />
-            </div>
-          )}
-          {!isUserLoggedIn && (
-            <Link href='/login'>
-              <Button variant='link' className='text-lg'>
-                Login
-              </Button>
-            </Link>
-          )}
-        </div>
+      <div className='flex flex-1 justify-center items-center'>
+        {isUserLoggedIn ? (
+          <div className='flex flex-row space-x-2 ml-18'>
+            <TowersDropdown />
+            <ShareTowerPopover />
+          </div>
+        ) : (
+          <Link href='/login' className=' mr-10 z-100'>
+            <Button variant='link' className='text-lg'>
+              Login
+            </Button>
+          </Link>
+        )}
       </div>
-      <div className='flex mt-1 mb-1'>{isUserLoggedIn && <UserAvatar />}</div>
+      {isUserLoggedIn && <UserAvatar className='flex justify-end flex-1' />}
+      {!isOnTowerPage && (
+        <div className='absolute bottom-0 left-0 right-0 flex justify-center items-end'>
+          <div className='after:content-[""] after:absolute after:bottom-full after:left-1/2 after:-translate-x-1/2 after:border-l-[10px] after:border-l-transparent after:border-r-[10px] after:border-r-transparent after:border-t-[10px] after:border-t-transparent after:border-b-[10px] after:border-b-[#FFFFFF] dark:after:border-b-[#030816] after:w-0 after:h-0'></div>
+        </div>
+      )}
     </header>
   )
 }

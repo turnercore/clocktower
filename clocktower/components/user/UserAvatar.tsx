@@ -34,7 +34,7 @@ import {
 } from '@/components/ui/popover'
 import { Settings } from 'lucide-react'
 
-export default function UserAvatar() {
+export default function UserAvatar({ className = '' }) {
   // ... existing state and useEffect hooks
   const [isHovered, setIsHovered] = useState(false)
   const [user, setUser] = useState<User | null>(null)
