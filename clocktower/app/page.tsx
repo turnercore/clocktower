@@ -4,7 +4,7 @@ import { Button } from '@/components/ui'
 
 const Home: React.FC = () => {
   return (
-    <div className='flex flex-col min-h-screen text-center items-center '>
+    <div className='relative flex flex-col text-center items-center min-h-screen'>
       <h1 className='text-9xl mt-3 mb-2 tracking-tighter leading-tight font-extrabold'>
         Clocktower
       </h1>

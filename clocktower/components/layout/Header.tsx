@@ -17,7 +17,7 @@ export default async function Header() {
   const isUserLoggedIn = !error && data?.session?.user ? true : false
   console.log('isUserLoggedIn', isUserLoggedIn)
   return (
-    <header className='bg-gray-500 bg-opacity-10 top-0 w-full h-[62px] flex justify-between items-center p-4'>
+    <header className='bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full h-[50px] flex justify-between items-center p-4'>
       <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
       <div className='flex flex-row items-center'>
         <div className='flex items-center mx-auto mr-5'>
