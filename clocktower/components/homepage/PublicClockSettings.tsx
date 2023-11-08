@@ -27,7 +27,10 @@ import {
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { ColorPaletteType, HexColorCode } from '@/types/schemas'
+import { FcSettings } from 'react-icons/fc'
+import { GiSettingsKnobs } from 'react-icons/gi'
 import { PublicClockType } from './PublicClock'
+import { IoSettingsOutline } from 'react-icons/io5'
 
 type PublicClockSettingsProps = {
   pieChart: JSX.Element
@@ -70,8 +73,8 @@ const PublicClockSettings: FC<PublicClockSettingsProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant='ghost' size='icon' className='mb-2'>
-          <LuSettings2 className='w-full h-full' />
+        <Button variant='ghost' size='icon'>
+          <GiSettingsKnobs className='w-3/4 h-3/4' />
         </Button>
       </DialogTrigger>
       <DialogContent>

@@ -5,6 +5,8 @@ import { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans, GeistMono } from 'geist/font'
 import { Providers } from '@/app/providers'
+import FooterGradientWaves from '@/components/svg/FooterGradientWaves'
+import Image from 'next/image'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
@@ -38,10 +40,9 @@ export default function RootLayout({
       </head>
       <body className={GeistSans.className}>
         <Providers>
-          <div className='flex flex-col min-h-screen'>
+          <div className='flex flex-col min-h-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
             <Header />
-            <div className='flex-1 mt-3 mb-3'>{children}</div>
-            <div className='background'></div>
+            <div className='flex-1 mt-3'>{children}</div>
             <Toaster />
           </div>
           <Footer />

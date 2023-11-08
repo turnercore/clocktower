@@ -70,7 +70,7 @@ const randomClockNames = [
   'Jester Joke-Off Jam Timer',
   "Ogre's Onion Cooking Contest",
   'Dragon Egg Hatching Hourglass',
-  'Fairy Flash Mob Minute',
+  'Fairy Flash Mob Countdown',
   'Leprechaun Gold Hunt Hour',
   'Mermaid Splash-Off Schedule',
   'Yeti Yodeling Marathon Meter',
@@ -82,7 +82,7 @@ const defaultClockData: PublicClockType = {
   // Provide default values for the offline clock
   name: 'Loading Clock',
   segments: 4, // Random Number between 2 and 10
-  color: '#FFC312',
+  color: '#99D5C9',
   filled: 2,
   rounded: false,
   line_width: 20,
@@ -109,7 +109,6 @@ const PublicClock: React.FC = () => {
       ...prevState,
       name: randomName,
       segments: randomSegements,
-      color: randomColorFromPalette,
       filled: Math.floor((Math.random() * randomSegements) / 2),
     }))
     setIsLoading(false)
@@ -241,11 +240,10 @@ const PublicClock: React.FC = () => {
           {pieChart}
 
           <div className='flex flex-col'>
-            <div className='flex flex-row space-x-2 items-center w-full'>
-              <h1 className='text-2xl mt-1 mb-4 tracking-wider leading-tight font-thin'>
-                {' '}
-                {clockData.name}{' '}
-              </h1>
+            <div className='flex flex-row items-center space-x-2 w-full'>
+              <h2 className='text-2xl tracking-wide leading-tight font-thin'>
+                {clockData.name}
+              </h2>
               <PublicClockSettings
                 clockData={clockData}
                 colorPalette={colorPalette}
@@ -256,7 +254,7 @@ const PublicClock: React.FC = () => {
           </div>
         </>
       )}
-      <span className='text-sm'>(Yes, they sync in realtime)</span>
+      <span className='text-sm mt-6'>(Yes, they sync in realtime)</span>
     </>
   )
 }

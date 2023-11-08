@@ -1,3 +1,5 @@
+const { url } = require('inspector')
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ['class'],
@@ -16,6 +18,17 @@ module.exports = {
       },
     },
     extend: {
+      backgroundImage: {
+        'main-background': "url('/img/background.png')",
+        'main-background-svg': "url('/img/background2.svg')",
+        'main-background-layered-waves-svg': "url('/img/waves-footer.svg')",
+        'main-background-layered-waves-dark-svg':
+          "url('/img/waves-footer-dark.svg')",
+        'pie-factory': "url('/img/pie-factory.svg')",
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-conic':
+          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+      },
       fontFamily: {
         sans: ['var(--font-geist-sans)'],
         mono: ['var(--font-geist-mono)'],
