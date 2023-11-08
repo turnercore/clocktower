@@ -63,12 +63,13 @@ export default function UserAvatar({ className = '' }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <div className='h-[40px] w-[40px] shadow-md hover:shadow-2xl hover:scale-115 rounded-full'>
-          <Avatar style={{ backgroundColor: profile.color || '#FFFFFF' }}>
-            <AvatarImage src={`https://robohash.org/${profile.username}`} />
-            <AvatarFallback>CT</AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar
+          className='h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl'
+          style={{ backgroundColor: profile.color || '#FFFFFF' }}
+        >
+          <AvatarImage src={`https://robohash.org/${profile.username}`} />
+          <AvatarFallback>CT</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56'>
         <DropdownMenuLabel className='text-center'>
