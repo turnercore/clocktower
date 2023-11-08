@@ -1,76 +1,42 @@
-'use client'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
-import * as z from 'zod'
-import {
-  Button,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui'
-import { HexColorPicker } from 'react-colorful'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import UpdateAccountForm from './components/UpdateAccountForm'
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
+import { Database } from '@/types/supabase'
+import { ProfileRow, ProfileRowSchema } from '@/types/schemas'
 
-const formSchema = z.object({
-  username: z.string().min(2, {
-    message: 'Username must be at least 2 characters.',
-  }),
-  fullName: z.string(),
-  email: z.string().email(),
-})
+export default async function AccountPage() {
+  let profile: ProfileRow | null = null
+  let isAnError = false
+  let email = ''
+  // Get the user profile data
+  const supabase = createServerComponentClient<Database>({ cookies })
+  try {
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession()
+    if (sessionError) throw sessionError
 
-const IconPickerDialog: React.FC<{
-  onConfirm: (icon: string, bgColor: string, iconColor: string) => void
-}> = ({ onConfirm }) => {
-  // ... (No changes here)
-}
+    const userId = sessionData.session?.user?.id
+    if (!userId) throw new Error('No user ID found in session data')
+    email = sessionData.session?.user?.email || ''
 
-const Account: React.FC = () => {
-  const supabase = createClientComponentClient()
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm({
-    resolver: zodResolver(formSchema),
-  })
-
-  const handleIconUpdate = (
-    newIcon: string,
-    newBgColor: string,
-    newIconColor: string,
-  ) => {
-    // ...
-  }
-
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    // Update user data on the server
-    // ...
+    const { data: userProfileData, error: fetchProfileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single()
+    if (fetchProfileError) throw fetchProfileError
+    profile = ProfileRowSchema.parse(userProfileData)
+    if (!profile) throw new Error('No profile data found')
+  } catch (error) {
+    console.error(error)
+    isAnError = true
   }
 
   return (
-    <div className='account-page'>
-      <form onSubmit={handleSubmit(onSubmit)} className='space-y-8'>
-        <div className='user-info'>
-          <label>Username: </label>
-          <input {...register('username')} type='text' />
-          {errors.username && <span>{errors.username.message}</span>}
-
-          <label>Email: </label>
-          <input {...register('email')} type='email' disabled />
-
-          <label>Full Name: </label>
-          <input {...register('fullName')} type='text' />
-        </div>
-        <IconPickerDialog onConfirm={handleIconUpdate} />
-        {/* Display the selected icon with the chosen colors */}
-        {/* ... (No changes here) */}
-        <Button type='submit'>Update</Button>
-      </form>
+    <div className='min-h-screen mb-[250px]'>
+      {!isAnError && profile && (
+        <UpdateAccountForm profile={profile} email={email} />
+      )}
     </div>
   )
 }
-
-export default Account
