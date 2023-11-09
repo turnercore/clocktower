@@ -18,7 +18,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
   Form,
@@ -42,7 +41,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import { AvatarFallback } from '@radix-ui/react-avatar'
-
+import hash from '@/tools/hash'
 // validation schema for form
 const formSchema = z
   .object({
@@ -324,7 +323,9 @@ const UpdateAccountForm = ({
             <AvatarImage
               className='shadow-inner shadow-ring rounded-full'
               style={{ backgroundColor: profile.color || '#FFFFFF' }}
-              src={`https://robohash.org/${currentUsername}`}
+              src={`https://robohash.org/${hash(
+                currentUsername || 'clocktower',
+              )}`}
             />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
@@ -334,12 +335,7 @@ const UpdateAccountForm = ({
         </div>
         <h1> Update Your Information:</h1>
         <Form {...form}>
-          <form
-            autoComplete='off'
-            aria-autocomplete='none'
-            onSubmit={form.handleSubmit(onSubmit)}
-            className='space-y-8'
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-8'>
             <FormField
               control={form.control}
               name='username'

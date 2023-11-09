@@ -19,6 +19,7 @@ import { useEffect, useState } from 'react'
 import { Profile } from '@/types/schemas'
 import { Settings } from 'lucide-react'
 import { GoGear, GoSignOut } from 'react-icons/go'
+import hash from '@/tools/hash'
 
 export default function UserAvatar({ className = '' }) {
   // ... existing state and useEffect hooks
@@ -67,7 +68,11 @@ export default function UserAvatar({ className = '' }) {
           className='h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl'
           style={{ backgroundColor: profile.color || '#FFFFFF' }}
         >
-          <AvatarImage src={`https://robohash.org/${profile.username}`} />
+          <AvatarImage
+            src={`https://robohash.org/${hash(
+              profile.username || 'clocktower',
+            )}`}
+          />
           <AvatarFallback>CT</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
