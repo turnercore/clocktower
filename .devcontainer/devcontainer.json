@@ -15,7 +15,7 @@
         "dbaeumer.vscode-eslint"
       ]
     }
-  },
+  }
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
@@ -24,7 +24,7 @@
   // "forwardPorts": [],
 
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "cd clocktower"
+  // "postCreateCommand": "cd clocktower"
 
   // Configure tool-specific properties.
   // "customizations": {},

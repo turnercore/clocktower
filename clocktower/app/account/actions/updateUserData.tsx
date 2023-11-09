@@ -5,6 +5,7 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { z } from 'zod'
 import { cookies } from 'next/headers'
 import { createClient } from '@supabase/supabase-js'
+import { openaiModeration } from '@/tools/openaiModeration'
 
 // Define the input schema outside the function for reusability
 const inputSchema = z.object({
@@ -86,6 +87,12 @@ export default async function updateUserDataSA(
     const userData: Partial<ProfileRow> = {}
     // If the user is changing their username make sure it is unique
     if (username) {
+      // Moderate the username
+      const input = new FormData()
+      input.append('input', username)
+      const { data: flagged } = await openaiModeration(input)
+      if (flagged) throw new Error('Username is not allowed.')
+
       // First check to make sure the username is not in use, we'll have to use the admin account to do this
       if (!supabaseUrl || !supabaseServiceKey)
         throw new Error(

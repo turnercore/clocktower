@@ -77,7 +77,7 @@ const PublicClockSettings: FC<PublicClockSettingsProps> = ({
           <GiSettingsKnobs className='w-3/4 h-3/4' />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className='min-w-[800px]'>
         <DialogHeader>
           <DialogTitle className='text-center text-2xl'>
             Clock Settings
@@ -93,7 +93,12 @@ const PublicClockSettings: FC<PublicClockSettingsProps> = ({
           />
         </div>
         <div className='flex flex-row'>
-          <div className='w-2/3 flex flex-col items-center'>{pieChart}</div>
+          <div className='w-2/3 flex flex-col items-center'>
+            {pieChart}{' '}
+            <h2 className='text-2xl tracking-wide leading-tight font-thin text-center'>
+              {clockData.name}
+            </h2>
+          </div>
           <div className='w-1/3 flex flex-col space-y-6 mx-5'>
             <div className='flex flex-col space-y-2 w-full'>
               <Label>Segments</Label>

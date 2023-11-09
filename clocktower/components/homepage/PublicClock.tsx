@@ -96,7 +96,6 @@ const PublicClock: React.FC = () => {
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(
     null,
   )
-  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
     const randomSegements = Math.floor(Math.random() * 10) + 2 // Random Number between 2 and 10
@@ -111,7 +110,6 @@ const PublicClock: React.FC = () => {
       segments: randomSegements,
       filled: Math.floor((Math.random() * randomSegements) / 2),
     }))
-    setIsLoading(false)
   }, [])
 
   // Create the chart data
@@ -233,27 +231,21 @@ const PublicClock: React.FC = () => {
 
   return (
     <>
-      {isLoading ? (
-        <div> 🕦 </div>
-      ) : (
-        <>
-          {pieChart}
+      {pieChart}
 
-          <div className='flex flex-col'>
-            <div className='flex flex-row items-center space-x-2 w-full'>
-              <h2 className='text-2xl tracking-wide leading-tight font-thin'>
-                {clockData.name}
-              </h2>
-              <PublicClockSettings
-                clockData={clockData}
-                colorPalette={colorPalette}
-                onSettingsChange={handleDataChange}
-                pieChart={pieChart}
-              />
-            </div>
-          </div>
-        </>
-      )}
+      <div className='flex flex-col'>
+        <div className='flex flex-row items-center space-x-2 w-full'>
+          <h2 className='text-2xl tracking-wide leading-tight font-thin'>
+            {clockData.name}
+          </h2>
+          <PublicClockSettings
+            clockData={clockData}
+            colorPalette={colorPalette}
+            onSettingsChange={handleDataChange}
+            pieChart={pieChart}
+          />
+        </div>
+      </div>
       <span className='text-sm mt-6'>(Yes, they sync in realtime)</span>
     </>
   )
