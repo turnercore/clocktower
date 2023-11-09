@@ -15,10 +15,10 @@ import {
   createClientComponentClient,
 } from '@supabase/auth-helpers-nextjs'
 import Link from 'next/link'
-import SignOutButton from './SignOutButton'
 import { useEffect, useState } from 'react'
 import { Profile } from '@/types/schemas'
 import { Settings } from 'lucide-react'
+import { GoGear, GoSignOut } from 'react-icons/go'
 
 export default function UserAvatar({ className = '' }) {
   // ... existing state and useEffect hooks
@@ -78,13 +78,17 @@ export default function UserAvatar({ className = '' }) {
         <DropdownMenuGroup>
           <Link href='/account'>
             <DropdownMenuItem>
-              <Settings className='mr-2 h-4 w-4' />
+              <GoGear className='mr-2 h-4 w-4' />
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem>
-            <SignOutButton />
-          </DropdownMenuItem>
+
+          <Link href='/signout'>
+            <DropdownMenuItem>
+              <GoSignOut className='mr-2 h-4 w-4' />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
