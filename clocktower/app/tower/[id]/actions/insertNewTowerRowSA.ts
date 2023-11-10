@@ -1,3 +1,4 @@
+// insertNewTowerRowSA.ts
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import {
@@ -17,7 +18,7 @@ import { cookies } from 'next/headers'
  * @returns A promise that resolves to a `ServerActionReturn` object containing the inserted row data, or an error message if the insertion fails.
  */
 // This function is called from the client to insert a new tower row into the database.
-const insertNewTowerRowServerAction = async (
+export const insertNewTowerRowSA = async (
   newRow: TowerRowRow | TowerRowType,
 ): Promise<ServerActionReturn<TowerRowRow>> => {
   try {
@@ -38,5 +39,3 @@ const insertNewTowerRowServerAction = async (
     }
   }
 }
-
-export default insertNewTowerRowServerAction

@@ -1,6 +1,6 @@
 'use client'
 import updateTowerColorsServerAction from '../actions/updateTowerColorsServerAction'
-import { ClockType, ColorPaletteType, HexColorCode } from '@/types/schemas'
+import { ClockType, HexColorCode } from '@/types/schemas'
 import React, { FC, ChangeEvent, useCallback, useMemo } from 'react'
 import {
   AlertDialog,
@@ -18,7 +18,6 @@ import {
   Slider,
   toast,
 } from '@/components/ui'
-import { SwatchesPicker } from '@/components/ui/color-picker'
 import {
   Dialog,
   DialogContent,
@@ -30,20 +29,19 @@ import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 import objectToFormData from '@/tools/objectToFormData'
 import updateClockDataServerAction from '../actions/updateClockDataServerAction'
-import deleteClockServerAction from '../actions/deleteClockServerAction'
+import { deleteClockSA } from '../actions/deleteClockSA'
+import { RealtimeColorPicker } from './RealtimeColorPicker'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
-  colorPaletteValues: Array<keyof ColorPaletteType>
   clockData: ClockType
   onStateChange: (key: keyof ClockType, value: any) => void
   onDelete: () => void
 }
 
-const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
+export const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   configuredPieChart,
   clockData,
-  colorPaletteValues,
   onStateChange,
   onDelete,
 }) => {
@@ -53,35 +51,38 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     [clockData.color],
   )
 
-  const handleColorChange = useCallback(async (hex: HexColorCode) => {
-    // Optomistic Update
-    const oldColor = clockData.color
-    const newColor = hex
+  const handleColorChange = useCallback(
+    async (color: HexColorCode) => {
+      // Optomistic Update
+      const oldColor = clockData.color
+      const newColor = color
 
-    // Update local state
-    onStateChange('color', newColor)
+      // Update local state
+      onStateChange('color', newColor)
 
-    // Call the server action to update the tower colors
-    const response = await updateTowerColorsServerAction(
-      objectToFormData({
-        towerId: 'your_tower_id',
-        entityId: clockData.id,
-        color: hex,
-      }),
-    )
+      // Call the server action to update the tower colors
+      const response = await updateTowerColorsServerAction(
+        objectToFormData({
+          towerId: 'your_tower_id',
+          entityId: clockData.id,
+          color,
+        }),
+      )
 
-    if (response.error) {
-      console.error('Failed to update tower colors:', response.error)
-      toast({
-        title: 'Failed to update tower colors',
-        description: response.error,
-        variant: 'destructive',
-        duration: 2000,
-      })
-      // Revert the local state
-      onStateChange('color', oldColor)
-    }
-  }, [])
+      if (response.error) {
+        console.error('Failed to update tower colors:', response.error)
+        toast({
+          title: 'Failed to update tower colors',
+          description: response.error,
+          variant: 'destructive',
+          duration: 2000,
+        })
+        // Revert the local state
+        onStateChange('color', oldColor)
+      }
+    },
+    [clockData, onStateChange, updateTowerColorsServerAction],
+  )
 
   const handleSegmentsChange = useCallback(
     async (
@@ -121,14 +122,14 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         onStateChange('segments', oldSegmentsValue)
       }
     },
-    [],
+    [clockData, onStateChange, updateClockDataServerAction],
   )
 
   const handleDelete = useCallback(
     async (event: React.MouseEvent<HTMLButtonElement>) => {
       // This might not be an optimistic update since deletion could be critical.
       // However, if you want to implement it similarly, you'd revert the delete on error.
-      const response = await deleteClockServerAction(
+      const response = await deleteClockSA(
         objectToFormData({
           clockId: clockData.id,
         }),
@@ -148,7 +149,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         onDelete()
       }
     },
-    [clockData.id, onDelete],
+    [clockData, onDelete, deleteClockSA],
   )
 
   const handleNameChange = useCallback(
@@ -180,7 +181,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         onStateChange('name', oldName)
       }
     },
-    [clockData.id, clockData.name, onStateChange],
+    [clockData, onStateChange, updateClockDataServerAction],
   )
 
   const handleIsRoundedChange = useCallback(
@@ -212,7 +213,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         onStateChange('rounded', oldIsRounded)
       }
     },
-    [clockData.id, clockData.rounded, onStateChange],
+    [clockData, onStateChange, updateClockDataServerAction],
   )
 
   const handleLineWidthChange = useCallback(
@@ -244,7 +245,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
         onStateChange('line_width', oldLineWidth)
       }
     },
-    [clockData.id, clockData.line_width, onStateChange],
+    [clockData, onStateChange, updateClockDataServerAction],
   )
 
   return (
@@ -331,10 +332,9 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
             </div>
             <div className='flex flex-col space-y-2 w-full'>
               <Label> Color </Label>
-              <SwatchesPicker
+              <RealtimeColorPicker
                 color={clockData.color}
                 onChange={handleColorChange}
-                presetColors={colorPaletteValues}
               />
             </div>
           </div>
@@ -343,5 +343,3 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     </Dialog>
   )
 }
-
-export default ClockSettingsDialog

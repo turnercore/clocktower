@@ -3,7 +3,7 @@ import {
   SupabaseClient,
   createServerActionClient,
 } from '@supabase/auth-helpers-nextjs'
-import fetchTowerData from './fetchTowerData'
+import { fetchTowerDataSA } from './fetchTowerDataSA'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 import {
@@ -23,7 +23,7 @@ const inputSchema = z.object({
   towerId: UUIDSchema,
 })
 
-const fetchCompleteTowerData = async (
+export const fetchCompleteTowerData = async (
   formData: FormData,
 ): Promise<ServerActionReturn<TowerType>> => {
   try {
@@ -36,7 +36,7 @@ const fetchCompleteTowerData = async (
     // Fetch the tower data
     const supabase = createServerActionClient<Database>({ cookies })
     const { data: towerDataFetchResult, error: towerDataFetchResultError } =
-      await fetchTowerData(towerId)
+      await fetchTowerDataSA(towerId)
 
     if (towerDataFetchResultError) throw new Error(towerDataFetchResultError)
     const towerData = towerDataFetchResult
@@ -121,5 +121,3 @@ const fetchAllClocksInTower = async (
     .eq('tower_id', towerId)
   return { data, error }
 }
-
-export default fetchCompleteTowerData

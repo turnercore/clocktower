@@ -5,7 +5,7 @@ import { Database } from '@/types/supabase'
 import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
-const deleteTowerRow = async (
+export const deleteTowerRowSA = async (
   rowId: UUID,
 ): Promise<ServerActionReturn<{ success: true }>> => {
   try {
@@ -21,5 +21,3 @@ const deleteTowerRow = async (
     }
   }
 }
-
-export default deleteTowerRow

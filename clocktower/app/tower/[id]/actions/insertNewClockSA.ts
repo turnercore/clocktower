@@ -1,5 +1,5 @@
 'use server'
-// insertNewClock.ts
+// insertNewClockSA.ts
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import {
   ClockType,
@@ -18,7 +18,7 @@ import { cookies } from 'next/headers'
  * @returns A promise that resolves to a `ServerActionReturn` object containing the inserted row data, or an error message if the insertion fails.
  */
 // This function is called from the client to insert a new clock into the database.
-const insertNewClock = async (
+const insertNewClockSA = async (
   newRow: ClockType,
 ): Promise<ServerActionReturn<ClockRowData>> => {
   try {
@@ -44,4 +44,4 @@ const insertNewClock = async (
   }
 }
 
-export default insertNewClock
+export default insertNewClockSA

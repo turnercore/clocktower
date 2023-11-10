@@ -1,36 +1,36 @@
 'use server'
-// Fetch Clock Data
+// Fetch Row Data
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import {
   UUID,
-  ClockType,
   UUIDSchema,
-  ClockSchema,
   ServerActionReturn,
+  TowerRowRow,
+  TowerRowRowSchema,
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
 
-export default async function fetchClockData(
-  inputClockId: UUID,
-): Promise<ServerActionReturn<ClockType>> {
+export const fetchTowerRowData = async (
+  inputRowId: UUID,
+): Promise<ServerActionReturn<TowerRowRow>> => {
   try {
     // Test the input with zod, if error, we're checking for errors anyway
-    const clockId = UUIDSchema.parse(inputClockId)
+    const rowId = UUIDSchema.parse(inputRowId)
 
-    // Get the clock data from the database
+    // Get the tower row data from the database
     const supabase = createServerActionClient<Database>({ cookies })
     const { data, error } = await supabase
-      .from('clocks')
+      .from('tower_row')
       .select('*')
-      .eq('id', clockId)
+      .eq('id', rowId)
       .single()
     if (error) throw error
 
-    return { data: ClockSchema.parse(data) }
+    return { data: TowerRowRowSchema.parse(data) }
   } catch (error) {
     return error instanceof Error
       ? { error: error.message }
-      : { error: 'Unknown error from fetchClockData.' }
+      : { error: 'Unknown error from fetchTowerRowData.' }
   }
 }

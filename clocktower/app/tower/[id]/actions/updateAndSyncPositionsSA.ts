@@ -15,9 +15,9 @@ import { Database } from '@/types/supabase'
 // works on rows and clocks
 // Is not async, it is fire and forget. If the database update fail, it will just continue,
 // the returned array will still be updated and sorted
-export default async function updateAndSyncPositions(
+export const updateAndSyncPositions = async (
   params: UpdateAndSyncPositionParams,
-): Promise<ServerActionReturn<SortableEntity[]>> {
+): Promise<ServerActionReturn<SortableEntity[]>> => {
   try {
     // If entities is empty, return empty array
     if (params.entities.length === 0) return { data: [] }

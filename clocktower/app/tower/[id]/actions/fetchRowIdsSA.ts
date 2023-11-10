@@ -1,35 +1,35 @@
 'use server'
-// dataUtilities.ts
+// fetchRowIdsSA.ts
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import {
-  UUID,
-  TowerDatabaseType,
-  TowerDatabaseSchema,
-  UUIDSchema,
-  ServerActionReturn,
-} from '@/types/schemas'
+import { UUID, UUIDSchema, ServerActionReturn } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { cookies } from 'next/headers'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
-export default async function fetchTowerData(
+export async function fetchRowIdsSA(
   inputTowerId: UUID,
-): Promise<ServerActionReturn<TowerDatabaseType>> {
+): Promise<ServerActionReturn<string[]>> {
   try {
     // Test the input with zod, if error, we're checking for errors anyway
     const towerId = UUIDSchema.parse(inputTowerId)
 
     // Get the tower data from the database
     const supabase = createServerActionClient<Database>({ cookies })
+
+    // Get the row ids from the database assoisated with this towerId
+
     const { data, error } = await supabase
-      .from('towers')
-      .select('*')
-      .eq('id', towerId)
-      .single()
+      .from('tower_rows')
+      .select('id')
+      .eq('tower_id', towerId)
+      .order('position', { ascending: true })
+
     if (error) throw error
-    // Convert colors from a jsonb to an array of objects
-    data.colors = JSON.parse(JSON.stringify(data.colors))
-    return { data: TowerDatabaseSchema.parse(data) as TowerDatabaseType }
+
+    // convert the data to the expected format
+    const rowIds = data.map((row) => row.id)
+
+    return { data: rowIds }
   } catch (error) {
     return {
       error: extractErrorMessage(error, 'Unknown error from fetchTowerData.'),

@@ -12,7 +12,7 @@ const inputSchema = z.object({
   clockId: UUIDSchema,
 })
 
-const deleteClockServerAction = async (
+export const deleteClockSA = async (
   formData: FormData,
 ): Promise<ServerActionReturn<{ success: true }>> => {
   try {
@@ -35,5 +35,3 @@ const deleteClockServerAction = async (
     }
   }
 }
-
-export default deleteClockServerAction
