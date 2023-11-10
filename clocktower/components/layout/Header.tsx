@@ -1,11 +1,18 @@
 import UserAvatar from '../user/UserAvatar'
-import { Button, ModeToggle } from '@/components/ui'
+import {
+  Button,
+  ModeToggle,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui'
 import { TowersDropdown } from './TowersDropdown'
 import ShareTowerPopover from './ShareTowerPopover'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
 import HeaderTriangleDecoration from './HeaderTriangleDecoration'
+import LoginForm from '../forms/LoginForm'
 
 export default async function Header() {
   // See if user is logged in
@@ -25,11 +32,16 @@ export default async function Header() {
             {/* <ShareTowerPopover /> */}
           </div>
         ) : (
-          <Link href='/login' className=' mr-10 z-100'>
-            <Button variant='link' className='text-lg'>
-              Login
-            </Button>
-          </Link>
+          <Popover>
+            <PopoverTrigger>
+              <Button variant='link' className=' mr-10 z-100 text-lg'>
+                Login
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent>
+              <LoginForm />
+            </PopoverContent>
+          </Popover>
         )}
       </div>
       {isUserLoggedIn && <UserAvatar />}

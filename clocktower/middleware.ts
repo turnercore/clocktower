@@ -9,7 +9,7 @@ const protectedRoutes = ['/tower, /account']
 export const config = {
   matcher: [
     '/tower/:path*', // matches /tower and /tower/anything-else
-    '/account/:path*',
+    '/account/profile/:path*',
   ],
 }
 
@@ -19,7 +19,7 @@ function isProtectedRoute(pathname: string): boolean {
 
 function handleUnauthenticatedClient(request: NextRequest): NextResponse {
   const url = request.nextUrl.clone()
-  url.pathname = '/login'
+  url.pathname = '/account/login'
   return NextResponse.rewrite(url)
   // return NextResponse.redirect('/login')
 }

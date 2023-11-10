@@ -27,7 +27,6 @@ export const updateClockDataSA = async ({
   newClockData: Partial<ClockRowData>
 }): Promise<ServerActionReturn<ClockRowData>> => {
   try {
-    console.log('updateClockDataSA', clockId, newClockData)
     // Validate form data with zod
     inputSchema.parse({ clockId, newClockData })
 

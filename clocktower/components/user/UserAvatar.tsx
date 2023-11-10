@@ -81,14 +81,14 @@ export default function UserAvatar({ className = '' }) {
           {profile.username}
         </DropdownMenuLabel>
         <DropdownMenuGroup>
-          <Link href='/account'>
+          <Link href='/account/profile'>
             <DropdownMenuItem>
               <GoGear className='mr-2 h-4 w-4' />
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
 
-          <Link href='/signout'>
+          <Link href='/account/logout'>
             <DropdownMenuItem>
               <GoSignOut className='mr-2 h-4 w-4' />
               <span>Sign Out</span>
