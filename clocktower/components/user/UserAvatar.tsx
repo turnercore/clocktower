@@ -2,48 +2,56 @@
 import {
   Avatar,
   AvatarImage,
-  Button,
   AvatarFallback,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
   DropdownMenuGroup,
   DropdownMenuLabel,
-} from "@/components/ui"
-import LoginForm from "@/components/forms/LoginForm"
-import { User, createClientComponentClient } from "@supabase/auth-helpers-nextjs"
-import Link from "next/link"
-import SignOutButton from "./SignOutButton"
-import { useEffect, useState } from "react"
-import type { Profile, UUID } from "@/types"
-import { generateUsername } from '@/tools/generateUsername'
-import { UserIcon } from '@/components/user/UserIcon'
-import { GiMeeple } from "react-icons/gi"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Settings } from "lucide-react"
+} from '@/components/ui'
+import {
+  User,
+  createClientComponentClient,
+} from '@supabase/auth-helpers-nextjs'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { Profile } from '@/types/schemas'
+import { Settings } from 'lucide-react'
+import { GoGear, GoSignOut } from 'react-icons/go'
+import hash from '@/tools/hash'
 
-export default function UserAvatar() {
+export default function UserAvatar({ className = '' }) {
   // ... existing state and useEffect hooks
   const [isHovered, setIsHovered] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   //Get user on mount
   useEffect(() => {
     const getSupabaseUser = async () => {
       try {
         const supabase = createClientComponentClient()
-        const { data } = await supabase.auth.getSession()
-        if (!data) return null
-        if (!data.session) return null
-        if (!data.session.user) return null
+        const { data, error } = await supabase.auth.getSession()
+        if (error) throw error
+        if (!data.session?.user)
+          throw new Error('No user found in session data')
         setUser(data.session.user)
+
+        // Now get the profile
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.session.user.id)
+          .single()
+
+        if (profileError) throw profileError
+        if (!profileData) throw new Error('No profile data found')
+        setProfile(profileData)
+
+        setIsLoading(false)
       } catch (error: any) {
         console.error(error.message)
       }
@@ -52,128 +60,42 @@ export default function UserAvatar() {
     getSupabaseUser()
   }, [])
 
-  // When user changes, get the user's profile from Supabase
-  useEffect(() => {
-    if (!user) return
-    const fetchProfile = async () => {
-      try {
-        const supabase = createClientComponentClient()
-        const { data: fetchedProfile, error } = await supabase
-          .from("profiles")
-          .select("id, icon, color, icon_color, username")
-          .eq("id", user.id)
-          .single()
-
-        if (!fetchedProfile) {
-          //If no user profile is found we'll create our own
-          const newProfile: Profile = {
-            id: user.id as UUID,
-            icon: 'default',
-            color: '#FFFFFF',
-            icon_color: '#000000',
-            username: generateUsername(),
-          }
-          //then we insert it into the database
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert(newProfile)
-          
-          if (insertError) throw insertError
-
-          setProfile(newProfile)
-        } else {
-          let updatedProfile: Profile = { ...fetchedProfile }
-          let needsUpdate = false
-  
-          if (fetchedProfile.icon === null) {
-            updatedProfile.icon = 'default'
-            needsUpdate = true
-          }
-          if (fetchedProfile.color === null) {
-            updatedProfile.color = '#FFFFFF' // Hex for white
-            needsUpdate = true
-          }
-          if (fetchedProfile.icon_color === null) {
-            updatedProfile.icon_color = '#000000' // Hex for black
-            needsUpdate = true
-          }
-          if (fetchedProfile.username === null) {
-            updatedProfile.username = generateUsername()
-            needsUpdate = true
-          }
-          
-          if (needsUpdate) {
-            const { error: updateError } = await supabase
-              .from("profiles")
-              .update(updatedProfile)
-              .eq("id", user.id)
-  
-            if (updateError) throw updateError
-          }
-          setProfile(updatedProfile)
-        }
-      } catch (error: any) {
-        console.error(error.message)
-      }
-    }
-    fetchProfile()
-  }, [user])
-
-  // Dialog for login form
-  const notLoggedInDialog = (
-    <Dialog open={isDialogOpen} onOpenChange={(open) => setIsDialogOpen(open)}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle className="text-center">Login</DialogTitle>
-        </DialogHeader>
-        <LoginForm />
-      </DialogContent>
-    </Dialog>
-  )
-
-  // Avatar for non-logged-in users
-  const notLoggedInHtml = (
-    <Avatar
-      onClick={() => setIsDialogOpen(true)}
-      className="w-10 h-10 cursor-pointer hover:shadow hover:scale-105 active:scale-100 active:shadow-inner"
-    >
-      <AvatarFallback> <GiMeeple className="h-5 w-5" /> </AvatarFallback>
-    </Avatar>
-  )
-
-
-
-
-  if (!user || !profile) return (
-    <>
-      {notLoggedInHtml}
-      {notLoggedInDialog}
-    </>
-  )
-
-  const loggedInHtml = (
+  if (!user || !profile) return <></>
+  return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant='outline' className={`rounded-full`} style={{ backgroundColor: profile.color }}>
-          <UserIcon name={profile.icon} color={profile.color} color_icon={profile.icon_color} />
-        </Button>
+        <Avatar
+          className='h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl'
+          style={{ backgroundColor: profile.color || '#FFFFFF' }}
+        >
+          <AvatarImage
+            src={`https://robohash.org/${hash(
+              profile.username || 'clocktower',
+            )}`}
+          />
+          <AvatarFallback>CT</AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel className="text-center">{profile.username}</DropdownMenuLabel>
+      <DropdownMenuContent className='w-56'>
+        <DropdownMenuLabel className='text-center'>
+          {profile.username}
+        </DropdownMenuLabel>
         <DropdownMenuGroup>
-          <Link href="/account">
+          <Link href='/account/profile'>
             <DropdownMenuItem>
-              <Settings className="mr-2 h-4 w-4" />
+              <GoGear className='mr-2 h-4 w-4' />
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-          <DropdownMenuItem>
-            <SignOutButton />
-          </DropdownMenuItem>
+
+          <Link href='/account/logout'>
+            <DropdownMenuItem>
+              <GoSignOut className='mr-2 h-4 w-4' />
+              <span>Sign Out</span>
+            </DropdownMenuItem>
+          </Link>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )
-
-  return loggedInHtml
 }

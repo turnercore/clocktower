@@ -1,22 +1,25 @@
 // @ts-nocheck
-const fs = require('fs')
-const path = require('path')
-const readline = require('readline')
-const ts = require('typescript')
+import fs from 'fs'
+import path from 'path'
+import readline from 'readline'
+import ts from 'typescript'
 
 // Read directory path from command-line arguments or ask for it
 let componentsDirectoryPath = process.argv[2]
 if (!componentsDirectoryPath) {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   })
-  
-  rl.question('Please enter the directory path (default is ../components/ui): ', function(inputPath) {
-    componentsDirectoryPath = inputPath || '../components/ui'
-    generateIndex(componentsDirectoryPath)
-    rl.close()
-  })
+
+  rl.question(
+    'Please enter the directory path (default is ../components/ui): ',
+    function (inputPath) {
+      componentsDirectoryPath = inputPath || '../components/ui'
+      generateIndex(componentsDirectoryPath)
+      rl.close()
+    },
+  )
 } else {
   generateIndex(componentsDirectoryPath)
 }
@@ -29,15 +32,20 @@ function generateIndex(directoryPath) {
   }
 
   //Check if directory is already indexed
-  if (fs.existsSync(path.join(directoryPath, 'index.ts')) || fs.existsSync(path.join(directoryPath, 'index.js'))) {
-    console.error('An index.ts or index.js file already exists in the directory. Exiting.')
+  if (
+    fs.existsSync(path.join(directoryPath, 'index.ts')) ||
+    fs.existsSync(path.join(directoryPath, 'index.js'))
+  ) {
+    console.error(
+      'An index.ts or index.js file already exists in the directory. Exiting.',
+    )
     process.exit(1)
   }
 
   // Filter for TypeScript and TypeScript JSX files
-  const componentFiles = fs.readdirSync(directoryPath).filter(file => 
-    file.endsWith('.ts') || file.endsWith('.tsx')
-  )
+  const componentFiles = fs
+    .readdirSync(directoryPath)
+    .filter((file) => file.endsWith('.ts') || file.endsWith('.tsx'))
 
   if (componentFiles.length === 0) {
     console.error(`No .ts or .tsx files found in ${directoryPath}`)
@@ -49,22 +57,26 @@ function generateIndex(directoryPath) {
   const exportComponents = []
 
   // Parse each TypeScript/TypeScript JSX file to get exported components
-  componentFiles.forEach(file => {
+  componentFiles.forEach((file) => {
     const filePath = path.join(directoryPath, file)
     const fileContents = fs.readFileSync(filePath, 'utf-8')
-    
+
     const sourceFile = ts.createSourceFile(
       filePath,
       fileContents,
       ts.ScriptTarget.ES2015,
-      true
+      true,
     )
 
     const exportList = []
 
-    ts.forEachChild(sourceFile, node => {
-      if (ts.isExportDeclaration(node) && node.exportClause && ts.isNamedExports(node.exportClause)) {
-        node.exportClause.elements.forEach(element => {
+    ts.forEachChild(sourceFile, (node) => {
+      if (
+        ts.isExportDeclaration(node) &&
+        node.exportClause &&
+        ts.isNamedExports(node.exportClause)
+      ) {
+        node.exportClause.elements.forEach((element) => {
           exportList.push(element.name.getText())
         })
       }
@@ -72,7 +84,9 @@ function generateIndex(directoryPath) {
 
     if (exportList.length > 0) {
       const importName = path.basename(file, path.extname(file))
-      importStatements.push(`import { ${exportList.join(', ')} } from './${importName}'`)
+      importStatements.push(
+        `import { ${exportList.join(', ')} } from './${importName}'`,
+      )
       exportComponents.push(...exportList)
     }
   })
