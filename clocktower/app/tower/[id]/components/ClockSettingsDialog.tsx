@@ -27,7 +27,6 @@ import {
 } from '@/components/ui/dialog'
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
-import objectToFormData from '@/tools/objectToFormData'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
@@ -113,11 +112,10 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
     // This might not be an optimistic update since deletion could be critical.
     // However, if you want to implement it similarly, you'd revert the delete on error.
-    const response = await deleteClockSA(
-      objectToFormData({
-        clockId: clockData.id,
-      }),
-    )
+    const response = await deleteClockSA({
+      clockId: clockData.id,
+      towerId: clockData.tower_id,
+    })
 
     if (response.error) {
       console.error('Failed to delete:', response.error)
@@ -272,9 +270,9 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               <Label> Segments </Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
-                  value={[clockData.segments || 1]}
+                  defaultValue={[clockData.segments]}
                   min={1}
-                  max={30}
+                  max={18}
                   onValueCommit={(value) =>
                     handleSegmentsChange(null, value[0])
                   }

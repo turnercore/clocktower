@@ -9,7 +9,6 @@ import ClockSettingsDialog from './ClockSettingsDialog'
 import type { Database } from '@/types/supabase'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
-import objectToFormData from '@/tools/objectToFormData'
 import type {
   RealtimePostgresDeletePayload,
   RealtimePostgresUpdatePayload,
@@ -104,7 +103,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   // Delete the clock
   const handleDelete = async () => {
     setIsDeleted(true)
-    const { error } = await deleteClockSA(objectToFormData({ clockId }))
+    const { error } = await deleteClockSA({ clockId, towerId })
     if (error) {
       toast({
         variant: 'destructive',

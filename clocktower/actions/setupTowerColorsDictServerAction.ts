@@ -2,11 +2,11 @@
 'use server'
 import { fetchCompleteTowerDataSA } from '@/app/tower/[id]/actions/fetchCompleteTowerDataSA'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import objectToFormData from '@/tools/objectToFormData'
 import {
   ColorPaletteSchema,
   ColorPaletteType,
   ServerActionReturn,
+  UUID,
   UUIDSchema,
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
@@ -14,27 +14,20 @@ import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
 
-// Schema for input
-const inputSchema = z.object({
-  towerId: UUIDSchema,
-})
 export const setupTowerColorsDictSA = async (
-  formData: FormData,
+  inputTowerId: UUID,
 ): Promise<ServerActionReturn<ColorPaletteType>> => {
   try {
     const colorsDict = {}
-    // Get the form data into a javascript object
-    const form = Object.fromEntries(formData.entries())
-
     // Validate data and extract it
-    const { towerId } = inputSchema.parse(form)
+    const towerId = UUIDSchema.parse(inputTowerId)
 
     // Get the user's cookies and create a Supabase client
     const supabase = createServerActionClient<Database>({ cookies })
 
     // Get complete tower data
     const { data: towerData, error: towerDataError } =
-      await fetchCompleteTowerDataSA(objectToFormData({ towerId }))
+      await fetchCompleteTowerDataSA(towerId)
     if (towerDataError) throw new Error(towerDataError)
     if (!towerData) throw new Error('No tower data returned from fetch')
 

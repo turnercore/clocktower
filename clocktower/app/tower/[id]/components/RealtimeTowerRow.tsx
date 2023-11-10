@@ -215,10 +215,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Update local state
     setIsDeleted(true)
     // Delete from the server
-    const inputData = new FormData()
-    inputData.append('rowId', rowId)
-    inputData.append('towerId', towerId)
-    const { error } = await deleteTowerRowSA(inputData)
+    const { error } = await deleteTowerRowSA({ rowId, towerId })
     if (error) {
       toast({
         variant: 'destructive',

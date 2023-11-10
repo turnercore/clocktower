@@ -12,14 +12,18 @@ const inputSchema = z.object({
   towerId: UUIDSchema,
 })
 
-export const deleteTowerRowSA = async (
-  formData: FormData,
-): Promise<ServerActionReturn<{ success: true }>> => {
+interface inputType {
+  rowId: UUID
+  towerId: UUID
+}
+
+export const deleteTowerRowSA = async ({
+  rowId,
+  towerId,
+}: inputType): Promise<ServerActionReturn<{ success: true }>> => {
   try {
     // validate input data
-    const form = Object.fromEntries(formData.entries())
-    const { rowId, towerId } = inputSchema.parse(form)
-
+    inputSchema.parse({ rowId, towerId })
     const supabase = createServerActionClient<Database>({ cookies })
     const { error } = await supabase
       .from('tower_rows')
@@ -29,10 +33,7 @@ export const deleteTowerRowSA = async (
     if (error) throw error
 
     // Update the colors
-    const removeColorInput = new FormData()
-    removeColorInput.append('towerId', towerId)
-    removeColorInput.append('rowId', rowId)
-    removeTowerColorSA(removeColorInput)
+    removeTowerColorSA({ towerId, entityId: rowId })
 
     return { data: { success: true } }
   } catch (error) {

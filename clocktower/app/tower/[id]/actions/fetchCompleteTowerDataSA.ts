@@ -14,24 +14,16 @@ import {
   UUID,
   UUIDSchema,
 } from '@/types/schemas'
-import isUserAuthenticated from '@/tools/isUserAuthenticated'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { z } from 'zod'
-
-// zod schema
-const inputSchema = z.object({
-  towerId: UUIDSchema,
-})
 
 export const fetchCompleteTowerDataSA = async (
-  formData: FormData,
+  towerId: UUID,
 ): Promise<ServerActionReturn<TowerType>> => {
   try {
     // Get the form data into a javascript object
-    const form = Object.fromEntries(formData.entries())
 
     // validate input
-    const { towerId } = inputSchema.parse(form)
+    UUIDSchema.parse(towerId)
 
     // Fetch the tower data
     const supabase = createServerActionClient<Database>({ cookies })

@@ -5,6 +5,7 @@ import {
   ServerActionReturn,
   UUIDSchema,
   ColorPaletteType,
+  UUID,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
@@ -16,14 +17,19 @@ const inputSchema = z.object({
   entityId: UUIDSchema,
 })
 
-export const removeTowerColorSA = async (
-  FormData: FormData,
-): Promise<ServerActionReturn<ColorPaletteType>> => {
+interface inputType {
+  towerId: UUID
+  entityId: UUID
+}
+
+export const removeTowerColorSA = async ({
+  towerId,
+  entityId,
+}: inputType): Promise<ServerActionReturn<ColorPaletteType>> => {
   try {
     const supabase = createServerActionClient<Database>({ cookies })
     // Extract and validate form data
-    const form = Object.fromEntries(FormData.entries())
-    const { towerId, entityId } = inputSchema.parse(form)
+    inputSchema.parse({ towerId, entityId })
 
     // Fetch the current colors object
     const { data: tower, error: fetchError } = await supabase
