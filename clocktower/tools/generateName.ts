@@ -1,3 +1,6 @@
+// generateName.ts
+// This file is a tool to generate random names for towers.
+
 const names = {
   firstNames: [
     'Creaky',

@@ -13,19 +13,18 @@ import { cookies } from 'next/headers'
 
 // Helper functions to handle database interactions and data modifications
 /**
- * Inserts a new row into the "clocks" table in the database.
- * @param newRow The new row to be inserted.
- * @returns A promise that resolves to a `ServerActionReturn` object containing the inserted row data, or an error message if the insertion fails.
+ * Inserts a new clock row into the database.
+ * @param newClock The new clock row to insert.
+ * @returns A promise that resolves to the inserted clock row data, or an error if the insertion failed.
  */
-// This function is called from the client to insert a new clock into the database.
 const insertNewClockSA = async (
-  newRow: ClockType,
+  newClock: ClockType,
 ): Promise<ServerActionReturn<ClockRowData>> => {
   try {
     // Create a client object that has the current user's cookies.
     const supabase = createServerActionClient<Database>({ cookies })
     // Validate Data and Parse the new row into the expected format with zod.
-    const row = ClockDatabaseSchema.parse(newRow) as ClockRowData
+    const row = ClockDatabaseSchema.parse(newClock) as ClockRowData
     // Insert the new row into the database with supabase.
     const { data, error } = await supabase
       .from('clocks')
