@@ -80,7 +80,7 @@ export default async function updateUserDataSA(
       const { error: updatePasswordError } = await supabase.auth.updateUser({
         password,
       })
-      if (updatePasswordError) throw updatePasswordError
+      if (updatePasswordError) throw new Error('Error updating password.')
     }
 
     // Update the rest of the user's data in the 'profiles' table
