@@ -1,12 +1,10 @@
 'use client'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Button, Card, CardContent, CardHeader, Input } from '@/components/ui'
+import { Button, Input } from '@/components/ui'
 import { Provider, Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
-import { usePathname, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Database } from '@/types/supabase'
 
@@ -49,7 +47,7 @@ export default function LoginForm() {
     })
     if (error) console.error(error)
 
-    router.push('/')
+    router.refresh()
   }
 
   async function signUpWithEmail() {
@@ -59,7 +57,7 @@ export default function LoginForm() {
     })
     if (error) console.error(error)
 
-    router.push('/')
+    router.push('/welcome')
   }
 
   async function signInWIthMagicLink() {
@@ -71,7 +69,7 @@ export default function LoginForm() {
     })
     if (error) console.error(error)
 
-    router.push('/magic')
+    router.push('/🪄')
   }
 
   //Split providers by , and add each to the providers list

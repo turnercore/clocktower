@@ -3,7 +3,6 @@ import { cookies } from 'next/headers'
 import { TowersDropdownComponent } from './TowersDropdownComponent'
 import { UUID } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-export const dynamic = 'force-dynamic'
 
 export async function TowersDropdown() {
   // Init supabase

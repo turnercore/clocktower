@@ -10,7 +10,6 @@ import { TowersDropdown } from './TowersDropdown'
 import ShareTowerPopover from './ShareTowerPopover'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import Link from 'next/link'
 import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 

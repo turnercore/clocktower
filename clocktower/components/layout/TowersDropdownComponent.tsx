@@ -15,11 +15,12 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { isValidUUID } from '@/tools/isValidUUID'
-import { UUID } from '@/types/schemas'
+import { TowerDatabaseType, UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { GoPlusCircle } from 'react-icons/go'
+import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
 
 export function TowersDropdownComponent({
   initialTowers,
@@ -69,6 +70,17 @@ export function TowersDropdownComponent({
     setTowers(newTowersList)
     // If the user is on the tower page, redirect to the home page
     if (path.includes(towerId)) router.push('/')
+  }
+
+  const handleCreateNewTower = async () => {
+    const newTowerId = crypto.randomUUID()
+    setOpen(false)
+    const { error } = await insertNewTowerSA(newTowerId)
+    if (error) {
+      console.error(error)
+      return
+    }
+    router.push(`/tower/${newTowerId}`)
   }
 
   useEffect(() => {
@@ -148,13 +160,7 @@ export function TowersDropdownComponent({
                 {tower.name}
               </CommandItem>
             ))}
-            <CommandItem
-              key='new'
-              onSelect={() => {
-                setOpen(false)
-                router.push('/tower/new')
-              }}
-            >
+            <CommandItem key='new' onSelect={handleCreateNewTower}>
               <GoPlusCircle className='mr-2 h-4 w-4' />
               <p>New Tower</p>
             </CommandItem>

@@ -10,6 +10,14 @@ const nextConfig = {
         source: '/towers/new',
         destination: '/tower/new',
       },
+      // {
+      //   source: '/%F0%9F%94%AE',
+      //   destination: '/magic',
+      // },
+      // {
+      //   source: '/🪄',
+      //   destination: '/magic',
+      // },
     ]
   },
 }
