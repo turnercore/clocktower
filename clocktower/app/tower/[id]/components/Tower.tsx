@@ -41,8 +41,8 @@ export const Tower = async ({ towerId }: TowerProps) => {
   const rows = rowIds ? (
     rowIds.map((rowId, index) =>
       !rowId ? null : (
-        <Suspense fallback={<p>Loading row...</p>}>
-          <TowerRow key={index} rowId={rowId} />
+        <Suspense key={index} fallback={<p>Loading row...</p>}>
+          <TowerRow key={rowId} rowId={rowId} />
         </Suspense>
       ),
     )

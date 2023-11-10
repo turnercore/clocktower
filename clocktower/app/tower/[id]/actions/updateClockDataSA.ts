@@ -19,14 +19,17 @@ const inputSchema = z.object({
   newClockData: ClockDatabaseSchema.partial(),
 })
 
-export const updateClockDataSA = async (
-  FormData: FormData,
-): Promise<ServerActionReturn<ClockRowData>> => {
+export const updateClockDataSA = async ({
+  clockId,
+  newClockData,
+}: {
+  clockId: string
+  newClockData: Partial<ClockRowData>
+}): Promise<ServerActionReturn<ClockRowData>> => {
   try {
-    // Extract form data into a javascript object
-    const form = Object.fromEntries(FormData.entries())
+    console.log('updateClockDataSA', clockId, newClockData)
     // Validate form data with zod
-    const { clockId, newClockData } = inputSchema.parse(form)
+    inputSchema.parse({ clockId, newClockData })
 
     // 2. Get the user's cookies and create a Supabase client
     const supabase = createServerActionClient<Database>({ cookies })
@@ -54,6 +57,7 @@ export const updateClockDataSA = async (
     return { data: validatedData }
   } catch (error) {
     // 6. If there was an error, return it
+    console.error(error)
     return {
       error: extractErrorMessage(error, 'Unknown error from updateClockData!'),
     }

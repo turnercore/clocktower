@@ -8,6 +8,7 @@ import {
   HexColorCodeSchema,
   UUID,
   ColorPaletteType,
+  HexColorCode,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
@@ -20,15 +21,21 @@ const inputSchema = z.object({
   color: HexColorCodeSchema,
 })
 
-export const updateTowerColorsSA = async (
-  FormData: FormData,
-): Promise<ServerActionReturn<ColorPaletteType>> => {
+interface inputType {
+  towerId: UUID
+  entityId: UUID
+  color: HexColorCode
+}
+
+export const updateTowerColorsSA = async ({
+  towerId,
+  entityId,
+  color,
+}: inputType): Promise<ServerActionReturn<ColorPaletteType>> => {
   try {
     const supabase = createServerActionClient<Database>({ cookies })
     // Extract and validate form data
-    const form = Object.fromEntries(FormData.entries())
-    const { towerId, entityId, color } = inputSchema.parse(form)
-    // ... (rest of the setup remains unchanged)
+    inputSchema.parse({ towerId, entityId, color })
 
     // Fetch the current colors object
     const { data: tower, error: fetchError } = await supabase

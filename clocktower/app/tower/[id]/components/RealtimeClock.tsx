@@ -120,26 +120,25 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   }
 
   // Handle state changes:
-  const handleStateChange =
-    (key: keyof ClockType, value: any) => {
-      try {
-        // zod validation of the value
-        const partialClockDataSchema = ClockSchema.partial()
-        // validate with parse
-        const validatedData = partialClockDataSchema.parse({ [key]: value })
-        // update state
-        if (clockData[key] !== validatedData[key]) {
-          updateClockData({ [key]: validatedData[key] })
-        }
-      } catch (error) {
-        console.error(error)
-        toast({
-          variant: 'destructive',
-          title: 'Error updating state',
-          description: extractErrorMessage(error),
-        })
+  const handleStateChange = (key: keyof ClockType, value: any) => {
+    try {
+      // zod validation of the value
+      const partialClockDataSchema = ClockSchema.partial()
+      // validate with parse
+      const validatedData = partialClockDataSchema.parse({ [key]: value })
+      // update state
+      if (clockData[key] !== validatedData[key]) {
+        updateClockData({ [key]: validatedData[key] })
       }
+    } catch (error) {
+      console.error(error)
+      toast({
+        variant: 'destructive',
+        title: 'Error updating state',
+        description: extractErrorMessage(error),
+      })
     }
+  }
 
   // This one actually updates the server
   const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
@@ -164,10 +163,9 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     const newClockData = {
       filled: newFilledValue,
     }
-    const formData = objectToFormData({ clockId, newClockData })
 
     // Update the server
-    const { error } = await updateClockDataSA(formData)
+    const { error } = await updateClockDataSA({ clockId, newClockData })
 
     // In case of an error, revert to previous state
     if (error) {

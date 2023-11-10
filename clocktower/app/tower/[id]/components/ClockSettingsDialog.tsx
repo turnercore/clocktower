@@ -56,13 +56,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     onStateChange('color', newColor)
 
     // Call the server action to update the tower colors
-    const response = await updateTowerColorsSA(
-      objectToFormData({
-        towerId: clockData.tower_id,
-        entityId: clockData.id,
-        color,
-      }),
-    )
+    const response = await updateTowerColorsSA({
+      towerId: clockData.tower_id,
+      entityId: clockData.id,
+      color,
+    })
 
     if (response.error) {
       console.error('Failed to update tower colors:', response.error)
@@ -92,14 +90,12 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
     onStateChange('segments', validValue)
 
-    const response = await updateClockDataSA(
-      objectToFormData({
-        clockId: clockData.id,
-        newClockData: {
-          segments: validValue,
-        },
-      }),
-    )
+    const response = await updateClockDataSA({
+      clockId: clockData.id,
+      newClockData: {
+        segments: validValue,
+      },
+    })
 
     if (response.error) {
       console.error('Failed to update segments:', response.error)
@@ -145,14 +141,12 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     // Optimistic Update
     onStateChange('name', newName)
 
-    const response = await updateClockDataSA(
-      objectToFormData({
-        clockId: clockData.id,
-        newClockData: {
-          name: newName,
-        },
-      }),
-    )
+    const response = await updateClockDataSA({
+      clockId: clockData.id,
+      newClockData: {
+        name: newName,
+      },
+    })
 
     if (response.error) {
       console.error('Failed to update name:', response.error)
@@ -176,14 +170,12 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     // Optimistic Update
     onStateChange('rounded', newIsRounded)
 
-    const response = await updateClockDataSA(
-      objectToFormData({
-        clockId: clockData.id,
-        newClockData: {
-          rounded: newIsRounded,
-        },
-      }),
-    )
+    const response = await updateClockDataSA({
+      clockId: clockData.id,
+      newClockData: {
+        rounded: newIsRounded,
+      },
+    })
 
     if (response.error) {
       console.error('Failed to update rounded setting:', response.error)
@@ -205,14 +197,12 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     // Optimistic Update
     onStateChange('line_width', newLineWidth)
 
-    const response = await updateClockDataSA(
-      objectToFormData({
-        clockId: clockData.id,
-        newClockData: {
-          line_width: newLineWidth,
-        },
-      }),
-    )
+    const response = await updateClockDataSA({
+      clockId: clockData.id,
+      newClockData: {
+        line_width: newLineWidth,
+      },
+    })
 
     if (response.error) {
       console.error('Failed to update line width:', response.error)
