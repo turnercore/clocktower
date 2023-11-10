@@ -1,7 +1,7 @@
 import UserAvatar from '../user/UserAvatar'
 import { Button, ModeToggle } from '@/components/ui'
 import { TowersDropdown } from './TowersDropdown'
-import ShareTowerPopover from '../../app/tower/[id]/components/ShareTowerPopover'
+import ShareTowerPopover from './ShareTowerPopover'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import Link from 'next/link'
@@ -22,7 +22,7 @@ export default async function Header() {
         {isUserLoggedIn ? (
           <div className='flex flex-row space-x-2 ml-18'>
             <TowersDropdown />
-            <ShareTowerPopover />
+            {/* <ShareTowerPopover /> */}
           </div>
         ) : (
           <Link href='/login' className=' mr-10 z-100'>

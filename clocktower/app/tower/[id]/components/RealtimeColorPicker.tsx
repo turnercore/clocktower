@@ -10,7 +10,7 @@ import {
 } from '@/types/schemas'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Database } from '@/types/supabase'
-import { RealtimePostgresUpdatePayload } from '@supabase/supabase-js'
+import { type RealtimePostgresUpdatePayload } from '@supabase/supabase-js'
 
 type RealtimeColorPickerProps = {
   color: HexColorCode
@@ -18,7 +18,7 @@ type RealtimeColorPickerProps = {
   id?: UUID
 }
 
-export const RealtimeColorPicker: React.FC<RealtimeColorPickerProps> = ({
+const RealtimeColorPicker: React.FC<RealtimeColorPickerProps> = ({
   color,
   onChange,
   id,
@@ -101,3 +101,5 @@ export const RealtimeColorPicker: React.FC<RealtimeColorPickerProps> = ({
     />
   )
 }
+
+export default RealtimeColorPicker

@@ -1,7 +1,7 @@
 'use client'
-import updateTowerColorsServerAction from '../actions/updateTowerColorsServerAction'
+import { updateTowerColorsSA } from '../actions/updateTowerColorsSA'
 import { ClockType, HexColorCode } from '@/types/schemas'
-import React, { FC, ChangeEvent, useCallback, useMemo } from 'react'
+import React, { FC, ChangeEvent } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,9 +28,9 @@ import {
 import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 import objectToFormData from '@/tools/objectToFormData'
-import updateClockDataServerAction from '../actions/updateClockDataServerAction'
+import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
-import { RealtimeColorPicker } from './RealtimeColorPicker'
+import RealtimeColorPicker from './RealtimeColorPicker'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
@@ -39,214 +39,193 @@ type ClockSettingsDialogProps = {
   onDelete: () => void
 }
 
-export const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
+const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   configuredPieChart,
   clockData,
   onStateChange,
   onDelete,
 }) => {
-  const dotsCss = useMemo(
-    () =>
-      `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`,
-    [clockData.color],
-  )
+  const dotsCss = `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
 
-  const handleColorChange = useCallback(
-    async (color: HexColorCode) => {
-      // Optomistic Update
-      const oldColor = clockData.color
-      const newColor = color
+  const handleColorChange = async (color: HexColorCode) => {
+    // Optomistic Update
+    const oldColor = clockData.color
+    const newColor = color
 
-      // Update local state
-      onStateChange('color', newColor)
+    // Update local state
+    onStateChange('color', newColor)
 
-      // Call the server action to update the tower colors
-      const response = await updateTowerColorsServerAction(
-        objectToFormData({
-          towerId: 'your_tower_id',
-          entityId: clockData.id,
-          color,
-        }),
-      )
+    // Call the server action to update the tower colors
+    const response = await updateTowerColorsSA(
+      objectToFormData({
+        towerId: clockData.tower_id,
+        entityId: clockData.id,
+        color,
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to update tower colors:', response.error)
-        toast({
-          title: 'Failed to update tower colors',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Revert the local state
-        onStateChange('color', oldColor)
-      }
-    },
-    [clockData, onStateChange, updateTowerColorsServerAction],
-  )
+    if (response.error) {
+      console.error('Failed to update tower colors:', response.error)
+      toast({
+        title: 'Failed to update tower colors',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert the local state
+      onStateChange('color', oldColor)
+    }
+  }
 
-  const handleSegmentsChange = useCallback(
-    async (
-      event: ChangeEvent<HTMLInputElement> | null = null,
-      segments: number | null = null,
-    ) => {
-      const value = event ? Number(event.target.value || event) : segments
-      if (value === null || isNaN(value) || !Number.isInteger(value)) {
-        return onStateChange('segments', 1)
-      }
+  const handleSegmentsChange = async (
+    event: ChangeEvent<HTMLInputElement> | null = null,
+    segments: number | null = null,
+  ) => {
+    const value = event ? Number(event.target.value || event) : segments
+    if (value === null || isNaN(value) || !Number.isInteger(value)) {
+      return onStateChange('segments', 1)
+    }
 
-      const validValue = Math.min(Math.max(value, 1), 100) // Clamp the value between 1 and 100
+    const validValue = Math.min(Math.max(value, 1), 100) // Clamp the value between 1 and 100
 
-      // Optimistic Update
-      const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
-      onStateChange('segments', validValue)
+    // Optimistic Update
+    const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
+    onStateChange('segments', validValue)
 
-      // Assume updateSegmentsServerAction is your function to update the segments on the server
-      const response = await updateClockDataServerAction(
-        objectToFormData({
-          clockId: clockData.id,
-          newClockData: {
-            segments: validValue,
-          },
-        }),
-      )
+    const response = await updateClockDataSA(
+      objectToFormData({
+        clockId: clockData.id,
+        newClockData: {
+          segments: validValue,
+        },
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to update segments:', response.error)
-        toast({
-          title: 'Failed to update segments',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Revert to the old segments value
-        onStateChange('segments', oldSegmentsValue)
-      }
-    },
-    [clockData, onStateChange, updateClockDataServerAction],
-  )
+    if (response.error) {
+      console.error('Failed to update segments:', response.error)
+      toast({
+        title: 'Failed to update segments',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert to the old segments value
+      onStateChange('segments', oldSegmentsValue)
+    }
+  }
 
-  const handleDelete = useCallback(
-    async (event: React.MouseEvent<HTMLButtonElement>) => {
-      // This might not be an optimistic update since deletion could be critical.
-      // However, if you want to implement it similarly, you'd revert the delete on error.
-      const response = await deleteClockSA(
-        objectToFormData({
-          clockId: clockData.id,
-        }),
-      )
+  const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    // This might not be an optimistic update since deletion could be critical.
+    // However, if you want to implement it similarly, you'd revert the delete on error.
+    const response = await deleteClockSA(
+      objectToFormData({
+        clockId: clockData.id,
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to delete:', response.error)
-        toast({
-          title: 'Failed to delete',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Code to revert the deletion
-      } else {
-        // Successfully deleted, so we call the onDelete prop to update the parent state
-        onDelete()
-      }
-    },
-    [clockData, onDelete, deleteClockSA],
-  )
+    if (response.error) {
+      console.error('Failed to delete:', response.error)
+      toast({
+        title: 'Failed to delete',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Code to revert the deletion
+    } else {
+      // Successfully deleted, so we call the onDelete prop to update the parent state
+      onDelete()
+    }
+  }
 
-  const handleNameChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const newName = event.target.value
-      const oldName = clockData.name
+  const handleNameChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const newName = event.target.value
+    const oldName = clockData.name
 
-      // Optimistic Update
-      onStateChange('name', newName)
+    // Optimistic Update
+    onStateChange('name', newName)
 
-      const response = await updateClockDataServerAction(
-        objectToFormData({
-          clockId: clockData.id,
-          newClockData: {
-            name: newName,
-          },
-        }),
-      )
+    const response = await updateClockDataSA(
+      objectToFormData({
+        clockId: clockData.id,
+        newClockData: {
+          name: newName,
+        },
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to update name:', response.error)
-        toast({
-          title: 'Failed to update name',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Revert the local state
-        onStateChange('name', oldName)
-      }
-    },
-    [clockData, onStateChange, updateClockDataServerAction],
-  )
+    if (response.error) {
+      console.error('Failed to update name:', response.error)
+      toast({
+        title: 'Failed to update name',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert the local state
+      onStateChange('name', oldName)
+    }
+  }
 
-  const handleIsRoundedChange = useCallback(
-    async (event: ChangeEvent<HTMLInputElement>) => {
-      const newIsRounded = event.target.checked
-      const oldIsRounded = clockData.rounded
+  const handleIsRoundedChange = async (
+    event: ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newIsRounded = event.target.checked
+    const oldIsRounded = clockData.rounded
 
-      // Optimistic Update
-      onStateChange('rounded', newIsRounded)
+    // Optimistic Update
+    onStateChange('rounded', newIsRounded)
 
-      const response = await updateClockDataServerAction(
-        objectToFormData({
-          clockId: clockData.id,
-          newClockData: {
-            rounded: newIsRounded,
-          },
-        }),
-      )
+    const response = await updateClockDataSA(
+      objectToFormData({
+        clockId: clockData.id,
+        newClockData: {
+          rounded: newIsRounded,
+        },
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to update rounded setting:', response.error)
-        toast({
-          title: 'Failed to update rounded setting',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Revert the local state
-        onStateChange('rounded', oldIsRounded)
-      }
-    },
-    [clockData, onStateChange, updateClockDataServerAction],
-  )
+    if (response.error) {
+      console.error('Failed to update rounded setting:', response.error)
+      toast({
+        title: 'Failed to update rounded setting',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert the local state
+      onStateChange('rounded', oldIsRounded)
+    }
+  }
 
-  const handleLineWidthChange = useCallback(
-    async (value: number) => {
-      const newLineWidth = value
-      const oldLineWidth = clockData.line_width
+  const handleLineWidthChange = async (value: number) => {
+    const newLineWidth = value
+    const oldLineWidth = clockData.line_width
 
-      // Optimistic Update
-      onStateChange('line_width', newLineWidth)
+    // Optimistic Update
+    onStateChange('line_width', newLineWidth)
 
-      const response = await updateClockDataServerAction(
-        objectToFormData({
-          clockId: clockData.id,
-          newClockData: {
-            line_width: newLineWidth,
-          },
-        }),
-      )
+    const response = await updateClockDataSA(
+      objectToFormData({
+        clockId: clockData.id,
+        newClockData: {
+          line_width: newLineWidth,
+        },
+      }),
+    )
 
-      if (response.error) {
-        console.error('Failed to update line width:', response.error)
-        toast({
-          title: 'Failed to update line width',
-          description: response.error,
-          variant: 'destructive',
-          duration: 2000,
-        })
-        // Revert the local state
-        onStateChange('line_width', oldLineWidth)
-      }
-    },
-    [clockData, onStateChange, updateClockDataServerAction],
-  )
+    if (response.error) {
+      console.error('Failed to update line width:', response.error)
+      toast({
+        title: 'Failed to update line width',
+        description: response.error,
+        variant: 'destructive',
+        duration: 2000,
+      })
+      // Revert the local state
+      onStateChange('line_width', oldLineWidth)
+    }
+  }
 
   return (
     <Dialog>
@@ -343,3 +322,5 @@ export const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     </Dialog>
   )
 }
+
+export default ClockSettingsDialog

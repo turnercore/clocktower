@@ -1,37 +1,23 @@
-type SortableByPosition =
-  | {
-      id: Key | null | undefined
-      position?: number
-    }
-  | null
-  | undefined
+import type { UUID } from '@/types/schemas'
+
+type SortableByPosition = {
+  id: UUID
+  position?: number | null
+  [key: string]: any // Allow any other properties
+}
+
 export function sortByPosition(
-  array: Array<SortableByPosition>,
-): Array<SortableByPosition> {
-  // Pair each item with its original index
-  const arrayWithIndices: Array<[SortableByPosition, number]> = array.map(
-    (item, index) => [item, index],
-  )
+  items: Array<SortableByPosition | null>,
+): Array<SortableByPosition | null> {
+  return items
+    .map((item, index) => ({ item, index })) // Pair each item with its original index
+    .sort((a, b) => {
+      // Use the position if it exists, otherwise fall back to the index
+      const positionA = a.item?.position ?? a.index
+      const positionB = b.item?.position ?? b.index
 
-  // Sort the array first by position (or index if position doesn't exist), then by original index
-  const sortedArrayWithIndices = arrayWithIndices.sort((a, b) => {
-    const positionA =
-      a[0] && typeof a[0] === 'object' && 'position' in a[0]
-        ? a[0].position ?? a[1]
-        : a[1]
-    const positionB =
-      b[0] && typeof b[0] === 'object' && 'position' in b[0]
-        ? b[0].position ?? b[1]
-        : b[1]
-
-    // If positions are equal, use original index as tie-breaker
-    if (positionA === positionB) {
-      return a[1] - b[1]
-    }
-    return positionA - positionB
-  })
-
-  // Extract the sorted items from the pairs
-  const sortedArray = sortedArrayWithIndices.map(([item, _]) => item)
-  return sortedArray
+      // If positions are equal, use the original index as a tie-breaker
+      return positionA - positionB
+    })
+    .map(({ item }) => item) // Extract the sorted items
 }

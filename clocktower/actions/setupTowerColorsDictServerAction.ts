@@ -1,5 +1,6 @@
+//setupTowerColorsDictSA.tsx
 'use server'
-import fetchCompleteTowerData from '@/app/tower/[id]/actions/fetchCompleteTowerData'
+import { fetchCompleteTowerDataSA } from '@/app/tower/[id]/actions/fetchCompleteTowerDataSA'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import objectToFormData from '@/tools/objectToFormData'
 import {
@@ -11,15 +12,13 @@ import {
 import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-// setupTowerColorsDictServerAction.ts
 import { z } from 'zod'
 
 // Schema for input
 const inputSchema = z.object({
   towerId: UUIDSchema,
 })
-
-const setupTowerColorsDictServerAction = async (
+export const setupTowerColorsDictSA = async (
   formData: FormData,
 ): Promise<ServerActionReturn<ColorPaletteType>> => {
   try {
@@ -35,7 +34,7 @@ const setupTowerColorsDictServerAction = async (
 
     // Get complete tower data
     const { data: towerData, error: towerDataError } =
-      await fetchCompleteTowerData(objectToFormData({ towerId }))
+      await fetchCompleteTowerDataSA(objectToFormData({ towerId }))
     if (towerDataError) throw new Error(towerDataError)
     if (!towerData) throw new Error('No tower data returned from fetch')
 
@@ -94,4 +93,3 @@ const setupTowerColorsDictServerAction = async (
     }
   }
 }
-export default setupTowerColorsDictServerAction

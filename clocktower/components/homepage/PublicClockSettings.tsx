@@ -1,21 +1,7 @@
 // PublicClockSettings.tsx
 'use client'
-import React, { FC, ChangeEvent, useCallback } from 'react'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-  Button,
-  Input,
-  Label,
-  Slider,
-} from '@/components/ui'
+import React, { FC, ChangeEvent } from 'react'
+import { Button, Input, Label, Slider } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
 import {
   Dialog,
@@ -24,13 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { LuSettings2 } from 'react-icons/lu'
-import { BsTrash3Fill } from 'react-icons/bs'
-import { ColorPaletteType, HexColorCode } from '@/types/schemas'
-import { FcSettings } from 'react-icons/fc'
+import { type HexColorCode } from '@/types/schemas'
 import { GiSettingsKnobs } from 'react-icons/gi'
 import { PublicClockType } from './PublicClock'
-import { IoSettingsOutline } from 'react-icons/io5'
 
 type PublicClockSettingsProps = {
   pieChart: JSX.Element

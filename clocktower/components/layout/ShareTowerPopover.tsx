@@ -11,7 +11,7 @@ import {
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
-import { toast } from '../../../../components/ui'
+import { toast } from '../ui'
 import { UUID } from '@/types/schemas'
 
 export default function ShareTowerPopover() {

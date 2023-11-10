@@ -3,7 +3,7 @@ import { type UUID } from '@/types/schemas'
 import { Suspense } from 'react'
 import { fetchTowerDataSA } from '../actions/fetchTowerDataSA'
 import { fetchRowIdsSA } from '../actions/fetchRowIdsSA'
-import { RealtimeTower } from './RealtimeTower'
+import RealtimeTower from './RealtimeTower'
 import { Button } from '@/components/ui'
 import Link from 'next/link'
 import { TowerRow } from './TowerRow'
@@ -32,23 +32,28 @@ export const Tower = async ({ towerId }: TowerProps) => {
   }
 
   // Fetch RowIds associated with this tower
-  const { data: rowIdsData, error: rowIdsError } = await fetchRowIdsSA(towerId)
+  const { data: rowIds, error: rowIdsError } = await fetchRowIdsSA(towerId)
   if (rowIdsError) {
     console.error(rowIdsError)
     return <p>Error loading rowIds data. {rowIdsError}</p>
   }
 
+  const rows = rowIds ? (
+    rowIds.map((rowId, index) =>
+      !rowId ? null : (
+        <Suspense fallback={<p>Loading row...</p>}>
+          <TowerRow key={index} rowId={rowId} />
+        </Suspense>
+      ),
+    )
+  ) : (
+    <></>
+  )
+
   // For each rowId fetched, create a TowerRow component wrapped in Suspense
   return (
-    <RealtimeTower initialData={towerData}>
-      {rowIdsData &&
-        rowIdsData.map((rowId) =>
-          !rowId ? null : (
-            <Suspense fallback={<p>Loading row...</p>}>
-              <TowerRow rowId={rowId} />
-            </Suspense>
-          ),
-        )}
-    </RealtimeTower>
+    <>
+      <RealtimeTower initialData={towerData}>{rows}</RealtimeTower>
+    </>
   )
 }

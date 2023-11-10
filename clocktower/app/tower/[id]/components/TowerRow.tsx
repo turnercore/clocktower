@@ -1,12 +1,11 @@
 // TowerRow.tsx
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { TowerRowRow, UUID, ClockRowData } from '@/types/schemas'
-import { RealtimeTowerRow } from './RealtimeTowerRow'
+import { TowerRowRow, UUID } from '@/types/schemas'
+import RealtimeTowerRow from './RealtimeTowerRow'
 import { Clock } from './Clock'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 import React, { Suspense } from 'react'
-import { sortByPosition } from '@/tools/sortByPosition'
 
 interface TowerRowServerProps {
   rowId: UUID
@@ -32,6 +31,7 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
     .from('clocks')
     .select('id')
     .eq('row_id', rowId)
+    .order('position', { ascending: true })
 
   if (clocksError) {
     console.error(clocksError)
@@ -40,23 +40,18 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
 
   const initialData: TowerRowRow = rowData as TowerRowRow //TODO: Fix the types to make this not necessary
 
-  const sortedClocks = sortByPosition(clocksData as ClockRowData[])
-  // Function to handle delete which you will have to define or pass as a prop
-  const handleDelete = (clockId: UUID) => {
-    console.log('Clock deleted with ID:', clockId)
-    // Implement deletion logic
-  }
+  const clockIds = clocksData.map((clock) => clock.id)
+
+  const clocks = clockIds.map((clockId, index) => (
+    <Suspense key={index} fallback={<p>Loading clock...</p>}>
+      <Clock key={clockId} clockId={clockId} />
+    </Suspense>
+  ))
 
   // TODO replace the suspense with a loading clock component
   return (
-    <RealtimeTowerRow initialData={initialData}>
-      {sortedClocks.map((clock) =>
-        !clock ? null : (
-          <Suspense key={clock.id} fallback={<p>Loading clock...</p>}>
-            <Clock clockId={clock.id} />
-          </Suspense>
-        ),
-      )}
-    </RealtimeTowerRow>
+    <>
+      <RealtimeTowerRow initialData={initialData}>{clocks}</RealtimeTowerRow>
+    </>
   )
 }

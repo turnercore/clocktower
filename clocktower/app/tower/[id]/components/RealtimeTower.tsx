@@ -11,7 +11,7 @@ import {
   RealtimePostgresInsertPayload,
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js'
-import { RealtimeTowerRow } from './RealtimeTowerRow'
+import RealtimeTowerRow from './RealtimeTowerRow'
 
 interface TowerProps {
   initialData: TowerDatabaseType
@@ -20,10 +20,7 @@ interface TowerProps {
 
 // TODO Add handling for tower deletion
 
-export const RealtimeTower: React.FC<TowerProps> = ({
-  initialData,
-  children,
-}) => {
+const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   // Initialize state variables with initialData
   const towerId = initialData.id as UUID
   const [towerData, setTowerData] = useState<TowerDatabaseType>(initialData)
@@ -146,3 +143,5 @@ export const RealtimeTower: React.FC<TowerProps> = ({
     </div>
   )
 }
+
+export default RealtimeTower

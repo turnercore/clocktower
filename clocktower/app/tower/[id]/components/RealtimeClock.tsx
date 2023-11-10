@@ -1,19 +1,13 @@
 'use client'
-import React, {
-  useState,
-  useEffect,
-  MouseEvent,
-  useMemo,
-  useCallback,
-} from 'react'
+import React, { useState, useEffect, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { toast } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import { ClockRowData, ClockSchema, ClockType, UUID } from '@/types/schemas'
-import { ClockSettingsDialog } from './ClockSettingsDialog'
+import ClockSettingsDialog from './ClockSettingsDialog'
 import type { Database } from '@/types/supabase'
-import updateClockDataServerAction from '../actions/updateClockDataServerAction'
+import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import objectToFormData from '@/tools/objectToFormData'
 import type {
@@ -27,9 +21,7 @@ interface RealtimeClockProps {
 }
 
 // Define the React component
-export const RealtimeClock: React.FC<RealtimeClockProps> = ({
-  initialData,
-}) => {
+const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const clockId = initialData.id as UUID
   const towerId = initialData.tower_id as UUID
   const rowId = initialData.row_id as UUID
@@ -44,28 +36,26 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
   // Init supabase
   const supabase = createClientComponentClient<Database>()
 
-  const handleRealtimeClockUpdate = useCallback(
-    (payload: RealtimePostgresUpdatePayload<ClockRowData>) => {
-      const newData = payload.new
-      if (newData.id !== clockId) return
-      if (newData !== clockData) {
-        setClockData(newData)
-      }
-    },
-    [clockId, clockData, setClockData],
-  )
+  const handleRealtimeClockUpdate = (
+    payload: RealtimePostgresUpdatePayload<ClockRowData>,
+  ) => {
+    const newData = payload.new
+    if (newData.id !== clockId) return
+    if (newData !== clockData) {
+      setClockData(newData)
+    }
+  }
 
-  const handleRealtimeClockDelete = useCallback(
-    (payload: RealtimePostgresDeletePayload<ClockRowData>) => {
-      if (isDeleted) return
-      const deletedData = payload.old
-      if (deletedData.id !== clockId) return
+  const handleRealtimeClockDelete = (
+    payload: RealtimePostgresDeletePayload<ClockRowData>,
+  ) => {
+    if (isDeleted) return
+    const deletedData = payload.old
+    if (deletedData.id !== clockId) return
 
-      // We be deleted
-      setIsDeleted(true)
-    },
-    [clockId, isDeleted], // dependencies
-  )
+    // We be deleted
+    setIsDeleted(true)
+  }
 
   //Subscribe to changes in the clock on the server and handle them appropriately
   useEffect(() => {
@@ -130,7 +120,7 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
   }
 
   // Handle state changes:
-  const handleStateChange = useCallback(
+  const handleStateChange =
     (key: keyof ClockType, value: any) => {
       try {
         // zod validation of the value
@@ -149,9 +139,7 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
           description: extractErrorMessage(error),
         })
       }
-    },
-    [clockData],
-  )
+    }
 
   // This one actually updates the server
   const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
@@ -179,7 +167,7 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
     const formData = objectToFormData({ clockId, newClockData })
 
     // Update the server
-    const { error } = await updateClockDataServerAction(formData)
+    const { error } = await updateClockDataSA(formData)
 
     // In case of an error, revert to previous state
     if (error) {
@@ -207,48 +195,46 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
   }
 
   // Update data based on the selected and hovered slice index
-  const updatedData = useMemo(() => {
-    return chartData.map((entry, index) => {
-      let fillColor = 'gray' // Default color for non-active slices
+  const updatedData = chartData.map((entry, index) => {
+    let fillColor = 'gray' // Default color for non-active slices
 
-      // Logic for selected slices
+    // Logic for selected slices
+    if (clockData.filled !== null && index <= clockData.filled) {
+      fillColor = entry.color // Original color for selected slices
+    }
+
+    // Trailing Hover Effect
+    if (hoveredSliceIndex !== null && index < hoveredSliceIndex) {
+      // Apply lighten effect if the segment is not filled
+      if (clockData.filled === null || index > clockData.filled) {
+        fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
+      }
+    }
+
+    // Leading Hover Effect
+    if (
+      hoveredSliceIndex !== null &&
+      index >= hoveredSliceIndex &&
+      clockData.filled !== null &&
+      index <= clockData.filled
+    ) {
+      fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
+    }
+
+    // Logic for hovered slices
+    if (hoveredSliceIndex === index) {
       if (clockData.filled !== null && index <= clockData.filled) {
-        fillColor = entry.color // Original color for selected slices
-      }
-
-      // Trailing Hover Effect
-      if (hoveredSliceIndex !== null && index < hoveredSliceIndex) {
-        // Apply lighten effect if the segment is not filled
-        if (clockData.filled === null || index > clockData.filled) {
-          fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
-        }
-      }
-
-      // Leading Hover Effect
-      if (
-        hoveredSliceIndex !== null &&
-        index >= hoveredSliceIndex &&
-        clockData.filled !== null &&
-        index <= clockData.filled
-      ) {
         fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
+      } else {
+        fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
       }
+    }
 
-      // Logic for hovered slices
-      if (hoveredSliceIndex === index) {
-        if (clockData.filled !== null && index <= clockData.filled) {
-          fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
-        } else {
-          fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
-        }
-      }
-
-      return {
-        ...entry,
-        color: fillColor,
-      }
-    })
-  }, [chartData, clockData.filled, hoveredSliceIndex])
+    return {
+      ...entry,
+      color: fillColor,
+    }
+  })
 
   //Css for the settings icon
   const configuredPieChart = (
@@ -291,3 +277,4 @@ export const RealtimeClock: React.FC<RealtimeClockProps> = ({
     </>
   )
 }
+export default RealtimeClock

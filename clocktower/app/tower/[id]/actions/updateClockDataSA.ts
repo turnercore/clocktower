@@ -19,7 +19,7 @@ const inputSchema = z.object({
   newClockData: ClockDatabaseSchema.partial(),
 })
 
-const updateClockDataServerAction = async (
+export const updateClockDataSA = async (
   FormData: FormData,
 ): Promise<ServerActionReturn<ClockRowData>> => {
   try {
@@ -59,5 +59,3 @@ const updateClockDataServerAction = async (
     }
   }
 }
-
-export default updateClockDataServerAction

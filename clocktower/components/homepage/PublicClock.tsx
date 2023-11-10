@@ -1,6 +1,6 @@
 //PublicClock.tsx
 'use client'
-import React, { useState, useEffect, MouseEvent, useMemo } from 'react'
+import React, { useState, useEffect, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import PublicClockSettings from './PublicClockSettings'
@@ -113,13 +113,11 @@ const PublicClock: React.FC = () => {
   }, [])
 
   // Create the chart data
-  const chartData = useMemo(() => {
-    return Array.from({ length: clockData.segments }, (_, i) => ({
-      title: `Segment ${i + 1}`,
-      value: 10,
-      color: clockData.color, // Default color
-    }))
-  }, [clockData.segments, clockData.color])
+  const chartData = Array.from({ length: clockData.segments }, (_, i) => ({
+    title: `Segment ${i + 1}`,
+    value: 10,
+    color: clockData.color, // Default color
+  }))
 
   // This one actually updates the server
   const handleSliceClick = (event: MouseEvent, dataIndex: number) => {
@@ -151,48 +149,46 @@ const PublicClock: React.FC = () => {
     setHoveredSliceIndex(null)
   }
 
-  const updatedData = useMemo(() => {
-    return chartData.map((entry, index) => {
-      let fillColor = 'gray' // Default color for non-active slices
+  const updatedData = chartData.map((entry, index) => {
+    let fillColor = 'gray' // Default color for non-active slices
 
-      // Logic for selected slices
+    // Logic for selected slices
+    if (clockData.filled !== null && index <= clockData.filled) {
+      fillColor = entry.color // Original color for selected slices
+    }
+
+    // Trailing Hover Effect
+    if (hoveredSliceIndex !== null && index < hoveredSliceIndex) {
+      // Apply lighten effect if the segment is not filled
+      if (clockData.filled === null || index > clockData.filled) {
+        fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
+      }
+    }
+
+    // Leading Hover Effect
+    if (
+      hoveredSliceIndex !== null &&
+      index >= hoveredSliceIndex &&
+      clockData.filled !== null &&
+      index <= clockData.filled
+    ) {
+      fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
+    }
+
+    // Logic for hovered slices
+    if (hoveredSliceIndex === index) {
       if (clockData.filled !== null && index <= clockData.filled) {
-        fillColor = entry.color // Original color for selected slices
-      }
-
-      // Trailing Hover Effect
-      if (hoveredSliceIndex !== null && index < hoveredSliceIndex) {
-        // Apply lighten effect if the segment is not filled
-        if (clockData.filled === null || index > clockData.filled) {
-          fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
-        }
-      }
-
-      // Leading Hover Effect
-      if (
-        hoveredSliceIndex !== null &&
-        index >= hoveredSliceIndex &&
-        clockData.filled !== null &&
-        index <= clockData.filled
-      ) {
         fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
+      } else {
+        fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
       }
+    }
 
-      // Logic for hovered slices
-      if (hoveredSliceIndex === index) {
-        if (clockData.filled !== null && index <= clockData.filled) {
-          fillColor = darkenHexColor(entry.color, clockData.darken_intensity)
-        } else {
-          fillColor = lightenHexColor(entry.color, clockData.lighten_intensity)
-        }
-      }
-
-      return {
-        ...entry,
-        color: fillColor,
-      }
-    })
-  }, [chartData, clockData.filled, hoveredSliceIndex])
+    return {
+      ...entry,
+      color: fillColor,
+    }
+  })
 
   // Handle changes from settings component
   const handleDataChange = (clockData: Partial<PublicClockType>) => {

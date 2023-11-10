@@ -6,10 +6,14 @@ import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { z } from 'zod'
+import { updateTowerColorsSA } from './updateTowerColorsSA'
+import { Form } from 'react-hook-form'
+import { removeTowerColorSA } from './removeTowerColorSA'
 
 // Define the function's arguments and return types
 const inputSchema = z.object({
   clockId: UUIDSchema,
+  towerId: UUIDSchema,
 })
 
 export const deleteClockSA = async (
@@ -26,6 +30,15 @@ export const deleteClockSA = async (
     const { error } = await supabase.from('clocks').delete().eq('id', clockId)
     // If there was an error deleting the clock, throw the error.
     if (error) throw error
+
+    // Update the colors array
+    const removeColorInput = new FormData()
+    removeColorInput.append('towerId', form.towerId)
+    removeColorInput.append('entityId', clockId)
+
+    // nonblocking call to update the towers colors
+    removeTowerColorSA(removeColorInput)
+
     // If not, Return the success message.
     return { data: { success: true } }
   } catch (error) {

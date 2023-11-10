@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { RealtimeClock } from './RealtimeClock'
+import RealtimeClock from './RealtimeClock'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +30,7 @@ import type {
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js'
 import insertNewClockSA from '../actions/insertNewClockSA'
-import updateRowNameServerAction from '../actions/updateRowNameServerAction'
+import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
 
 type RealtimeTowerRowProps = {
@@ -38,7 +38,7 @@ type RealtimeTowerRowProps = {
   children?: React.ReactNode
 }
 
-export const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
+const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   initialData,
   children,
 }) => {
@@ -196,7 +196,7 @@ export const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Update local state
     setRowName(event.target.value)
     // Update the server
-    const { error } = await updateRowNameServerAction(rowId, newRowName)
+    const { error } = await updateRowNameSA(rowId, newRowName)
     // Handle Errors
     if (error) {
       console.error(error)
@@ -215,7 +215,10 @@ export const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Update local state
     setIsDeleted(true)
     // Delete from the server
-    const { error } = await deleteTowerRowSA(rowId)
+    const inputData = new FormData()
+    inputData.append('rowId', rowId)
+    inputData.append('towerId', towerId)
+    const { error } = await deleteTowerRowSA(inputData)
     if (error) {
       toast({
         variant: 'destructive',
@@ -292,3 +295,5 @@ export const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     </>
   )
 }
+
+export default RealtimeTowerRow

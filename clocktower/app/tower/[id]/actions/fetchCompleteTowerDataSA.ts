@@ -23,7 +23,7 @@ const inputSchema = z.object({
   towerId: UUIDSchema,
 })
 
-export const fetchCompleteTowerData = async (
+export const fetchCompleteTowerDataSA = async (
   formData: FormData,
 ): Promise<ServerActionReturn<TowerType>> => {
   try {

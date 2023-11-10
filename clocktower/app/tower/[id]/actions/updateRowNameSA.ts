@@ -12,7 +12,7 @@ import extractErrorMessage from '@/tools/extractErrorMessage'
 import { cookies } from 'next/headers'
 
 // 1. Define the function's arguments and return types
-const updateRowNameServerAction = async (
+export const updateRowNameSA = async (
   rowId: UUID,
   newRowName: string,
 ): Promise<ServerActionReturn<TowerRowRow>> => {
@@ -42,5 +42,3 @@ const updateRowNameServerAction = async (
     }
   }
 }
-
-export default updateRowNameServerAction
