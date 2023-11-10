@@ -1,6 +1,5 @@
 'use client'
-import * as React from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,6 +19,7 @@ import { UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { GoPlusCircle } from 'react-icons/go'
 
 export function TowersDropdownComponent({
   initialTowers,
@@ -32,11 +32,11 @@ export function TowersDropdownComponent({
   const params = useParams()
   const supabase = createClientComponentClient()
   const path = usePathname()
-  const [open, setOpen] = React.useState(false)
-  const [towers, setTowers] = React.useState(initialTowers)
+  const [open, setOpen] = useState(false)
+  const [towers, setTowers] = useState(initialTowers)
   const selectedTowerName =
     towers.find((tower) => tower.id === params.id)?.name || ''
-  const [value, setValue] = React.useState(selectedTowerName)
+  const [value, setValue] = useState(selectedTowerName)
 
   const handleInsertTower = async (payload: any) => {
     // Check if the tower is already in the list, if it is ignore
@@ -154,9 +154,9 @@ export function TowersDropdownComponent({
                 setOpen(false)
                 router.push('/tower/new')
               }}
-              className='p-1 pt-5'
             >
-              <Button className='mx-auto items-center'> + New Tower </Button>
+              <GoPlusCircle className='mr-2 h-4 w-4' />
+              <p>New Tower</p>
             </CommandItem>
           </CommandGroup>
         </Command>

@@ -30,6 +30,7 @@ import { BsTrash3Fill } from 'react-icons/bs'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
+import { GiSettingsKnobs } from 'react-icons/gi'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
@@ -44,8 +45,6 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   onStateChange,
   onDelete,
 }) => {
-  const dotsCss = `absolute top-[5%] right-[5%] w-[12%] h-[12%] text-gray-400 hover:text-[${clockData.color}] hover:bg-gray-200 rounded-full p-1`
-
   const handleColorChange = async (color: HexColorCode) => {
     // Optomistic Update
     const oldColor = clockData.color
@@ -218,8 +217,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant='ghost' size='icon' className={dotsCss}>
-          <LuSettings2 className='w-full h-full' />
+        <Button variant='ghost' size='icon' className='hover:scale-105 opacity-60 hover:opacity-100'>
+          <GiSettingsKnobs className='w-3/4 h-3/4 hover:scale-105' />
         </Button>
       </DialogTrigger>
       <DialogContent>

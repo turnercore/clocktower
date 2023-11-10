@@ -270,7 +270,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
           </CardTitle>
           <CardContent>
             <ScrollArea className='overflow-auto'>
-              <div className='flex flex-row width-full items-center space-x-4'>
+              <div className='flex flex-row width-full items-center space-x-6'>
                 {children}
                 {addedClocks.map((clock) => (
                   <RealtimeClock key={clock.id} initialData={clock} />
@@ -283,7 +283,6 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                   <TbClockPlus className='ml-1 h-8 w-8' />
                 </Button>
               </div>
-              <br />
               <ScrollBar orientation='horizontal' className='w-full' />
             </ScrollArea>
           </CardContent>

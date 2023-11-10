@@ -260,15 +260,22 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   return (
     <>
       {!isDeleted && (
-        <div className='flex flex-col relative items-center'>
-          <h3 className='text-center'>{clockData.name}</h3>
-          {configuredPieChart}
-          <ClockSettingsDialog
-            configuredPieChart={configuredPieChart}
-            clockData={clockData}
-            onStateChange={handleStateChange}
-            onDelete={handleDelete}
-          />
+        <div>
+          <div className='flex flex-col items-center max-w-[400px] min-w-[200px] bg-slate-100 rounded-full'>
+            {configuredPieChart}
+          </div>
+          <div className='flex flex-row items-center space-x-2 w-full mt-1'>
+            <h2 className='pl-8 text-2xl w-full font-thin text-center'>
+              {clockData.name}
+            </h2>
+
+            <ClockSettingsDialog
+              configuredPieChart={configuredPieChart}
+              clockData={clockData}
+              onStateChange={handleStateChange}
+              onDelete={handleDelete}
+            />
+          </div>
         </div>
       )}
     </>
