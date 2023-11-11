@@ -14,6 +14,7 @@ import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 import Link from 'next/link'
 import { GoHome } from 'react-icons/go'
+import { NextRequest } from 'next/server'
 
 export default async function Header() {
   // See if user is logged in
@@ -36,7 +37,7 @@ export default async function Header() {
         {isUserLoggedIn ? (
           <div className='flex flex-row space-x-2 ml-18'>
             <TowersDropdown />
-            {/* <ShareTowerPopover /> */}
+            <ShareTowerPopover></ShareTowerPopover>
           </div>
         ) : (
           <Popover>

@@ -5,8 +5,6 @@ import { Metadata } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans, GeistMono } from 'geist/font'
 import { Providers } from '@/app/providers'
-import FooterGradientWaves from '@/components/svg/FooterGradientWaves'
-import Image from 'next/image'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 

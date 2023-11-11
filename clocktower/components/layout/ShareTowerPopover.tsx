@@ -13,6 +13,7 @@ import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
 import { toast } from '../ui'
 import { UUID } from '@/types/schemas'
+import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
 
 export default function ShareTowerPopover() {
   const path = usePathname()
@@ -39,52 +40,27 @@ export default function ShareTowerPopover() {
   }, [towerId, path])
 
   const handleInvite = async () => {
-    if (!username || !towerId) return
-    setIsLoading(true)
+    if (!userId) return
 
-    try {
-      // Check if the user with the entered username exists
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('username', username)
-        .single()
+    const { error } = await inviteUserToTowerSA({
+      inputUserId: userId,
+      inputInvitedUsername: username,
+      inputTowerId: towerId,
+    })
 
-      // Error handling
-      if (profilesError || !profilesData)
-        throw profilesError || new Error('User not found.')
-
-      const invitedUserId = profilesData.id
-
-      // Call the add_user_to_tower function to handle the rest
-      const { error: addError } = await supabase.rpc('add_user_to_tower', {
-        tower: towerId,
-        new_user_id: invitedUserId,
-      })
-
-      if (addError) throw addError
-
-      // Add entry in the friends table
-      const { error: friendsInsertError } = await supabase
-        .from('friends')
-        .upsert([{ user_id: userId, friend_id: invitedUserId }])
-
-      if (friendsInsertError) throw friendsInsertError
-
+    if (error) {
       toast({
-        title: 'User invited',
-        description: `User ${username} has been invited to the tower.`,
-      })
-    } catch (error: any) {
-      console.error(error)
-      toast({
-        title: `Unable to invite user "${username}"`,
-        description: error.message || 'An unknown error occurred.',
+        title: 'Error inviting user!',
+        description: error,
         variant: 'destructive',
       })
+      return
     }
-    setIsLoading(false)
-    setUsername('')
+
+    toast({
+      title: 'User invited!',
+      description: `User ${username} has been invited to the tower.`,
+    })
   }
 
   return (
