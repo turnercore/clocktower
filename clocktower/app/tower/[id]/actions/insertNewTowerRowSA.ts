@@ -11,20 +11,14 @@ import { Database } from '@/types/supabase'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-// Helper functions to handle database interactions and data modifications
-/**
- * Inserts a new row into the "tower_rows" table in the database.
- * @param newRow The new row to be inserted.
- * @returns A promise that resolves to a `ServerActionReturn` object containing the inserted row data, or an error message if the insertion fails.
- */
 // This function is called from the client to insert a new tower row into the database.
 export const insertNewTowerRowSA = async (
   newRow: TowerRowRow | TowerRowType,
 ): Promise<ServerActionReturn<TowerRowRow>> => {
   try {
     // Create a client object that has the current user's cookies.
-    const supabase = createServerActionClient<Database>({ cookies })
-    const row = TowerRowRowSchema.parse(newRow) as TowerRowRow // this will just drop the clocks property if it's there
+    const supabase = createServerActionClient({ cookies })
+    const row = TowerRowRowSchema.parse(newRow) // this will just drop the clocks property if it's there
     // Parse the new row into the expected format.
     // Insert the new row into the database.
     const { error } = await supabase.from('tower_rows').insert(row)

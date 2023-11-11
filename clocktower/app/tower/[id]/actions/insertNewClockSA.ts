@@ -38,7 +38,7 @@ const insertNewClockSA = async (
   } catch (error) {
     // If there was an error, return it in a standard format.
     return {
-      error: extractErrorMessage(error, 'Unknown error from insertNewRow.'),
+      error: extractErrorMessage(error, 'Unknown error from insertNewClock.'),
     }
   }
 }

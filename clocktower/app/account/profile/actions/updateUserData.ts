@@ -4,7 +4,6 @@ import { ProfileRow, ServerActionReturn } from '@/types/schemas'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { z } from 'zod'
 import { cookies } from 'next/headers'
-import { createClient } from '@supabase/supabase-js'
 import { openaiModeration } from '@/tools/openaiModeration'
 
 // Define the input schema outside the function for reusability
