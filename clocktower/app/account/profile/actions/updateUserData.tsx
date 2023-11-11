@@ -46,9 +46,6 @@ export default async function updateUserDataSA(
     // Validate data
     const result = inputSchema.parse(form)
 
-    // If we get here, the data is valid and can be used exactly as you would expect
-    // to use it in the rest of your server action.
-
     //init supabase
     const supabase = createServerActionClient({ cookies })
 

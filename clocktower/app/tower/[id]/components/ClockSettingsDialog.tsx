@@ -25,12 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
 import { GiSettingsKnobs } from 'react-icons/gi'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
@@ -49,24 +49,37 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
     // Optomistic Update
     const oldColor = clockData.color
     const newColor = color
+    try {
+      // Update local state
+      onStateChange('color', newColor)
 
-    // Update local state
-    onStateChange('color', newColor)
+      // Call the server action to update the clock color
+      const { data: clockColorData, error: clockColorError } =
+        await updateClockDataSA({
+          clockId: clockData.id,
+          newClockData: {
+            color,
+          },
+        })
 
-    // Call the server action to update the tower colors
-    const response = await updateTowerColorsSA({
-      towerId: clockData.tower_id,
-      entityId: clockData.id,
-      color,
-    })
+      if (clockColorError) throw clockColorError
 
-    if (response.error) {
-      console.error('Failed to update tower colors:', response.error)
+      // Call the server action to update the tower colors)
+      const { data: towerColorData, error: towerColorError } =
+        await updateTowerColorsSA({
+          towerId: clockData.tower_id,
+          entityId: clockData.id,
+          color,
+        })
+      if (towerColorError) throw towerColorError
+    } catch (error) {
+      const errorMessage = extractErrorMessage(error, 'Failed to update color')
+      console.error('Failed to update tower colors:', error)
       toast({
         title: 'Failed to update tower colors',
-        description: response.error,
+        description: errorMessage,
         variant: 'destructive',
-        duration: 2000,
+        duration: 1000,
       })
       // Revert the local state
       onStateChange('color', oldColor)
@@ -217,7 +230,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant='ghost' size='icon' className='hover:scale-105 opacity-60 hover:opacity-100'>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='hover:scale-105 opacity-60 hover:opacity-100'
+        >
           <GiSettingsKnobs className='w-3/4 h-3/4 hover:scale-105' />
         </Button>
       </DialogTrigger>

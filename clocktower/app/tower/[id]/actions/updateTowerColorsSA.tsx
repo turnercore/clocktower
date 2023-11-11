@@ -32,6 +32,9 @@ export const updateTowerColorsSA = async ({
   entityId,
   color,
 }: inputType): Promise<ServerActionReturn<ColorPaletteType>> => {
+  console.log('towerId', towerId)
+  console.log('entityId', entityId)
+  console.log('color', color)
   try {
     const supabase = createServerActionClient<Database>({ cookies })
     // Extract and validate form data
@@ -48,7 +51,7 @@ export const updateTowerColorsSA = async ({
     if (!tower) throw new Error('Tower not found')
     if (!tower.colors) throw new Error('Tower colors not found')
 
-    let colors: ColorPaletteType = await JSON.parse(tower.colors as string)
+    let colors: ColorPaletteType = tower.colors as ColorPaletteType
 
     // Remove entityId from any existing color entry
     Object.keys(colors).forEach((key) => {
@@ -59,6 +62,7 @@ export const updateTowerColorsSA = async ({
         }
       }
     })
+    console.log('MADE IT HERE!')
 
     // Add entityId to the new color entry
     if (!colors[color]) {
@@ -69,7 +73,7 @@ export const updateTowerColorsSA = async ({
     // Update the colors object in the database
     const { error: updateError } = await supabase
       .from('towers')
-      .update({ colors })
+      .update({ colors }) // Convert the colors object to a JSON string
       .eq('id', towerId)
 
     if (updateError) throw updateError
