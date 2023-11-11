@@ -1,6 +1,6 @@
 'use client'
 import { UUID, TowerRowRow, TowerDatabaseType } from '@/types/schemas'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button, toast } from '@/components/ui'
 import TowerSettingsDialog from './TowerSettingsDialog'
@@ -25,6 +25,7 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   const towerId = initialData.id as UUID
   const [towerData, setTowerData] = useState<TowerDatabaseType>(initialData)
   const [addedRows, setAddedRows] = useState<TowerRowRow[]>([])
+  const addedRowsRef = useRef<UUID[]>(addedRows.map((row) => row.id)) // Create a ref for addedRows
 
   const supabase = createClientComponentClient<Database>()
 
@@ -33,9 +34,17 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
     payload: RealtimePostgresInsertPayload<TowerRowRow>,
   ) => {
     // Check if the new row belongs to this tower
-    if (payload.new.tower_id === towerId) {
+    if (
+      payload.new.tower_id === towerId &&
+      !addedRowsRef.current.includes(payload.new.id)
+    ) {
       // Add the new row to the local state
-      setAddedRows((prevRows) => [...prevRows, payload.new])
+      setAddedRows((prevRows) => {
+        const updatedRows = [...prevRows, payload.new]
+        // Update the ref inside the setState callback
+        addedRowsRef.current = updatedRows.map((row) => row.id)
+        return updatedRows
+      })
     }
   }
 
@@ -99,7 +108,13 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
     // Update local state optomistically
     const oldAddedRows = addedRows
     const newAddedRows = [...oldAddedRows, newRow]
-    setAddedRows(newAddedRows)
+    // Add the new row to the local state
+    setAddedRows((prevRows) => {
+      const updatedRows = [...prevRows, newRow]
+      // Update the ref inside the setState callback
+      addedRowsRef.current = updatedRows.map((row) => row.id)
+      return updatedRows
+    })
 
     // Attempt to insert the new row into the server
     const { error } = await insertNewTowerRowSA(newRow)
@@ -112,7 +127,10 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
         variant: 'destructive',
       })
       //Revert local changes
-      setAddedRows(oldAddedRows)
+      setAddedRows(() => {
+        addedRowsRef.current = oldAddedRows.map((row) => row.id)
+        return oldAddedRows
+      })
     }
   }
 

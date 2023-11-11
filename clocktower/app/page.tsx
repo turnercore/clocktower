@@ -4,13 +4,13 @@ import { Button } from '@/components/ui'
 import { Suspense } from 'react'
 import SiteTitle from '@/components/homepage/SiteTitle'
 
-const Home: React.FC = () => {
+const Home = () => {
   return (
     <div className='relative flex flex-col text-center items-center mb-[100px]'>
       <SiteTitle />
       <div className=' mb-8'>
         <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
-        <Link href='/login'>
+        <Link href='/account/login'>
           <Button variant='outline'> Login </Button>
         </Link>
         to make some clocks

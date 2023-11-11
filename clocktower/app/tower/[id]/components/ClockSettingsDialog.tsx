@@ -45,6 +45,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   onStateChange,
   onDelete,
 }) => {
+  const [segments, setSegments] = React.useState<number>(clockData.segments)
+
   const handleColorChange = async (color: HexColorCode) => {
     // Optomistic Update
     const oldColor = clockData.color
@@ -88,37 +90,62 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
 
   const handleSegmentsChange = async (
     event: ChangeEvent<HTMLInputElement> | null = null,
-    segments: number | null = null,
+    newSegments: number | null = null,
   ) => {
-    const value = event ? Number(event.target.value || event) : segments
+    // Guard input
+    const value = event ? Number(event.target.value || event) : newSegments
     if (value === null || isNaN(value) || !Number.isInteger(value)) {
       return onStateChange('segments', 1)
     }
-
     const validValue = Math.min(Math.max(value, 1), 100) // Clamp the value between 1 and 100
 
     // Optimistic Update
-    const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
+    const oldValue = segments
+    setSegments(value)
+    const oldSegmentsValue = segments
     onStateChange('segments', validValue)
 
-    const response = await updateClockDataSA({
-      clockId: clockData.id,
-      newClockData: {
-        segments: validValue,
-      },
-    })
+    try {
+      const response = await updateClockDataSA({
+        clockId: clockData.id,
+        newClockData: {
+          segments: validValue,
+        },
+      })
 
-    if (response.error) {
-      console.error('Failed to update segments:', response.error)
+      if (response.error) throw response.error
+    } catch (error) {
+      const errorMessage = extractErrorMessage(
+        error,
+        'Failed to update segments',
+      )
+      console.error('Failed to update segments:', errorMessage)
       toast({
         title: 'Failed to update segments',
-        description: response.error,
+        description: errorMessage,
         variant: 'destructive',
         duration: 2000,
       })
       // Revert to the old segments value
       onStateChange('segments', oldSegmentsValue)
+      setSegments(oldValue)
     }
+  }
+
+  const handleSegmentsDrag = (value: number[]) => {
+    const newSegments = value[0]
+    // Guard input
+    if (
+      newSegments === null ||
+      isNaN(newSegments) ||
+      !Number.isInteger(newSegments)
+    ) {
+      return onStateChange('segments', 1)
+    }
+
+    const validValue = Math.min(Math.max(newSegments, 1), 100) // Clamp the value between 1 and 100
+
+    setSegments(validValue)
   }
 
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -283,15 +310,17 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           </div>
           <div className='w-1/2 flex flex-col space-y-6 mx-5'>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label> Segments </Label>
+              <Label> {segments} Segments </Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
                   defaultValue={[clockData.segments]}
                   min={1}
                   max={18}
+                  step={1}
                   onValueCommit={(value) =>
                     handleSegmentsChange(null, value[0])
                   }
+                  onValueChange={handleSegmentsDrag}
                 />
               </div>
             </div>
