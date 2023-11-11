@@ -107,26 +107,20 @@ export interface Database {
       }
       profiles: {
         Row: {
-          bg_color: string
+          avatar_set: number
           color: string | null
-          icon: string | null
-          icon_color: string | null
           id: string
           username: string | null
         }
         Insert: {
-          bg_color?: string
+          avatar_set?: number
           color?: string | null
-          icon?: string | null
-          icon_color?: string | null
           id?: string
           username?: string | null
         }
         Update: {
-          bg_color?: string
+          avatar_set?: number
           color?: string | null
-          icon?: string | null
-          icon_color?: string | null
           id?: string
           username?: string | null
         }
@@ -142,7 +136,7 @@ export interface Database {
       }
       tower_rows: {
         Row: {
-          color: string | null
+          color: string
           created_at: string
           id: string
           name: string | null
@@ -151,7 +145,7 @@ export interface Database {
           users: string[] | null
         }
         Insert: {
-          color?: string | null
+          color?: string
           created_at?: string
           id?: string
           name?: string | null
@@ -160,7 +154,7 @@ export interface Database {
           users?: string[] | null
         }
         Update: {
-          color?: string | null
+          color?: string
           created_at?: string
           id?: string
           name?: string | null
