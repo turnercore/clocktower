@@ -32,9 +32,6 @@ const inputSchema = z.object({
 
 type ReturnType = { success: boolean }
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || ''
-
 export default async function updateUserDataSA(
   formData: FormData,
 ): Promise<ServerActionReturn<ReturnType>> {
@@ -91,12 +88,7 @@ export default async function updateUserDataSA(
       if (flagged) throw new Error('Username is not allowed.')
 
       // First check to make sure the username is not in use, we'll have to use the admin account to do this
-      if (!supabaseUrl || !supabaseServiceKey)
-        throw new Error(
-          'Supabase creds not defined in server environment, unable to process',
-        )
-      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-      const { data: existingUser } = await supabaseAdmin
+      const { data: existingUser } = await supabase
         .from('profiles')
         .select('username')
         .ilike('username', username)
@@ -115,6 +107,8 @@ export default async function updateUserDataSA(
       .update(userData)
       .eq('id', userId)
       .single()
+
+    if (updateProfileError) throw updateProfileError
 
     return { data: { success: true } }
   } catch (error) {
