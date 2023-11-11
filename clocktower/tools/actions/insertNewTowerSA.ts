@@ -78,7 +78,7 @@ const insertNewTowerSA = async (
     const defaultClockData: ClockType = {
       id: clockId,
       tower_id: towerId,
-      name: 'Default Clock',
+      name: '',
       position: 0,
       color: '#99D5C9',
       users: [userId],

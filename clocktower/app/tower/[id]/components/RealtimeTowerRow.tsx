@@ -48,6 +48,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   const [rowName, setRowName] = useState<string>(initialData.name || '')
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
   const [addedClocks, setAddedClocks] = useState<Array<ClockType>>([])
+  const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -89,11 +90,16 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Make sure it pertains to this row
     if (newData.row_id !== rowId) return
 
-    // Ensure the clock is not already in the addedclocks
-    const clockExists = addedClocks.some((clock) => clock.id === newData.id)
-    if (clockExists) return
+    // Ensure the clock is not already in the addedClocksRef
+    if (addedClocksRef.current.includes(newData.id)) return
+
     // Add the clock locally
-    setAddedClocks([...addedClocks, newData])
+    setAddedClocks((prevClocks) => {
+      const updatedClocks = [...prevClocks, newData]
+      // Update the ref inside the setState callback
+      addedClocksRef.current = updatedClocks.map((c) => c.id)
+      return updatedClocks
+    })
   }
 
   useEffect(() => {
@@ -138,9 +144,10 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   }, [supabase, rowId])
 
   const addClock = async () => {
+    // Define default Clock
     const newClock: ClockType = {
       id: crypto.randomUUID() as UUID,
-      position: 420 + addedClocks.length,
+      position: 420 + addedClocksRef.current.length,
       name: '',
       segments: 6,
       row_id: rowId,
@@ -155,24 +162,25 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     }
 
     // Update local state
-    const oldClockData = addedClocks
-    const updatedClocks = [...addedClocks, newClock]
-    setAddedClocks(updatedClocks)
+    const oldClocks = addedClocks
+    setAddedClocks((prevClocks) => {
+      const updatedClocks = [...prevClocks, newClock]
+      // Update the ref inside the setState callback
+      addedClocksRef.current = updatedClocks.map((clock) => clock.id)
+      return updatedClocks
+    })
 
     // Update the server
     const { error } = await insertNewClockSA(newClock)
 
-    // Handle Errors
     if (error) {
-      console.error(error)
-      toast({
-        variant: 'destructive',
-        title: 'Error adding new clock',
-        description: error,
+      console.error('Error adding clock:', error)
+      // If there was an error, revert the state
+      setAddedClocks(() => {
+        // Update the ref inside the setState callback
+        addedClocksRef.current = oldClocks.map((clock) => clock.id)
+        return oldClocks
       })
-      // Revert if error
-      setAddedClocks(oldClockData)
-      return
     }
   }
 

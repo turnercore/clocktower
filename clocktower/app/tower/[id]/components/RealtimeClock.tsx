@@ -261,7 +261,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     <>
       {!isDeleted && (
         <div>
-          <div className='flex flex-col items-center max-w-[400px] min-w-[200px] bg-slate-100 rounded-full'>
+          <div className='flex flex-col items-center max-w-[400px] min-w-[200px] rounded-full'>
             {configuredPieChart}
           </div>
           <div className='flex flex-row items-center space-x-2 w-full mt-1'>

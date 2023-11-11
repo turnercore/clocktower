@@ -1,4 +1,4 @@
-import UpdateAccountForm from '../components/UpdateAccountForm'
+import UpdateAccountForm from './components/UpdateAccountForm'
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'

@@ -12,6 +12,8 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
+import Link from 'next/link'
+import { GoHome } from 'react-icons/go'
 
 export default async function Header() {
   // See if user is logged in
@@ -22,8 +24,14 @@ export default async function Header() {
   const isUserLoggedIn = !error && data?.session?.user ? true : false
 
   return (
-    <header className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4'>
+    <header className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 spacex-2'>
+      <Button variant='outline' size='icon' asChild>
+        <Link href='/'>
+          <GoHome className='h-[1.2rem] w-[1.2rem]' />
+        </Link>
+      </Button>
       <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
+
       <div className='flex flex-1 justify-center items-center'>
         {isUserLoggedIn ? (
           <div className='flex flex-row space-x-2 ml-18'>

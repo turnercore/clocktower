@@ -25,12 +25,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
-import { LuSettings2 } from 'react-icons/lu'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
 import { GiSettingsKnobs } from 'react-icons/gi'
+import extractErrorMessage from '@/tools/extractErrorMessage'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: JSX.Element
@@ -45,28 +45,43 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   onStateChange,
   onDelete,
 }) => {
+  const [segments, setSegments] = React.useState<number>(clockData.segments)
+
   const handleColorChange = async (color: HexColorCode) => {
     // Optomistic Update
     const oldColor = clockData.color
     const newColor = color
+    try {
+      // Update local state
+      onStateChange('color', newColor)
 
-    // Update local state
-    onStateChange('color', newColor)
+      // Call the server action to update the clock color
+      const { data: clockColorData, error: clockColorError } =
+        await updateClockDataSA({
+          clockId: clockData.id,
+          newClockData: {
+            color,
+          },
+        })
 
-    // Call the server action to update the tower colors
-    const response = await updateTowerColorsSA({
-      towerId: clockData.tower_id,
-      entityId: clockData.id,
-      color,
-    })
+      if (clockColorError) throw clockColorError
 
-    if (response.error) {
-      console.error('Failed to update tower colors:', response.error)
+      // Call the server action to update the tower colors)
+      const { data: towerColorData, error: towerColorError } =
+        await updateTowerColorsSA({
+          towerId: clockData.tower_id,
+          entityId: clockData.id,
+          color,
+        })
+      if (towerColorError) throw towerColorError
+    } catch (error) {
+      const errorMessage = extractErrorMessage(error, 'Failed to update color')
+      console.error('Failed to update tower colors:', error)
       toast({
         title: 'Failed to update tower colors',
-        description: response.error,
+        description: errorMessage,
         variant: 'destructive',
-        duration: 2000,
+        duration: 1000,
       })
       // Revert the local state
       onStateChange('color', oldColor)
@@ -75,37 +90,62 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
 
   const handleSegmentsChange = async (
     event: ChangeEvent<HTMLInputElement> | null = null,
-    segments: number | null = null,
+    newSegments: number | null = null,
   ) => {
-    const value = event ? Number(event.target.value || event) : segments
+    // Guard input
+    const value = event ? Number(event.target.value || event) : newSegments
     if (value === null || isNaN(value) || !Number.isInteger(value)) {
       return onStateChange('segments', 1)
     }
-
     const validValue = Math.min(Math.max(value, 1), 100) // Clamp the value between 1 and 100
 
     // Optimistic Update
-    const oldSegmentsValue = clockData.segments // Assume clockData is accessible and holds the previous segments value
+    const oldValue = segments
+    setSegments(value)
+    const oldSegmentsValue = segments
     onStateChange('segments', validValue)
 
-    const response = await updateClockDataSA({
-      clockId: clockData.id,
-      newClockData: {
-        segments: validValue,
-      },
-    })
+    try {
+      const response = await updateClockDataSA({
+        clockId: clockData.id,
+        newClockData: {
+          segments: validValue,
+        },
+      })
 
-    if (response.error) {
-      console.error('Failed to update segments:', response.error)
+      if (response.error) throw response.error
+    } catch (error) {
+      const errorMessage = extractErrorMessage(
+        error,
+        'Failed to update segments',
+      )
+      console.error('Failed to update segments:', errorMessage)
       toast({
         title: 'Failed to update segments',
-        description: response.error,
+        description: errorMessage,
         variant: 'destructive',
         duration: 2000,
       })
       // Revert to the old segments value
       onStateChange('segments', oldSegmentsValue)
+      setSegments(oldValue)
     }
+  }
+
+  const handleSegmentsDrag = (value: number[]) => {
+    const newSegments = value[0]
+    // Guard input
+    if (
+      newSegments === null ||
+      isNaN(newSegments) ||
+      !Number.isInteger(newSegments)
+    ) {
+      return onStateChange('segments', 1)
+    }
+
+    const validValue = Math.min(Math.max(newSegments, 1), 100) // Clamp the value between 1 and 100
+
+    setSegments(validValue)
   }
 
   const handleDelete = async (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -217,7 +257,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant='ghost' size='icon' className='hover:scale-105 opacity-60 hover:opacity-100'>
+        <Button
+          variant='ghost'
+          size='icon'
+          className='hover:scale-105 opacity-60 hover:opacity-100'
+        >
           <GiSettingsKnobs className='w-3/4 h-3/4 hover:scale-105' />
         </Button>
       </DialogTrigger>
@@ -266,15 +310,17 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           </div>
           <div className='w-1/2 flex flex-col space-y-6 mx-5'>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label> Segments </Label>
+              <Label> {segments} Segments </Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
                   defaultValue={[clockData.segments]}
                   min={1}
                   max={18}
+                  step={1}
                   onValueCommit={(value) =>
                     handleSegmentsChange(null, value[0])
                   }
+                  onValueChange={handleSegmentsDrag}
                 />
               </div>
             </div>
