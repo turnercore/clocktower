@@ -14,12 +14,10 @@ export type HexColorCode = z.infer<typeof HexColorCodeSchema>
 
 export const ProfileRowSchema = z
   .object({
-    bg_color: z.string().nullable(),
-    icon: z.string().nullable(),
-    icon_color: z.string().nullable(),
     id: z.string(),
     username: z.string().nullable(),
     color: HexColorCodeSchema.nullable(),
+    avatar_set: z.number().default(1),
   })
   .strip()
 

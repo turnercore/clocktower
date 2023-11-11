@@ -28,20 +28,23 @@ import {
   FormLabel,
   FormMessage,
   Input,
+  RadioGroup,
+  RadioGroupItem,
   toast,
 } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
-import { type ProfileRow } from '@/types/schemas'
+import { UUIDSchema, type ProfileRow } from '@/types/schemas'
 import { BsTrash3Fill } from 'react-icons/bs'
-import updateUserAvatarSA from '../profile/actions/updateUserAvatar'
-import updateUserDataSA from '../profile/actions/updateUserData'
-import deleteUserAccount from '../profile/actions/deleteUserAccount'
+import updateUserAvatarSA from '../actions/updateUserAvatar'
+import updateUserDataSA from '../actions/updateUserData'
+import deleteUserAccount from '../actions/deleteUserAccount'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import hash from '@/tools/hash'
+import updateUserAvatarSetSA from '../actions/updateUserAvatarSet'
 // validation schema for form
 const formSchema = z
   .object({
@@ -155,6 +158,7 @@ const UpdateAccountForm = ({
   const [userEmail, setUserEmail] = useState(email)
   const [currentUsername, setCurrentUsername] = useState(profile.username)
   const [currentColor, setCurrentColor] = useState(profile.color)
+  const [avatarSet, setAvatarSet] = useState(profile.avatar_set || 1)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
@@ -302,7 +306,29 @@ const UpdateAccountForm = ({
   const handleColorChange = (color: string) => {
     setCurrentColor(color)
     form.setValue('color', color)
+    // Update the server with the new color
+  }
+
+  // Update the avatar set
+  const handleAvatarSetChange = async (value: string) => {
+    // Change string to number 1, 2, 3, 4
+    const avatarSetNumber = parseInt(value)
+    // Update the local state optomistically
+    const oldAvatarIndex = avatarSet
+    setAvatarSet(avatarSetNumber)
+
     // Update the server
+    const { data, error } = await updateUserAvatarSetSA(avatarSetNumber, userId)
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error Processing Update',
+        variant: 'destructive',
+        description: extractErrorMessage(error),
+      })
+      // Revert local state
+      setAvatarSet(oldAvatarIndex)
+    }
   }
 
   // User Account update form
@@ -310,11 +336,10 @@ const UpdateAccountForm = ({
     <Card className='mx-auto max-w-2xl'>
       <CardHeader className='items-center'>
         <CardTitle>Account</CardTitle>
-        <CardDescription className='items-center flex flex-col'>
-          <p className='text-center'>
-            Change your account information here. <br />
-            You do not need to fill in any information you don't want to update.
-          </p>
+        <CardDescription className='items-center flex flex-col text-center'>
+          Change your account information here.
+          <br /> You do not need to fill in any information you don't want to
+          update.
         </CardDescription>
       </CardHeader>
       <CardContent className=' space-y-3'>
@@ -325,13 +350,29 @@ const UpdateAccountForm = ({
               style={{ backgroundColor: profile.color || '#FFFFFF' }}
               src={`https://robohash.org/${hash(
                 currentUsername || 'clocktower',
-              )}`}
+              )}?set=set${avatarSet}&size=250x250`}
             />
-            <AvatarFallback>CN</AvatarFallback>
+            <AvatarFallback>
+              <div className='bg-gray-400 rounded-full w-64 h-64 animate-pulse' />
+            </AvatarFallback>
           </Avatar>
           <h1 className='text-center font-mono text-4xl mb-4 mt-2'>
             {currentUsername}
           </h1>
+          <RadioGroup
+            defaultValue={profile.avatar_set.toString() || '1'}
+            onValueChange={handleAvatarSetChange}
+            className='flex justify-center'
+          >
+            {[1, 2, 3, 4].map((value) => (
+              <RadioGroupItem
+                key={value}
+                value={value.toString()}
+                id={`r${value}`}
+                className='mx-1'
+              />
+            ))}
+          </RadioGroup>
         </div>
         <h1> Update Your Information:</h1>
         <Form {...form}>
@@ -343,7 +384,11 @@ const UpdateAccountForm = ({
                 <FormItem>
                   <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder='New Username' {...field} />
+                    <Input
+                      placeholder='New Username'
+                      autoComplete='new-username'
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     This is your public display name for getting invited to
@@ -353,6 +398,7 @@ const UpdateAccountForm = ({
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name='email'
@@ -360,11 +406,16 @@ const UpdateAccountForm = ({
                 <FormItem>
                   <FormLabel>New Email</FormLabel>
                   <FormControl>
-                    <Input placeholder='New Email' {...field} />
+                    <Input
+                      placeholder='New Email'
+                      autoComplete='new-email'
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     Your email address for logging in is private and will not be
-                    shared with anyone. <br /> Your current email is:{' '}
+                    shared with anyone. <br />
+                    Your current email is:
                     {userEmail}
                   </FormDescription>
                   <FormMessage />
@@ -381,7 +432,11 @@ const UpdateAccountForm = ({
                   <FormItem>
                     <FormLabel>Confirm Email</FormLabel>
                     <FormControl>
-                      <Input placeholder='Confirm Email' {...field} />
+                      <Input
+                        placeholder='Confirm Email'
+                        autoComplete='new-email'
+                        {...field}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -399,6 +454,7 @@ const UpdateAccountForm = ({
                     <Input
                       placeholder='New Password'
                       type='password'
+                      autoComplete='new-password'
                       {...field}
                     />
                   </FormControl>
@@ -423,6 +479,7 @@ const UpdateAccountForm = ({
                       <Input
                         placeholder='Confirm Password'
                         type='password'
+                        autoComplete='new-password'
                         {...field}
                       />
                     </FormControl>

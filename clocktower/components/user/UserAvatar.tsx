@@ -17,16 +17,12 @@ import {
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Profile } from '@/types/schemas'
-import { Settings } from 'lucide-react'
 import { GoGear, GoSignOut } from 'react-icons/go'
 import hash from '@/tools/hash'
 
 export default function UserAvatar({ className = '' }) {
-  // ... existing state and useEffect hooks
-  const [isHovered, setIsHovered] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   //Get user on mount
@@ -71,7 +67,7 @@ export default function UserAvatar({ className = '' }) {
           <AvatarImage
             src={`https://robohash.org/${hash(
               profile.username || 'clocktower',
-            )}`}
+            )}?size=64x64&set=set${profile.avatar_set || '1'}}`}
           />
           <AvatarFallback>CT</AvatarFallback>
         </Avatar>
