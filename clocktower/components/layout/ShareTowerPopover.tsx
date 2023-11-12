@@ -27,36 +27,43 @@ export default function ShareTowerPopover() {
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    if (path.includes('tower') && towerId) {
-      setIsOnTowerPage(true)
-    } else return
-
-    const fetchUserId = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (data.session?.user.id) {
-        setUserId(data.session.user.id)
+    const fetchUserIdAndDetermineOwner = async () => {
+      if (path.includes('tower') && towerId) {
+        setIsOnTowerPage(true)
+      } else {
+        return
       }
-      determineIfUserIsTowerOwner()
-    }
 
-    const determineIfUserIsTowerOwner = async () => {
-      const { data, error } = await supabase
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession()
+      if (sessionError) {
+        console.error(sessionError)
+        return
+      }
+
+      if (!sessionData.session?.user) {
+        console.error('No user found in session data')
+        return
+      }
+
+      const currentUserId = sessionData.session.user.id
+      setUserId(currentUserId)
+
+      const { data: towerData, error: towerError } = await supabase
         .from('towers')
         .select('owner')
         .eq('id', towerId)
         .single()
 
-      if (error || !data.owner) {
-        console.error(error)
+      if (towerError) {
+        console.error(towerError)
         return
       }
 
-      if (data.owner === userId) {
-        setIsTowerOwner(true)
-      }
+      setIsTowerOwner(towerData.owner === currentUserId)
     }
 
-    fetchUserId()
+    fetchUserIdAndDetermineOwner()
   }, [towerId, path])
 
   const handleInvite = async () => {
@@ -88,7 +95,7 @@ export default function ShareTowerPopover() {
     userId && (
       <Popover>
         <PopoverTrigger asChild>
-          <Button title='Invite Users' variant={'ghost'} className='ml-2'>
+          <Button title='Invite Users' variant='outline'>
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>

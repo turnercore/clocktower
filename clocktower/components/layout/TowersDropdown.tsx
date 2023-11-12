@@ -18,13 +18,16 @@ import { isValidUUID } from '@/tools/isValidUUID'
 import { TowerDatabaseType, UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import {
+  User,
+  createClientComponentClient,
+} from '@supabase/auth-helpers-nextjs'
 import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
 import { Database } from '@/types/supabase'
 import { capitalizeFirstLetterOfEveryWord } from '@/tools/capitalizeFirstLetterOfEveryWord'
 
-const TowersDropdown = () => {
+const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
   const params = useParams()
   const path = usePathname()
@@ -32,7 +35,7 @@ const TowersDropdown = () => {
   const [open, setOpen] = useState(false)
   const [towers, setTowers] = useState<TowerDatabaseType[]>([])
   const [selectedTowerName, setSelectedTowerName] = useState('')
-  const [userId, setUserId] = useState<UUID | null>(null)
+  const [userId, setUserId] = useState<UUID | null>(user?.id || null)
 
   // Handle realtime changes to the towers list if a tower is addded
   const handleRealtimeInsertTower = async (payload: any) => {
@@ -82,26 +85,15 @@ const TowersDropdown = () => {
     router.push(`/tower/${newTowerId}`)
   }
 
-  // Getting the towers from the database the user has access to
+  // Subscribe to changes once we have a userID
   useEffect(() => {
+    if (!userId) return
     const getTowers = async () => {
-      // Get the user's id
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession()
-      // Handle errors
-      if (sessionError || !sessionData || !sessionData.session?.user.id) {
-        console.error(sessionError)
-        return
-      }
-
-      const currentUserId = sessionData.session.user.id
-      setUserId(currentUserId)
-
       // Fetch the towers the user has access to using the join table
       const { data: towerAccessData, error: towerAccessError } = await supabase
         .from('towers_users')
         .select('tower_id')
-        .eq('user_id', currentUserId)
+        .eq('user_id', userId)
       // Handle errors
       if (towerAccessError) {
         console.error(towerAccessError)
@@ -130,13 +122,8 @@ const TowersDropdown = () => {
     const subscribeToChanges = async () => {
       console.log('Subscribing to changes')
     }
-
     getTowers()
-  }, [])
 
-  // Subscribe to changes once we have a userID
-  useEffect(() => {
-    if (!userId) return
     // Subscribe to changes
     const channel = supabase
       .channel(`towers_users_${userId}`)
@@ -191,7 +178,6 @@ const TowersDropdown = () => {
       <PopoverContent className='w-[200px] p-0'>
         <Command>
           <CommandInput placeholder='Search Towers...' />
-
           <CommandEmpty>
             No tower found. Perhaps you should <br />
             <Button>Create a new one.</Button>

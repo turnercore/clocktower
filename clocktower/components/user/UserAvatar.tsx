@@ -65,9 +65,10 @@ export default function UserAvatar({ className = '' }) {
           style={{ backgroundColor: profile.color || '#FFFFFF' }}
         >
           <AvatarImage
+            style={{ backgroundColor: profile.color || '#FFFFFF' }}
             src={`https://robohash.org/${hash(
               profile.username || 'clocktower',
-            )}?size=64x64&set=set${profile.avatar_set || '1'}}`}
+            )}?set=set${profile.avatar_set}&size=64x64`}
           />
           <AvatarFallback>CT</AvatarFallback>
         </Avatar>
