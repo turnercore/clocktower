@@ -1,7 +1,7 @@
 'use client'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button, Input } from '@/components/ui'
-import { Provider, Session } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 import { useRouter } from 'next/navigation'

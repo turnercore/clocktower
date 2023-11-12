@@ -33,12 +33,11 @@ const InvitedUsersList = ({
   const params = useParams()
   const path = usePathname()
   const towerId: UUID = params.id as UUID
-  const presence = useRealtimePresence(towerId)
+  const presences = useRealtimePresence(towerId)
   const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   // State to track expanded state of avatar list
   const [isExpanded, setIsExpanded] = useState(false)
-  const [connectedUsers, setConnectedUsers] = useState<UUID[]>([])
 
   // Function to toggle expanded state
   const toggleExpanded = () => {
@@ -95,6 +94,7 @@ const InvitedUsersList = ({
     getInvitedUsers()
   }, [towerId])
 
+  console.log('presences', presences)
   return (
     <div className='relative'>
       <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
@@ -104,7 +104,11 @@ const InvitedUsersList = ({
               key={user.id}
               user={user}
               isInteractable={isInteractable}
-              isOnline={true}
+              isOnline={
+                presences.find((presence) => presence.user_id === user.id)
+                  ? true
+                  : false
+              }
             />
           ),
         )}

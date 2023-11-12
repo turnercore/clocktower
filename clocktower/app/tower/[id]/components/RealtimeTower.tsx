@@ -1,5 +1,10 @@
 'use client'
-import { UUID, TowerRowRow, TowerDatabaseType } from '@/types/schemas'
+import {
+  UUID,
+  TowerRowRow,
+  TowerDatabaseType,
+  PresencePayload,
+} from '@/types/schemas'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button, toast } from '@/components/ui'
@@ -15,14 +20,20 @@ import RealtimeTowerRow from './RealtimeTowerRow'
 
 interface TowerProps {
   initialData: TowerDatabaseType
+  currentUserId: UUID
   children?: React.ReactNode
 }
 
 // TODO Add handling for tower deletion
 
-const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
+const RealtimeTower: React.FC<TowerProps> = ({
+  initialData,
+  currentUserId,
+  children,
+}) => {
   // Initialize state variables with initialData
   const towerId = initialData.id as UUID
+  const [userId, setUserId] = useState<UUID>(currentUserId)
   const [towerData, setTowerData] = useState<TowerDatabaseType>(initialData)
   const [addedRows, setAddedRows] = useState<TowerRowRow[]>([])
   const addedRowsRef = useRef<UUID[]>(addedRows.map((row) => row.id)) // Create a ref for addedRows
@@ -89,11 +100,22 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
         handleUpdateTower,
       )
       .subscribe()
+
+    // // Announce that we have joined the tower to the channel
+    // const presencePayload: PresencePayload = {
+    //   id: userId,
+    //   presence: {
+    //     online: true,
+    //     lastSeen: new Date().toISOString(),
+    //   },
+    // }
+    // subscription.track(presencePayload)
+
     // Cleanup function to unsubscribe from real-time updates
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase, towerId])
+  }, [supabase, towerId, userId])
 
   const handleAddRow = async () => {
     // Create a new row object with initial data

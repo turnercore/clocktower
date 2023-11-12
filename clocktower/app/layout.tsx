@@ -1,7 +1,7 @@
 import '@/styles/globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
-import { Metadata } from 'next'
+import { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans, GeistMono } from 'geist/font'
 import { Providers } from '@/app/providers'
@@ -15,9 +15,15 @@ export const dynamic = 'force-dynamic'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 1,
+}
+
 export const metadata: Metadata = {
   title: 'Clocktower',
-  viewport: 'width=device-width, initial-scale=1',
   description: 'Sharable clocks for TTRPG games.',
   applicationName: 'Clocktower',
   authors: [{ name: 'Turner Monroe', url: 'https://github.com/turnercore' }],
