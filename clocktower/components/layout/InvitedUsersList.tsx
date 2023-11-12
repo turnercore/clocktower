@@ -19,6 +19,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AvatarWithPresence from '@/components/user/AvatarWithPresence'
+import useWindowSize from '@/hooks/useWindowSize'
 import useRealtimePresence from '@/hooks/useRealtimePresence'
 
 interface InvitedUsersListProps {
@@ -32,22 +33,19 @@ const InvitedUsersList = ({
   const supabase = createClientComponentClient<Database>()
   const params = useParams()
   const path = usePathname()
+  const windowSize = useWindowSize()
   const towerId: UUID = params.id as UUID
   const presences = useRealtimePresence(towerId)
   const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   // State to track expanded state of avatar list
   const [isExpanded, setIsExpanded] = useState(false)
+  const [maxAvatars, setMaxAvatars] = useState(3)
 
   // Function to toggle expanded state
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
   }
-
-  // Number of avatars to show when not expanded, reduced by screen size
-  // This will depend on the width of your avatars and the container
-  // TODO make this dynamic based on screen size
-  const maxAvatarsToShow: number = 3
 
   // Get invited users from tower
   useEffect(() => {
@@ -94,32 +92,55 @@ const InvitedUsersList = ({
     getInvitedUsers()
   }, [towerId])
 
-  console.log('presences', presences)
+  // Determine max number of avatars to show
+  useEffect(() => {
+    setMaxAvatars(maxAvatarsToShow(windowSize))
+    if (profiles.length > maxAvatars) {
+      setIsExpanded(false)
+    }
+  }, [windowSize, profiles.length])
+
   return (
     <div className='relative'>
       <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
-        {(isExpanded ? profiles : profiles.slice(0, maxAvatarsToShow)).map(
-          (user) => (
-            <AvatarWithPresence
-              key={user.id}
-              user={user}
-              isInteractable={isInteractable}
-              isOnline={
-                presences.find((presence) => presence.user_id === user.id)
-                  ? true
-                  : false
-              }
-            />
-          ),
+        {(isExpanded ? profiles : profiles.slice(0, maxAvatars)).map((user) => (
+          <AvatarWithPresence
+            key={user.id}
+            user={user}
+            isInteractable={isInteractable}
+            isOnline={
+              presences.find((presence) => presence.user_id === user.id)
+                ? true
+                : false
+            }
+          />
+        ))}
+        {profiles.length > maxAvatars && (
+          <Avatar onClick={toggleExpanded}>
+            <AvatarFallback
+              delayMs={600}
+              className='justify-center align-center text-center hover:cursor-pointer'
+            >
+              {isExpanded
+                ? '<'
+                : '+' + (profiles.length - Math.floor(maxAvatars))}
+            </AvatarFallback>
+          </Avatar>
         )}
       </div>
-      {profiles.length > maxAvatarsToShow && (
-        <Button className='absolute right-0 top-0' onClick={toggleExpanded}>
-          {isExpanded ? 'Less' : 'More...'}
-        </Button>
-      )}
     </div>
   )
+}
+
+const maxAvatarsToShow = ({
+  height,
+  width,
+}: {
+  height: number
+  width: number
+}) => {
+  if (width <= 450) return 0
+  return (width - 450) / 50
 }
 
 export default InvitedUsersList
