@@ -22,7 +22,9 @@ const AvatarWithPresence = ({
         style={{ backgroundColor: user.color || '#FFFFFF' }}
       >
         <AvatarImage
-          src={`https://robohash.org/${hash(user.username || 'clocktower')}`}
+          src={`https://robohash.org/${hash(
+            user.username || 'clocktower',
+          )}?set=set${user.avatar_set}&size=64x64`}
           alt={user.username || 'Avatar'}
         />
         <AvatarFallback delayMs={600}>
