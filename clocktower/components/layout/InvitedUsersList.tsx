@@ -11,8 +11,11 @@ import {
   AvatarImage,
   AlertDialogFooter,
   AlertDialogHeader,
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
 } from '@/components/ui'
-import hash from '@/tools/hash'
 import { ProfileRow, UUID } from '@/types/schemas'
 import { Database } from '@/types/supabase'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
@@ -101,9 +104,10 @@ const InvitedUsersList = ({
   }, [windowSize, profiles.length])
 
   return (
-    <div className='relative'>
-      <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
-        {(isExpanded ? profiles : profiles.slice(0, maxAvatars)).map((user) => (
+    <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
+      {profiles
+        .slice(0, isExpanded ? profiles.length : maxAvatars)
+        .map((user) => (
           <AvatarWithPresence
             key={user.id}
             user={user}
@@ -115,19 +119,37 @@ const InvitedUsersList = ({
             }
           />
         ))}
-        {profiles.length > maxAvatars && (
-          <Avatar onClick={toggleExpanded}>
-            <AvatarFallback
-              delayMs={600}
-              className='justify-center align-center text-center hover:cursor-pointer'
-            >
-              {isExpanded
-                ? '<'
-                : '+' + (profiles.length - Math.floor(maxAvatars))}
-            </AvatarFallback>
-          </Avatar>
-        )}
-      </div>
+      {profiles.length > maxAvatars && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Avatar className='cursor-pointer'>
+              <AvatarFallback
+                delayMs={600}
+                className='flex items-center justify-center'
+              >
+                {isExpanded
+                  ? '-'
+                  : `+${profiles.length - Math.floor(maxAvatars)}`}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className='z-10'>
+            {profiles.slice(maxAvatars).map((user) => (
+              <DropdownMenuItem key={user.id} asChild>
+                <AvatarWithPresence
+                  user={user}
+                  isInteractable={isInteractable}
+                  isOnline={
+                    presences.find((presence) => presence.user_id === user.id)
+                      ? true
+                      : false
+                  }
+                />
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   )
 }
@@ -139,8 +161,8 @@ const maxAvatarsToShow = ({
   height: number
   width: number
 }) => {
-  if (width <= 450) return 0
-  return (width - 450) / 50
+  if (width <= 460) return 0
+  return (width - 460) / 60
 }
 
 export default InvitedUsersList
