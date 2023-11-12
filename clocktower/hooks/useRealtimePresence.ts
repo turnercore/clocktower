@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import {
   RealtimePresenceJoinPayload,
+  RealtimePresenceLeavePayload,
   createClient,
 } from '@supabase/supabase-js'
 import { PresencePayload, UUID } from '@/types/schemas'
@@ -14,6 +15,11 @@ type UserPresence = {
   user_id: UUID
 }
 
+// The presenceSync state is an object with random UUID keys with values of UsePresences
+type PresenceSyncState = {
+  [key: UUID]: UserPresence[]
+}
+
 function useRealtimePresence(towerId: UUID): UserPresence[] {
   const supabase = createClientComponentClient()
   const [presence, setPresence] = useState<UserPresence[]>([])
@@ -23,6 +29,22 @@ function useRealtimePresence(towerId: UUID): UserPresence[] {
   ) => {
     const newUsers = payload?.newPresences
     setPresence((prevState) => [...prevState, ...newUsers])
+  }
+
+  const handleUserLeave = (
+    payload: RealtimePresenceLeavePayload<UserPresence>,
+  ) => {
+    const leftUsers = payload?.leftPresences
+    setPresence((prevState) =>
+      prevState.filter(
+        (user) => !leftUsers.some((u) => u.user_id === user.user_id),
+      ),
+    )
+  }
+
+  const syncUsers = (payload: PresenceSyncState) => {
+    const newUsers = Object.values(payload).flat()
+    setPresence(newUsers)
   }
 
   useEffect(() => {
@@ -37,10 +59,13 @@ function useRealtimePresence(towerId: UUID): UserPresence[] {
       .on('presence', { event: 'leave' }, (payload: any) => {
         console.log('User left:', payload)
         // Here you would remove the user(s) from the presence state
+        handleUserLeave(payload)
       })
       .on('presence', { event: 'sync' }, () => {
         console.log('Syncing presence:', room.presenceState())
         // Here you would update the presence state with the new user(s)
+        // @ts-ignore
+        syncUsers(room.presenceState())
       })
       .subscribe()
 
