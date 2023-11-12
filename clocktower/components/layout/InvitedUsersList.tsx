@@ -18,20 +18,39 @@ import { Database } from '@/types/supabase'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import AvatarWithPresence from '@/components/user/AvatarWithPresence'
+import useRealtimePresence from '@/hooks/useRealtimePresence'
+
+interface InvitedUsersListProps {
+  isInteractable: boolean
+}
 
 const InvitedUsersList = ({
   isInteractable = false,
-}: {
-  isInteractable: boolean
-}) => {
+}: InvitedUsersListProps) => {
   // Grab invited users from towerId
   const supabase = createClientComponentClient<Database>()
   const params = useParams()
   const path = usePathname()
   const towerId: UUID = params.id as UUID
+  const presence = useRealtimePresence(towerId)
   const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
+  // State to track expanded state of avatar list
+  const [isExpanded, setIsExpanded] = useState(false)
+  const [connectedUsers, setConnectedUsers] = useState<UUID[]>([])
 
+  // Function to toggle expanded state
+  const toggleExpanded = () => {
+    setIsExpanded(!isExpanded)
+  }
+
+  // Number of avatars to show when not expanded, reduced by screen size
+  // This will depend on the width of your avatars and the container
+  // TODO make this dynamic based on screen size
+  const maxAvatarsToShow: number = 3
+
+  // Get invited users from tower
   useEffect(() => {
     const getInvitedUsers = async () => {
       const { data, error } = await supabase
@@ -76,61 +95,25 @@ const InvitedUsersList = ({
     getInvitedUsers()
   }, [towerId])
 
-  //TODO add ability to remove user if isInteractable
   return (
-    <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
-      {isInteractable
-        ? profiles.map((user) => (
-            <AlertDialog key={user.id}>
-              <AlertDialogTrigger asChild>
-                <Avatar className=' hover:cursor-pointer'>
-                  <AvatarImage
-                    style={{ backgroundColor: user.color || '#FFFFFF' }}
-                    src={`https://robohash.org/${hash(
-                      user.username || 'clocktower',
-                    )}?set=set${user.avatar_set}&size=64x64`}
-                  />
-                  <AvatarFallback delayMs={600}>
-                    {user.username?.slice(0, 1).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>Remove {user.username}?</AlertDialogHeader>
-                <p>
-                  Are you sure you want to remove {user.username} from this
-                  tower?
-                </p>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    onClick={() => {
-                      console.log('remove user')
-                    }}
-                  >
-                    Remove
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          ))
-        : profiles.map((user) => (
-            <Avatar
+    <div className='relative'>
+      <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
+        {(isExpanded ? profiles : profiles.slice(0, maxAvatarsToShow)).map(
+          (user) => (
+            <AvatarWithPresence
               key={user.id}
-              onClick={() => {}}
-              style={{ backgroundColor: user.color || '#FFFFFF' }}
-            >
-              <AvatarImage
-                style={{ backgroundColor: user.color || '#FFFFFF' }}
-                src={`https://robohash.org/${hash(
-                  user.username || 'clocktower',
-                )}?set=set${user.avatar_set}&size=64x64`}
-              />
-              <AvatarFallback delayMs={600}>
-                {user.username?.slice(0, 1).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          ))}
+              user={user}
+              isInteractable={isInteractable}
+              isOnline={true}
+            />
+          ),
+        )}
+      </div>
+      {profiles.length > maxAvatarsToShow && (
+        <Button className='absolute right-0 top-0' onClick={toggleExpanded}>
+          {isExpanded ? 'Less' : 'More...'}
+        </Button>
+      )}
     </div>
   )
 }

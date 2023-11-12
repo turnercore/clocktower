@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Database } from '@/types/supabase'
 
-const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
+// const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''
 
 export default function LoginForm() {
@@ -70,19 +70,6 @@ export default function LoginForm() {
     if (error) console.error(error)
 
     router.push('/🪄')
-  }
-
-  //Split providers by , and add each to the providers list
-  const providers = [] as Provider[]
-  try {
-    //This isn't really an error, maybe remove error and just make it empty array.
-    if (!providersENV) throw new Error('No providers found in env')
-    const providersArray = providersENV.split(',')
-    providersArray.forEach((provider) => {
-      providers.push(provider as Provider)
-    })
-  } catch (error: any) {
-    console.error(error.message)
   }
 
   const handleSignOut = async () => {
