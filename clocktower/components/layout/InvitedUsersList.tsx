@@ -83,19 +83,17 @@ const InvitedUsersList = ({
         ? profiles.map((user) => (
             <AlertDialog key={user.id}>
               <AlertDialogTrigger asChild>
-                <Button variant='outline' className='rounded-full'>
-                  <Avatar className=' hover:cursor-pointer'>
-                    <AvatarImage
-                      style={{ backgroundColor: user.color || '#FFFFFF' }}
-                      src={`https://robohash.org/${hash(
-                        user.username || 'clocktower',
-                      )}?set=set${user.avatar_set}&size=64x64`}
-                    />
-                    <AvatarFallback delayMs={600}>
-                      {user.username?.slice(0, 1).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
+                <Avatar className=' hover:cursor-pointer'>
+                  <AvatarImage
+                    style={{ backgroundColor: user.color || '#FFFFFF' }}
+                    src={`https://robohash.org/${hash(
+                      user.username || 'clocktower',
+                    )}?set=set${user.avatar_set}&size=64x64`}
+                  />
+                  <AvatarFallback delayMs={600}>
+                    {user.username?.slice(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>Remove {user.username}?</AlertDialogHeader>

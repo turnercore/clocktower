@@ -11,6 +11,8 @@ import {
 } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
+export const dynamic = 'force-dynamic'
+
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
 export const metadata: Metadata = {

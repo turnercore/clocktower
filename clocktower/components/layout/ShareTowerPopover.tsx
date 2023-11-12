@@ -24,6 +24,8 @@ export default function ShareTowerPopover() {
   const [username, setUsername] = useState('')
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
   const [isTowerOwner, setIsTowerOwner] = useState(false)
+  const [invitedUsers, setInvitedUsers] = useState<UUID[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
@@ -51,7 +53,7 @@ export default function ShareTowerPopover() {
 
       const { data: towerData, error: towerError } = await supabase
         .from('towers')
-        .select('owner')
+        .select('owner, users')
         .eq('id', towerId)
         .single()
 
@@ -61,6 +63,12 @@ export default function ShareTowerPopover() {
       }
 
       setIsTowerOwner(towerData.owner === currentUserId)
+      // filter out current user
+      const currentInvitedUsers = towerData.users.filter(
+        (user: UUID) => user !== currentUserId,
+      )
+      setInvitedUsers(currentInvitedUsers || [])
+      setIsLoading(false)
     }
 
     fetchUserIdAndDetermineOwner()
@@ -90,6 +98,8 @@ export default function ShareTowerPopover() {
     })
   }
 
+  if (isLoading) return <></>
+
   return (
     isOnTowerPage &&
     userId && (
@@ -99,23 +109,31 @@ export default function ShareTowerPopover() {
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-80'>
-          <div className='grid gap-4'>
-            <div className='space-y-2'>
-              <h4 className='font-medium leading-none'>Invite User</h4>
-              <div className='grid grid-cols-3 items-center gap-4'>
-                <Label htmlFor='username'>Username</Label>
-                <Input
-                  id='username'
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className='col-span-2 h-8'
-                />
-              </div>
-              <Button onClick={handleInvite}>Invite</Button>
+        <PopoverContent className='w-80 grid gap-4'>
+          <div className='space-y-2'>
+            <h4 className='font-medium leading-none'>Invite User</h4>
+            <div className='grid grid-cols-3 items-center gap-4'>
+              <Label htmlFor='username'>Username</Label>
+              <Input
+                id='username'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className='col-span-2 h-8'
+              />
             </div>
-            <InvitedUsersList isInteractable={isTowerOwner} />
+            <Button onClick={handleInvite}>Invite</Button>
           </div>
+          {
+            // If users are invited, show them
+            invitedUsers.length > 0 && (
+              <div>
+                <h1 className='mb-2'>
+                  Invited Users{isTowerOwner ? ', Click to Remove' : ''}
+                </h1>
+                <InvitedUsersList isInteractable={isTowerOwner} />
+              </div>
+            )
+          }
         </PopoverContent>
       </Popover>
     )
