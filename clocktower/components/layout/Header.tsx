@@ -1,3 +1,4 @@
+'use client'
 import UserAvatar from '../user/UserAvatar'
 import {
   Button,
@@ -6,26 +7,46 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui'
-import { TowersDropdown } from './TowersDropdown'
+import TowersDropdown from './TowersDropdown'
 import ShareTowerPopover from './ShareTowerPopover'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 import Link from 'next/link'
 import { GoHome } from 'react-icons/go'
-import { NextRequest } from 'next/server'
+import { Database } from '@/types/supabase'
+import { useEffect, useState } from 'react'
+import { useParams, usePathname } from 'next/navigation'
 
-export default async function Header() {
+// Changing this to a client componenet
+export default function Header() {
   // See if user is logged in
   // If not, show login button
   // If so, show user avatar
-  const supabase = createServerComponentClient({ cookies })
-  const { data, error } = await supabase.auth.getSession()
-  const isUserLoggedIn = !error && data?.session?.user ? true : false
+  const supabase = createClientComponentClient<Database>()
+  const path = usePathname()
+  const params = useParams()
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const getSupabaseUser = async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession()
+        if (error) throw error
+        if (!data.session?.user)
+          throw new Error('No user found in session data')
+
+        setIsUserLoggedIn(true)
+      } catch (error: any) {
+        console.error(error.message)
+      }
+    }
+
+    getSupabaseUser()
+  }, [])
 
   return (
-    <header className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 spacex-2'>
+    <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 spacex-2'>
       <Button variant='outline' size='icon' asChild>
         <Link href='/'>
           <GoHome className='h-[1.2rem] w-[1.2rem]' />
@@ -37,7 +58,10 @@ export default async function Header() {
         {isUserLoggedIn ? (
           <div className='flex flex-row space-x-2 ml-18'>
             <TowersDropdown />
-            <ShareTowerPopover></ShareTowerPopover>
+            {
+              // If on tower page, show share tower button
+              path.includes('tower') && params.id && <ShareTowerPopover />
+            }
           </div>
         ) : (
           <Popover>
@@ -54,6 +78,6 @@ export default async function Header() {
       </div>
       {isUserLoggedIn && <UserAvatar />}
       <HeaderTriangleDecoration />
-    </header>
+    </div>
   )
 }

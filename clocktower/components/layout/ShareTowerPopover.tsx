@@ -14,6 +14,7 @@ import { TbUserShare } from 'react-icons/tb'
 import { toast } from '../ui'
 import { UUID } from '@/types/schemas'
 import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
+import InvitedUsersList from './InvitedUsersList'
 
 export default function ShareTowerPopover() {
   const path = usePathname()
@@ -21,8 +22,8 @@ export default function ShareTowerPopover() {
   const towerId: UUID = params.id as UUID
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
+  const [isTowerOwner, setIsTowerOwner] = useState(false)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
@@ -35,7 +36,26 @@ export default function ShareTowerPopover() {
       if (data.session?.user.id) {
         setUserId(data.session.user.id)
       }
+      determineIfUserIsTowerOwner()
     }
+
+    const determineIfUserIsTowerOwner = async () => {
+      const { data, error } = await supabase
+        .from('towers')
+        .select('owner')
+        .eq('id', towerId)
+        .single()
+
+      if (error || !data.owner) {
+        console.error(error)
+        return
+      }
+
+      if (data.owner === userId) {
+        setIsTowerOwner(true)
+      }
+    }
+
     fetchUserId()
   }, [towerId, path])
 
@@ -87,6 +107,7 @@ export default function ShareTowerPopover() {
               </div>
               <Button onClick={handleInvite}>Invite</Button>
             </div>
+            <InvitedUsersList isInteractable={isTowerOwner} />
           </div>
         </PopoverContent>
       </Popover>

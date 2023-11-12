@@ -27,8 +27,8 @@ const SiteTitle = () => {
               return t < 1 / 12 ? 0 : Math.floor(12 * t) / 12 // Custom easing function that starts with a delay
             }
           },
-          duration: 60000 / 3,
-          delay: count * (60000 / 3), // Delay the start of each animation
+          duration: 60000 / 5,
+          delay: count * (60000 / 5), // Delay the start of each animation
         })
         count++
       }
@@ -36,7 +36,7 @@ const SiteTitle = () => {
   }, [])
 
   return (
-    <h1 className='text-[11rem] mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
+    <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
       {title.split('').map((letter, index) => (
         <div
           key={index}

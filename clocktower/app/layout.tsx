@@ -10,6 +10,7 @@ const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
 export const metadata: Metadata = {
   title: 'Clocktower',
+  viewport: 'width=device-width, initial-scale=1',
   description: 'Sharable clocks for TTRPG games.',
   applicationName: 'Clocktower',
   authors: [{ name: 'Turner Monroe', url: 'https://github.com/turnercore' }],
@@ -36,11 +37,11 @@ export default function RootLayout({
       <head>
         <link rel='stylesheet' href='https://use.typekit.net/ckd1nmz.css' />
       </head>
-      <body className={GeistSans.className}>
+      <body className={`${GeistSans.className} min-w-full`}>
         <Providers>
-          <div className='flex flex-col min-h-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
+          <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
             <Header />
-            <div className='flex-1 mt-3'>{children}</div>
+            <main className='w-full flex-1 mt-3'>{children}</main>
             <Toaster />
           </div>
           <Footer />
