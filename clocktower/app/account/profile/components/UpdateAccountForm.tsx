@@ -243,7 +243,6 @@ const UpdateAccountForm = ({
     const oldEmail = userEmail
     if (values.username) setCurrentUsername(values.username)
     if (values.email) setUserEmail(values.email)
-    if (values.color) setCurrentColor(values.color)
 
     // Submit the form data
     const { data, error } = await updateUserDataSA(formData)
