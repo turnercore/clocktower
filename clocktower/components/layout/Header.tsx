@@ -57,7 +57,7 @@ export default function Header({ user }: { user: User | null }) {
         ) : (
           <Popover>
             <PopoverTrigger>
-              <Button variant='link' className=' mr-10 z-100 text-lg'>
+              <Button variant='link' className=' text-center z-100 text-lg'>
                 Login
               </Button>
             </PopoverTrigger>
