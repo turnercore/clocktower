@@ -20,6 +20,8 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  Dialog,
+  DialogTrigger,
   Form,
   FormControl,
   FormDescription,
@@ -30,11 +32,13 @@ import {
   Input,
   RadioGroup,
   RadioGroupItem,
+  DialogContent,
   toast,
+  DialogHeader,
+  DialogFooter,
 } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
-import { UUIDSchema, type ProfileRow } from '@/types/schemas'
-import { BsTrash3Fill } from 'react-icons/bs'
+import { type ProfileRow } from '@/types/schemas'
 import updateUserAvatarSA from '../actions/updateUserAvatar'
 import updateUserDataSA from '../actions/updateUserData'
 import deleteUserAccount from '../actions/deleteUserAccount'
@@ -45,6 +49,8 @@ import { useEffect, useState } from 'react'
 import { AvatarFallback } from '@radix-ui/react-avatar'
 import hash from '@/tools/hash'
 import updateUserAvatarSetSA from '../actions/updateUserAvatarSet'
+import { BsTrash3Fill } from 'react-icons/bs'
+import { DialogClose } from '@radix-ui/react-dialog'
 // validation schema for form
 const formSchema = z
   .object({
@@ -81,13 +87,6 @@ const formSchema = z
       .trim()
       .email('Please enter a valid email address')
       .or(z.literal('')) // Accept an empty string as valid
-      .optional(),
-    color: z
-      .string()
-      .trim()
-      .email('Please enter a valid email address')
-      .or(z.literal('')) // Accept an empty string as valid
-      .transform((str) => str.replace(/\s+/g, '')) // This will remove all whitespace
       .optional(),
   })
   .superRefine(
@@ -244,7 +243,6 @@ const UpdateAccountForm = ({
     const oldEmail = userEmail
     if (values.username) setCurrentUsername(values.username)
     if (values.email) setUserEmail(values.email)
-    if (values.color) setCurrentColor(values.color)
 
     // Submit the form data
     const { data, error } = await updateUserDataSA(formData)
@@ -303,10 +301,25 @@ const UpdateAccountForm = ({
   }
 
   // Take care of the color change
-  const handleColorChange = (color: string) => {
+  const handleColorChange = async (color: string) => {
+    // Update the local state
+    const oldColor = currentColor
     setCurrentColor(color)
-    form.setValue('color', color)
     // Update the server with the new color
+    const colorInput = new FormData()
+    colorInput.append('userId', userId)
+    colorInput.append('color', color)
+    const { error } = await updateUserDataSA(colorInput)
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error Processing Color Change',
+        variant: 'destructive',
+        description: extractErrorMessage(error),
+      })
+      // Revert local state
+      setCurrentColor(oldColor)
+    }
   }
 
   // Update the avatar set
@@ -344,18 +357,36 @@ const UpdateAccountForm = ({
       </CardHeader>
       <CardContent className=' space-y-3'>
         <div className='flex flex-col items-center mx-auto min-h-[200px] min-y-[250px] mb-6'>
-          <Avatar className='h-fit w-fit'>
-            <AvatarImage
-              className='shadow-inner shadow-ring rounded-full'
-              style={{ backgroundColor: profile.color || '#FFFFFF' }}
-              src={`https://robohash.org/${hash(
-                currentUsername || 'clocktower',
-              )}?set=set${avatarSet}&size=250x250`}
-            />
-            <AvatarFallback>
-              <div className='bg-gray-400 rounded-full w-64 h-64 animate-pulse' />
-            </AvatarFallback>
-          </Avatar>
+          <Dialog>
+            <DialogTrigger>
+              <Avatar className='h-fit w-fit'>
+                <AvatarImage
+                  className='shadow-inner shadow-ring rounded-full'
+                  style={{ backgroundColor: currentColor || '#FFFFFF' }}
+                  src={`https://robohash.org/${hash(
+                    currentUsername || 'clocktower',
+                  )}?set=set${avatarSet}&size=250x250`}
+                />
+                <AvatarFallback>
+                  <div className='bg-gray-400 rounded-full w-64 h-64 animate-pulse' />
+                </AvatarFallback>
+              </Avatar>
+            </DialogTrigger>
+            <DialogContent className='flex flex-col items-center'>
+              <DialogHeader>Choose a Color</DialogHeader>
+              <SwatchesPicker
+                color={currentColor || '#000000'}
+                onChange={handleColorChange}
+                presetColors={colorPaletteValues}
+              />
+              <DialogFooter>
+                <DialogClose>
+                  <Button> Ok</Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
           <h1 className='text-center font-mono text-4xl mb-4 mt-2'>
             {currentUsername}
           </h1>
@@ -488,24 +519,6 @@ const UpdateAccountForm = ({
                 )}
               />
             )}
-
-            {/* <FormField
-              control={form.control}
-              name='color'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Color</FormLabel>
-                  <FormControl>
-                    <SwatchesPicker
-                      color={field.value || currentColor || '#000000'}
-                      onChange={handleColorChange}
-                      presetColors={colorPaletteValues}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            /> */}
 
             <div className='flex flex-row space-x-4'>
               <Button type='submit' disabled={isSubmitting}>
