@@ -29,16 +29,21 @@ export default function Header({ user }: { user: User | null }) {
 
   return (
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
-      <Button variant='outline' size='icon' asChild>
-        <Link href='/'>
-          <GoHome className='h-[1.2rem] w-[1.2rem]' />
-        </Link>
-      </Button>
-      <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
+      {/* Left side of header */}
+      <div>
+        <Button variant='outline' size='icon' asChild>
+          <Link href='/'>
+            <GoHome className='h-[1.2rem] w-[1.2rem]' />
+          </Link>
+        </Button>
+        <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
+      </div>
+      {/* Center of Header */}
+      <div>
+        <HeaderTriangleDecoration />
 
-      <div className='flex flex-1 justify-center items-center'>
         {isUserLoggedIn ? (
-          <div className='flex flex-row space-x-2 ml-18'>
+          <div className='flex flex-row space-x-2 pr-6'>
             <TowersDropdown user={user} />
             {
               // If on tower page, show share tower button
@@ -62,13 +67,15 @@ export default function Header({ user }: { user: User | null }) {
           </Popover>
         )}
       </div>
-      {isUserLoggedIn && (
-        <>
-          <InvitedUsersList isInteractable={false} />
-          <UserAvatar />
-        </>
-      )}
-      <HeaderTriangleDecoration />
+      {/* Right side of header */}
+      <div className='flex flex-row'>
+        {isUserLoggedIn && (
+          <>
+            <InvitedUsersList isInteractable={false} />
+            <UserAvatar />
+          </>
+        )}
+      </div>
     </div>
   )
 }
