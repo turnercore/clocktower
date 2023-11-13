@@ -9,15 +9,11 @@ import {
 } from '@/components/ui'
 import TowersDropdown from './TowersDropdown'
 import ShareTowerPopover from './ShareTowerPopover'
-import {
-  User,
-  createClientComponentClient,
-} from '@supabase/auth-helpers-nextjs'
+import { User } from '@supabase/auth-helpers-nextjs'
 import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 import Link from 'next/link'
 import { GoHome } from 'react-icons/go'
-import { Database } from '@/types/supabase'
 import { useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'

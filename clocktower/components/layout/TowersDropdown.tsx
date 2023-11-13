@@ -153,7 +153,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId])
+  }, [userId, supabase, params])
 
   const navigateToSelectedTower = (towerId: UUID) => {
     // If the value is not a valid UUID, do nothing

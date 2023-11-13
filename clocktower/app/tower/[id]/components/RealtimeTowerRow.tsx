@@ -242,7 +242,6 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
           {/* Row Name and Settings*/}
           <CardTitle className='flex flex-row space-x-2 space-y-2 items-center mx-8 mt-3'>
             <Input
-              id='rowName'
               name='rowName'
               className='w-[200px] mt-2'
               placeholder='Row'
