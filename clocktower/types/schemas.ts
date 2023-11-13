@@ -225,3 +225,15 @@ export type SortableEntity = {
   position: number
   [key: string]: unknown
 }
+
+export type UserPresence = {
+  online: boolean
+  lastSeen: string // ISO date string
+  // You can add more user-specific presence information here
+}
+
+// Realtime Presence
+export type PresencePayload = {
+  id: UUID
+  presence: UserPresence
+}

@@ -13,6 +13,8 @@ import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
 import { toast } from '../ui'
 import { UUID } from '@/types/schemas'
+import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
+import InvitedUsersList from './InvitedUsersList'
 
 export default function ShareTowerPopover() {
   const path = usePathname()
@@ -20,98 +22,118 @@ export default function ShareTowerPopover() {
   const towerId: UUID = params.id as UUID
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
+  const [isTowerOwner, setIsTowerOwner] = useState(false)
+  const [invitedUsers, setInvitedUsers] = useState<UUID[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const supabase = createClientComponentClient()
 
   useEffect(() => {
-    if (path.includes('tower') && towerId) {
-      setIsOnTowerPage(true)
-    } else return
-
-    const fetchUserId = async () => {
-      const { data, error } = await supabase.auth.getSession()
-      if (data.session?.user.id) {
-        setUserId(data.session.user.id)
+    const fetchUserIdAndDetermineOwner = async () => {
+      if (path.includes('tower') && towerId) {
+        setIsOnTowerPage(true)
+      } else {
+        return
       }
+
+      const { data: sessionData, error: sessionError } =
+        await supabase.auth.getSession()
+      if (sessionError) {
+        console.error(sessionError)
+        return
+      }
+
+      if (!sessionData.session?.user) {
+        console.error('No user found in session data')
+        return
+      }
+
+      const currentUserId = sessionData.session.user.id
+      setUserId(currentUserId)
+
+      const { data: towerData, error: towerError } = await supabase
+        .from('towers')
+        .select('owner, users')
+        .eq('id', towerId)
+        .single()
+
+      if (towerError) {
+        console.error(towerError)
+        return
+      }
+
+      setIsTowerOwner(towerData.owner === currentUserId)
+      // filter out current user
+      const currentInvitedUsers = towerData.users.filter(
+        (user: UUID) => user !== currentUserId,
+      )
+      setInvitedUsers(currentInvitedUsers || [])
+      setIsLoading(false)
     }
-    fetchUserId()
+
+    fetchUserIdAndDetermineOwner()
   }, [towerId, path])
 
   const handleInvite = async () => {
-    if (!username || !towerId) return
-    setIsLoading(true)
+    if (!userId) return
 
-    try {
-      // Check if the user with the entered username exists
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('username', username)
-        .single()
+    const { error } = await inviteUserToTowerSA({
+      inputUserId: userId,
+      inputInvitedUsername: username,
+      inputTowerId: towerId,
+    })
 
-      // Error handling
-      if (profilesError || !profilesData)
-        throw profilesError || new Error('User not found.')
-
-      const invitedUserId = profilesData.id
-
-      // Call the add_user_to_tower function to handle the rest
-      const { error: addError } = await supabase.rpc('add_user_to_tower', {
-        tower: towerId,
-        new_user_id: invitedUserId,
-      })
-
-      if (addError) throw addError
-
-      // Add entry in the friends table
-      const { error: friendsInsertError } = await supabase
-        .from('friends')
-        .upsert([{ user_id: userId, friend_id: invitedUserId }])
-
-      if (friendsInsertError) throw friendsInsertError
-
+    if (error) {
       toast({
-        title: 'User invited',
-        description: `User ${username} has been invited to the tower.`,
-      })
-    } catch (error: any) {
-      console.error(error)
-      toast({
-        title: `Unable to invite user "${username}"`,
-        description: error.message || 'An unknown error occurred.',
+        title: 'Error inviting user!',
+        description: error,
         variant: 'destructive',
       })
+      return
     }
-    setIsLoading(false)
-    setUsername('')
+
+    toast({
+      title: 'User invited!',
+      description: `User ${username} has been invited to the tower.`,
+    })
   }
+
+  if (isLoading) return <></>
 
   return (
     isOnTowerPage &&
     userId && (
       <Popover>
         <PopoverTrigger asChild>
-          <Button title='Invite Users' variant={'ghost'} className='ml-2'>
+          <Button title='Invite Users' variant='outline'>
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-80'>
-          <div className='grid gap-4'>
-            <div className='space-y-2'>
-              <h4 className='font-medium leading-none'>Invite User</h4>
-              <div className='grid grid-cols-3 items-center gap-4'>
-                <Label htmlFor='username'>Username</Label>
-                <Input
-                  id='username'
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  className='col-span-2 h-8'
-                />
-              </div>
-              <Button onClick={handleInvite}>Invite</Button>
+        <PopoverContent className='w-80 grid gap-4'>
+          <div className='space-y-2'>
+            <h4 className='font-medium leading-none'>Invite User</h4>
+            <div className='grid grid-cols-3 items-center gap-4'>
+              <Label htmlFor='username'>Username</Label>
+              <Input
+                id='username'
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className='col-span-2 h-8'
+              />
             </div>
+            <Button onClick={handleInvite}>Invite</Button>
           </div>
+          {
+            // If users are invited, show them
+            invitedUsers.length > 0 && (
+              <div>
+                <h1 className='mb-2'>
+                  Invited Users{isTowerOwner ? ', Click to Remove' : ''}
+                </h1>
+                <InvitedUsersList isInteractable={isTowerOwner} />
+              </div>
+            )
+          }
         </PopoverContent>
       </Popover>
     )

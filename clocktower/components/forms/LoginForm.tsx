@@ -1,14 +1,14 @@
 'use client'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button, Input } from '@/components/ui'
-import { Provider, Session } from '@supabase/supabase-js'
+import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 import { useRouter } from 'next/navigation'
 import { useTheme } from 'next-themes'
 import { Database } from '@/types/supabase'
 
-const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
+// const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''
 
 export default function LoginForm() {
@@ -70,19 +70,6 @@ export default function LoginForm() {
     if (error) console.error(error)
 
     router.push('/🪄')
-  }
-
-  //Split providers by , and add each to the providers list
-  const providers = [] as Provider[]
-  try {
-    //This isn't really an error, maybe remove error and just make it empty array.
-    if (!providersENV) throw new Error('No providers found in env')
-    const providersArray = providersENV.split(',')
-    providersArray.forEach((provider) => {
-      providers.push(provider as Provider)
-    })
-  } catch (error: any) {
-    console.error(error.message)
   }
 
   const handleSignOut = async () => {

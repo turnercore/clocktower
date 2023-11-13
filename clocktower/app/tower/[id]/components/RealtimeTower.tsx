@@ -1,5 +1,10 @@
 'use client'
-import { UUID, TowerRowRow, TowerDatabaseType } from '@/types/schemas'
+import {
+  UUID,
+  TowerRowRow,
+  TowerDatabaseType,
+  PresencePayload,
+} from '@/types/schemas'
 import React, { useState, useEffect, useRef } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { Button, toast } from '@/components/ui'
@@ -89,6 +94,7 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
         handleUpdateTower,
       )
       .subscribe()
+
     // Cleanup function to unsubscribe from real-time updates
     return () => {
       subscription.unsubscribe()
