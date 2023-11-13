@@ -1,6 +1,10 @@
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ProfileRow, ServerActionReturn } from '@/types/schemas'
+import {
+  HexColorCodeSchema,
+  ProfileRow,
+  ServerActionReturn,
+} from '@/types/schemas'
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { z } from 'zod'
 import { cookies } from 'next/headers'
@@ -21,7 +25,7 @@ const inputSchema = z.object({
     .string()
     .min(8, { message: 'Passwords must match.' })
     .optional(),
-  color: z.string().optional(),
+  color: HexColorCodeSchema.optional(),
   username: z
     .string()
     .min(2, { message: 'Username must be at least 2 characters.' })
