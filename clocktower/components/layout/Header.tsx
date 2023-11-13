@@ -30,7 +30,7 @@ export default function Header({ user }: { user: User | null }) {
   return (
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
       {/* Left side of header */}
-      <div>
+      <div className='flex-1 flex justify-start'>
         <Button variant='outline' size='icon' asChild>
           <Link href='/'>
             <GoHome className='h-[1.2rem] w-[1.2rem]' />
@@ -39,7 +39,8 @@ export default function Header({ user }: { user: User | null }) {
         <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
       </div>
       {/* Center of Header */}
-      <div>
+        <div className='flex-0 min-w-0'>
+
         <HeaderTriangleDecoration />
 
         {isUserLoggedIn ? (
@@ -68,13 +69,13 @@ export default function Header({ user }: { user: User | null }) {
         )}
       </div>
       {/* Right side of header */}
-      <div className='flex flex-row'>
+      <div className='flex-1 flex justify-end'>
         {isUserLoggedIn && (
           <>
             <InvitedUsersList isInteractable={false} />
             <UserAvatar />
           </>
-        )}
+        )}<div></div>
       </div>
     </div>
   )
