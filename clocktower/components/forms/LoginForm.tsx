@@ -10,7 +10,7 @@ import { Database } from '@/types/supabase'
 // const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''
 
-export default function LoginForm() {
+export default function LoginForm({ onClick }: { onClick?: () => void }) {
   const [isLoading, setIsLoading] = useState(true)
   const [userSession, setUserSession] = useState<Session | null>(null)
   const [email, setEmail] = useState<string>('')
@@ -54,6 +54,7 @@ export default function LoginForm() {
         title: 'Success!',
         description: 'You are now logged in. Look at you :)',
       })
+      if (onClick) onClick()
       router.refresh()
     }
   }
@@ -71,6 +72,7 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
+      if (onClick) onClick()
       router.push('/welcome')
     }
   }
@@ -90,6 +92,7 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
+      if (onClick) onClick()
       router.push('/magic')
     }
   }

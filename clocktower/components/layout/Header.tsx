@@ -30,8 +30,14 @@ export default function Header() {
   const [towerId, setTowerId] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
 
   useEffect(() => {
+    if (path.includes('logout')) {
+      supabase.auth.signOut()
+      setUser(null)
+      return
+    }
     const getUserFromSession = async () => {
       const { data, error } = await supabase.auth.getSession()
       if (data.session?.user && !error) {
@@ -75,14 +81,22 @@ export default function Header() {
         ) : (
           <>
             {!isLoading && (
-              <Popover>
+              <Popover open={isLoginPopoverOpen}>
                 <PopoverTrigger asChild>
-                  <Button variant='link' className='text-lg text-center'>
+                  <Button
+                    onClick={() => setIsLoginPopoverOpen(!isLoginPopoverOpen)}
+                    variant='link'
+                    className='text-lg text-center'
+                  >
                     Login
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent>
-                  <LoginForm />
+                <PopoverContent
+                  onEscapeKeyDown={() => setIsLoginPopoverOpen(false)}
+                  onPointerDownOutside={() => setIsLoginPopoverOpen(false)}
+                  onInteractOutside={() => setIsLoginPopoverOpen(false)}
+                >
+                  <LoginForm onClick={() => setIsLoginPopoverOpen(false)} />
                 </PopoverContent>
               </Popover>
             )}
