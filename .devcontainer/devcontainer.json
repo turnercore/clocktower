@@ -7,13 +7,14 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "GitHub.copilot",
-        "GitHub.copilot-chat",
-        "GitHub.copilot-labs",
-        "esbenp.prettier-vscode",
-        "bradlc.vscode-tailwindcss",
-        "dbaeumer.vscode-eslint"
-      ]
+		"GitHub.copilot",
+		"GitHub.copilot-chat",
+		"GitHub.copilot-labs",
+		"esbenp.prettier-vscode",
+		"bradlc.vscode-tailwindcss",
+		"dbaeumer.vscode-eslint",
+		"wix.vscode-import-cost"
+	]
     }
   }
 

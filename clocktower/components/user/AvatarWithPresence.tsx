@@ -12,7 +12,7 @@ import {
   toast,
 } from '@/components/ui'
 import hash from '@/tools/hash'
-import { ProfileRow } from '@/types/schemas'
+import type { ProfileRow } from '@/types/schemas'
 import { AlertDialog, AlertDialogCancel } from '@radix-ui/react-alert-dialog'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams } from 'next/navigation'

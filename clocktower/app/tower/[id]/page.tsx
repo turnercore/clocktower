@@ -1,4 +1,4 @@
-import { UUID } from '@/types/schemas'
+import { type UUID } from '@/types/schemas'
 import { Tower } from './components/Tower'
 
 type ExpectedParams = {
