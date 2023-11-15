@@ -4,6 +4,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { signOutSA } from './actions/signOutSA'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { toast } from '@/components/ui'
 
 const LogoutPage = () => {
   const router = useRouter()
@@ -24,6 +25,10 @@ const LogoutPage = () => {
       } catch (error) {
         console.error(error)
       }
+      toast({
+        title: 'You are now signed out.',
+        description: 'See you later! 👋',
+      })
       router.push('/')
     }
 

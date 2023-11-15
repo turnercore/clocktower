@@ -40,7 +40,6 @@ import {
 } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
 import { type ProfileRow } from '@/types/schemas'
-import updateUserAvatarSA from '../actions/updateUserAvatar'
 import updateUserDataSA from '../actions/updateUserData'
 import deleteUserAccount from '../actions/deleteUserAccount'
 import extractErrorMessage from '@/tools/extractErrorMessage'
@@ -212,8 +211,7 @@ const UpdateAccountForm = ({
   }
 
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!values || isSubmitting || !userId) return
     // Check to see if all the values are undefined
     const allValuesUndefined = Object.values(values).every(

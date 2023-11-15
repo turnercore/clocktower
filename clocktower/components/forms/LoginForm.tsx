@@ -1,25 +1,47 @@
 'use client'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Button, Input, toast } from '@/components/ui'
+import {
+  Button,
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+  Input,
+  toast,
+} from '@/components/ui'
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { Database } from '@/types/supabase'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
 
-// const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
 const domain = process.env.NEXT_PUBLIC_DOMAIN || ''
 
-export default function LoginForm() {
+//TODO add zod validation to the form
+const loginFormSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6).optional(),
+})
+
+export default function LoginForm({ onClick }: { onClick?: () => void }) {
   const [isLoading, setIsLoading] = useState(true)
   const [userSession, setUserSession] = useState<Session | null>(null)
-  const [email, setEmail] = useState<string>('')
-  const [password, setPassword] = useState<string>('')
   const supabase = createClientComponentClient<Database>()
-  const url = new URL('/api/auth/callback', domain)
-  const theme = useTheme().resolvedTheme
   const router = useRouter()
+
+  //Form
+  const form = useForm<z.infer<typeof loginFormSchema>>({
+    resolver: zodResolver(loginFormSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  })
 
   // see if user is logged in already
   //useEffect to see if the user is logged in
@@ -40,7 +62,7 @@ export default function LoginForm() {
     getSession()
   }, [])
 
-  async function signInWithEmail() {
+  async function signInWithEmail(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -53,11 +75,26 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
-      router.push('/')
+      toast({
+        title: 'Success!',
+        description: 'You are now logged in. Look at you :)',
+      })
+      if (onClick) onClick()
+      router.refresh()
     }
   }
 
   async function signUpWithEmail() {
+    const email = form.getValues('email')
+    const password = form.getValues('password')
+    if (!email || !password || password.length < 6)
+      return toast({
+        title: 'Error Signing Up',
+        description:
+          'Please enter a valid email and password. Your password must be at least 6 characters long.',
+        variant: 'destructive',
+      })
+
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -70,11 +107,12 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
+      if (onClick) onClick()
       router.push('/welcome')
     }
   }
 
-  async function signInWIthMagicLink() {
+  async function signInWIthMagicLink(email: string) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -89,6 +127,7 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
+      if (onClick) onClick()
       router.push('/magic')
     }
   }
@@ -98,12 +137,11 @@ export default function LoginForm() {
     getSession()
   }
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    if (password) {
-      signInWithEmail()
+  const onSubmit = (values: z.infer<typeof loginFormSchema>) => {
+    if (values.password) {
+      signInWithEmail(values.email, values.password)
     } else {
-      signInWIthMagicLink()
+      signInWIthMagicLink(values.email)
     }
   }
 
@@ -126,40 +164,68 @@ export default function LoginForm() {
               </Button>
             </>
           ) : (
-            <form onSubmit={handleSubmit}>
-              <div className='flex flex-col space-y-4'>
-                <div className='text-center'>
-                  <h1 className='text-2xl'>Login or SignUp</h1>
-                </div>
-                <div className='space-y-4'>
-                  <Input
-                    type='email'
-                    placeholder='Email'
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
-                  <Input
-                    type='password'
-                    placeholder='Password'
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <div className='flex flex-row space-x-2 justify-between'>
-                    <Button
-                      disabled={!email}
-                      type='submit'
-                      // onClick={password ? signInWithEmail : signInWIthMagicLink}
-                    >
-                      {password ? 'Sign In' : 'Magic Sign In 🪄'}
-                    </Button>
-                    <Button
-                      disabled={email && password ? false : true}
-                      onClick={signUpWithEmail}
-                    >
-                      Sign Up
-                    </Button>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className='flex flex-col space-y-4'>
+                  <div className='text-center'>
+                    <h1 className='text-2xl'>Login or SignUp</h1>
+                  </div>
+                  <div className='space-y-4'>
+                    <FormField
+                      control={form.control}
+                      name='email'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type='email'
+                              placeholder='Email'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name='password'
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type='password'
+                              placeholder='Password'
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className='flex flex-row space-x-2 justify-between'>
+                      <Button disabled={!form.watch('email')} type='submit'>
+                        {form.watch('password')
+                          ? 'Sign In'
+                          : 'Magic Sign In 🪄'}
+                      </Button>
+                      <Button
+                        disabled={
+                          form.watch('email') && form.watch('password')
+                            ? false
+                            : true
+                        }
+                        onClick={signUpWithEmail}
+                      >
+                        Sign Up
+                      </Button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </form>
+              </form>
+            </Form>
           )}
         </div>
       )}
