@@ -3,22 +3,32 @@ import Confetti from 'react-confetti'
 import Link from 'next/link'
 import useWindowSize from '@/hooks/useWindowSize'
 import { Button } from '@/components/ui'
+import anime from 'animejs'
+import { useEffect, useRef } from 'react'
 
 const WelcomePage = () => {
   const { width, height } = useWindowSize()
-  //TODO Add an animation to welcome after the confetti
+  const welcomeRef = useRef(null)
+
+  useEffect(() => {
+    anime.timeline({ loop: false }).add({
+      targets: welcomeRef.current,
+      opacity: [0, 1],
+      translateY: [-50, 0],
+      easing: 'easeOutExpo',
+      duration: 1200,
+    })
+  }, [])
 
   return (
-    <div className='flex flex-col items-center space-y-2'>
-      <div className='text-center items-center'>
-        <h1 className='text-9xl'>Welcome!</h1>
-        <p className='mt-2 mb-10'>
+    <div className='flex flex-col items-center justify-center h-screen p-4 pb-80'>
+      <div ref={welcomeRef} className='text-center items-center'>
+        <h1 className='text-9xl font-bold'>Welcome!</h1>
+        <p className='mt-2 mb-10 text-xl'>
           Now you're ready to get started, just login with your shiny new
           account.
         </p>
-      </div>
-      <div className='mt-10'>
-        <Button className='w-32 h-16 text-2xl' asChild>
+        <Button className='w-32 h-16 text-2xl transition-colors' asChild>
           <Link href='/account/login'>Login</Link>
         </Button>
       </div>
