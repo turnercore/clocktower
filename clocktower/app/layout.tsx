@@ -5,13 +5,6 @@ import { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans, GeistMono } from 'geist/font'
 import { Providers } from '@/app/providers'
-import {
-  User,
-  createServerComponentClient,
-} from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-
-// export const dynamic = 'force-dynamic'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
@@ -45,14 +38,6 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode
 }) {
-  // Get User's Id
-  // const supabase = createServerComponentClient({ cookies })
-  // const { data, error } = await supabase.auth.getSession()
-  // let user = null
-  // if (!error && data.session?.user?.id) {
-  //   user = data.session.user as User
-  // }
-
   return (
     <html lang='en'>
       <head>
