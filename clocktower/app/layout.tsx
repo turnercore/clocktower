@@ -11,7 +11,7 @@ import {
 } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-export const dynamic = 'force-dynamic'
+// export const dynamic = 'force-dynamic'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
@@ -46,12 +46,12 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   // Get User's Id
-  const supabase = createServerComponentClient({ cookies })
-  const { data, error } = await supabase.auth.getSession()
-  let user = null
-  if (!error && data.session?.user?.id) {
-    user = data.session.user as User
-  }
+  // const supabase = createServerComponentClient({ cookies })
+  // const { data, error } = await supabase.auth.getSession()
+  // let user = null
+  // if (!error && data.session?.user?.id) {
+  //   user = data.session.user as User
+  // }
 
   return (
     <html lang='en'>
@@ -63,7 +63,7 @@ export default async function RootLayout({
       >
         <Providers>
           <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
-            <Header user={user} />
+            <Header />
             <main className='w-full flex-1 mt-3'>{children}</main>
             <Toaster />
           </div>

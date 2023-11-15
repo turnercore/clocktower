@@ -85,9 +85,10 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     router.push(`/tower/${newTowerId}`)
   }
 
-  // Subscribe to changes once we have a userID
+  // Get the towers for the user
   useEffect(() => {
     if (!userId) return
+
     const getTowers = async () => {
       // Fetch the towers the user has access to using the join table
       const { data: towerAccessData, error: towerAccessError } = await supabase
@@ -118,12 +119,12 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
       const currentTower = towersData.find((tower) => tower.id === params.id)
       if (currentTower) setSelectedTowerName(currentTower.name || '')
     }
-
-    const subscribeToChanges = async () => {
-      console.log('Subscribing to changes')
-    }
     getTowers()
+  }, [userId, supabase, user])
 
+  // Subscribe to changes in the towers list
+  useEffect(() => {
+    if (!userId) return
     // Subscribe to changes
     const channel = supabase
       .channel(`towers_users_${userId}`)
@@ -153,7 +154,18 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [userId, supabase, params])
+  }, [userId, supabase])
+
+  // Reset the selected tower name to the current tower name
+  useEffect(() => {
+    if (!params.id || !towers.length || !path.includes('tower')) {
+      setSelectedTowerName('')
+      return
+    }
+
+    const currentTower = towers.find((tower) => tower.id === params.id)
+    if (currentTower) setSelectedTowerName(currentTower.name || '')
+  }, [params.id, towers, path])
 
   const navigateToSelectedTower = (towerId: UUID) => {
     // If the value is not a valid UUID, do nothing
