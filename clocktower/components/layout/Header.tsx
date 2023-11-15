@@ -20,17 +20,22 @@ import InvitedUsersList from './InvitedUsersList'
 
 // Changing this to a client componenet
 export default function Header({ user }: { user: User | null }) {
-  // See if user is logged in
-  // If not, show login button
-  // If so, show user avatar
   const path = usePathname()
   const params = useParams()
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(user ? true : false)
+  const [isOnTowerPage, setIsOnTowerPage] = useState(false)
+  const [towerId, setTowerId] = useState('')
+  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
+
+  useEffect(() => {
+    setIsUserLoggedIn(user ? true : false)
+    setIsOnTowerPage(path.includes('tower') && params.id ? true : false)
+    setTowerId((params.id as string) || '')
+  }, [user, path, params])
 
   return (
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
       {/* Left side of header */}
-      <div>
+      <div className='flex-1 flex justify-start'>
         <Button variant='outline' size='icon' asChild>
           <Link href='/'>
             <GoHome className='h-[1.2rem] w-[1.2rem]' />
@@ -39,7 +44,7 @@ export default function Header({ user }: { user: User | null }) {
         <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
       </div>
       {/* Center of Header */}
-      <div>
+      <div className='flex-0 min-w-0'>
         <HeaderTriangleDecoration />
 
         {isUserLoggedIn ? (
@@ -47,7 +52,7 @@ export default function Header({ user }: { user: User | null }) {
             <TowersDropdown user={user} />
             {
               // If on tower page, show share tower button
-              path.includes('tower') && params.id && (
+              isOnTowerPage && (
                 <>
                   <ShareTowerPopover />
                 </>
@@ -56,7 +61,7 @@ export default function Header({ user }: { user: User | null }) {
           </div>
         ) : (
           <Popover>
-            <PopoverTrigger>
+            <PopoverTrigger asChild>
               <Button variant='link' className=' mr-10 z-100 text-lg'>
                 Login
               </Button>
@@ -68,12 +73,12 @@ export default function Header({ user }: { user: User | null }) {
         )}
       </div>
       {/* Right side of header */}
-      <div className='flex flex-row'>
+      <div className='flex-1 flex justify-end'>
         {isUserLoggedIn && (
-          <>
+          <div className='flex flex-row space-x-2'>
             <InvitedUsersList isInteractable={false} />
             <UserAvatar />
-          </>
+          </div>
         )}
       </div>
     </div>
