@@ -10,9 +10,11 @@ const Home = () => {
       <SiteTitle />
       <div className=' mb-8'>
         <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
-        <Link href='/account/login'>
-          <Button variant='outline'> Login </Button>
-        </Link>
+        <div>
+          <Button variant='outline' asChild>
+            <Link href='/account/login'>Login</Link>
+          </Button>
+        </div>
         to make some clocks
       </div>
       <div className='max-h-[500px] w-[500px] flex items-center flex-col'>
