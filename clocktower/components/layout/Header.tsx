@@ -38,6 +38,7 @@ export default function Header() {
       setUser(null)
       return
     }
+
     const getUserFromSession = async () => {
       const { data, error } = await supabase.auth.getSession()
       if (data.session?.user && !error) {

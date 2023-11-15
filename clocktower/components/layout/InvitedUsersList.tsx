@@ -37,7 +37,7 @@ const InvitedUsersList = ({
   const params = useParams()
   const path = usePathname()
   const windowSize = useWindowSize()
-  const towerId: UUID = params.id as UUID
+  const [towerId, setTowerId] = useState<UUID>((params.id as UUID) || '')
   const presences = useRealtimePresence(towerId)
   const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
@@ -49,6 +49,11 @@ const InvitedUsersList = ({
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded)
   }
+
+  // Handle changing pages
+  useEffect(() => {
+    setTowerId((params.id as UUID) || '')
+  }, [params, path])
 
   // Get invited users from tower
   useEffect(() => {
@@ -102,6 +107,8 @@ const InvitedUsersList = ({
       setIsExpanded(false)
     }
   }, [windowSize, profiles.length])
+
+  if (!profiles.length || profiles.length === 0 || !towerId) return <></>
 
   return (
     <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
