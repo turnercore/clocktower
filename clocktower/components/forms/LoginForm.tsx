@@ -5,7 +5,6 @@ import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 import { useRouter } from 'next/navigation'
-import { useTheme } from 'next-themes'
 import { Database } from '@/types/supabase'
 
 // const providersENV = process.env.NEXT_PUBLIC_PROVIDERS || ''
@@ -17,8 +16,6 @@ export default function LoginForm() {
   const [email, setEmail] = useState<string>('')
   const [password, setPassword] = useState<string>('')
   const supabase = createClientComponentClient<Database>()
-  const url = new URL('/api/auth/callback', domain)
-  const theme = useTheme().resolvedTheme
   const router = useRouter()
 
   // see if user is logged in already
@@ -53,7 +50,11 @@ export default function LoginForm() {
         variant: 'destructive',
       })
     } else {
-      router.push('/')
+      toast({
+        title: 'Success!',
+        description: 'You are now logged in. Look at you :)',
+      })
+      router.refresh()
     }
   }
 
