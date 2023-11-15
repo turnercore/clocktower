@@ -17,6 +17,7 @@ import { GoHome } from 'react-icons/go'
 import { useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'
+import { is } from 'date-fns/locale'
 
 // Changing this to a client componenet
 export default function Header({ user }: { user: User | null }) {
@@ -62,7 +63,7 @@ export default function Header({ user }: { user: User | null }) {
         ) : (
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant='link' className=' mr-10 z-100 text-lg'>
+              <Button variant='link' className='text-lg text-center'>
                 Login
               </Button>
             </PopoverTrigger>
@@ -76,7 +77,7 @@ export default function Header({ user }: { user: User | null }) {
       <div className='flex-1 flex justify-end'>
         {isUserLoggedIn && (
           <div className='flex flex-row space-x-2'>
-            <InvitedUsersList isInteractable={false} />
+            {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
             <UserAvatar />
           </div>
         )}
