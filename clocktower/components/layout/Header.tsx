@@ -45,6 +45,7 @@ export default function Header({ user }: { user: User | null }) {
       </div>
       {/* Center of Header */}
       <div className='flex-0 min-w-0'>
+
         <HeaderTriangleDecoration />
 
         {isUserLoggedIn ? (
