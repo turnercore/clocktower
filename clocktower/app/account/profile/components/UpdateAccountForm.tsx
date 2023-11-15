@@ -396,7 +396,7 @@ const UpdateAccountForm = ({
             <div className='flex flex-col items-center space-y-2'>
               <Label>Color</Label>
               <Dialog>
-                <DialogTrigger>
+                <DialogTrigger asChild>
                   <Button
                     style={{ backgroundColor: currentColor || '#FFFFFF' }}
                     className='w-24'
