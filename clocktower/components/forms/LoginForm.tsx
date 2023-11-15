@@ -1,6 +1,6 @@
 'use client'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Button, Input } from '@/components/ui'
+import { Button, Input, toast } from '@/components/ui'
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
@@ -45,9 +45,16 @@ export default function LoginForm() {
       email,
       password,
     })
-    if (error) console.error(error)
-
-    router.refresh()
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error Signing In',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      router.push('/')
+    }
   }
 
   async function signUpWithEmail() {
@@ -55,9 +62,16 @@ export default function LoginForm() {
       email,
       password,
     })
-    if (error) console.error(error)
-
-    router.push('/welcome')
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error Signing Up',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      router.push('/welcome')
+    }
   }
 
   async function signInWIthMagicLink() {
@@ -67,14 +81,30 @@ export default function LoginForm() {
         emailRedirectTo: domain + '/api/auth/callback',
       },
     })
-    if (error) console.error(error)
-
-    router.push('/🪄')
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error Signing In',
+        description: error.message,
+        variant: 'destructive',
+      })
+    } else {
+      router.push('/magic')
+    }
   }
 
   const handleSignOut = async () => {
     supabase.auth.signOut()
     getSession()
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (password) {
+      signInWithEmail()
+    } else {
+      signInWIthMagicLink()
+    }
   }
 
   //If the user is logged in return 'You are logged in' with the email and a sign out button
@@ -96,32 +126,40 @@ export default function LoginForm() {
               </Button>
             </>
           ) : (
-            <div className='flex flex-col space-y-4'>
-              <div className='text-center'>
-                <h1 className='text-2xl'>Login or SignUp</h1>
-              </div>
-              <div className='space-y-4'>
-                <Input
-                  type='email'
-                  placeholder='Email'
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-                <Input
-                  type='password'
-                  placeholder='Password'
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-                <div className='flex flex-row space-x-2 justify-between'>
-                  <Button onClick={signInWithEmail}>Sign In</Button>
-                  <Button onClick={signUpWithEmail}>Sign Up</Button>
+            <form onSubmit={handleSubmit}>
+              <div className='flex flex-col space-y-4'>
+                <div className='text-center'>
+                  <h1 className='text-2xl'>Login or SignUp</h1>
                 </div>
-                <div className='flex flex-col items-center'>
-                  <Button onClick={signInWIthMagicLink}>
-                    Sign In With Magic 🪄
-                  </Button>
+                <div className='space-y-4'>
+                  <Input
+                    type='email'
+                    placeholder='Email'
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
+                  <Input
+                    type='password'
+                    placeholder='Password'
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <div className='flex flex-row space-x-2 justify-between'>
+                    <Button
+                      disabled={!email}
+                      type='submit'
+                      // onClick={password ? signInWithEmail : signInWIthMagicLink}
+                    >
+                      {password ? 'Sign In' : 'Magic Sign In 🪄'}
+                    </Button>
+                    <Button
+                      disabled={email && password ? false : true}
+                      onClick={signUpWithEmail}
+                    >
+                      Sign Up
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </div>
+            </form>
           )}
         </div>
       )}

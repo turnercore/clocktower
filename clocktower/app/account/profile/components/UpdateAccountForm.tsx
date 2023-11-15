@@ -36,6 +36,7 @@ import {
   toast,
   DialogHeader,
   DialogFooter,
+  Label,
 } from '@/components/ui'
 import { SwatchesPicker } from '@/components/ui/color-picker'
 import { type ProfileRow } from '@/types/schemas'
@@ -357,53 +358,66 @@ const UpdateAccountForm = ({
       </CardHeader>
       <CardContent className=' space-y-3'>
         <div className='flex flex-col items-center mx-auto min-h-[200px] min-y-[250px] mb-6'>
-          <Dialog>
-            <DialogTrigger>
-              <Avatar className='h-fit w-fit'>
-                <AvatarImage
-                  className='shadow-inner shadow-ring rounded-full'
-                  style={{ backgroundColor: currentColor || '#FFFFFF' }}
-                  src={`https://robohash.org/${hash(
-                    currentUsername || 'clocktower',
-                  )}?set=set${avatarSet}&size=250x250`}
-                />
-                <AvatarFallback>
-                  <div className='bg-gray-400 rounded-full w-64 h-64 animate-pulse' />
-                </AvatarFallback>
-              </Avatar>
-            </DialogTrigger>
-            <DialogContent className='flex flex-col items-center'>
-              <DialogHeader>Choose a Color</DialogHeader>
-              <SwatchesPicker
-                color={currentColor || '#000000'}
-                onChange={handleColorChange}
-                presetColors={colorPaletteValues}
-              />
-              <DialogFooter>
-                <DialogClose>
-                  <Button> Ok</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Avatar className='h-fit w-fit'>
+            <AvatarImage
+              className='shadow-inner shadow-ring rounded-full'
+              style={{ backgroundColor: currentColor || '#FFFFFF' }}
+              src={`https://robohash.org/${hash(
+                currentUsername || 'clocktower',
+              )}?set=set${avatarSet}&size=250x250`}
+            />
+            <AvatarFallback>
+              <div className='bg-gray-400 rounded-full w-64 h-64 animate-pulse' />
+            </AvatarFallback>
+          </Avatar>
 
           <h1 className='text-center font-mono text-4xl mb-4 mt-2'>
             {currentUsername}
           </h1>
-          <RadioGroup
-            defaultValue={profile.avatar_set.toString() || '1'}
-            onValueChange={handleAvatarSetChange}
-            className='flex justify-center'
-          >
-            {[1, 2, 3, 4].map((value) => (
-              <RadioGroupItem
-                key={value}
-                value={value.toString()}
-                id={`r${value}`}
-                className='mx-1'
-              />
-            ))}
-          </RadioGroup>
+
+          <div className='flex flex-row items-center space-x-12'>
+            <div className='flex flex-col items-center space-y-2'>
+              <Label>Avatar Set</Label>
+              <RadioGroup
+                defaultValue={profile.avatar_set.toString() || '1'}
+                onValueChange={handleAvatarSetChange}
+                className='flex justify-center'
+              >
+                {[1, 2, 3, 4].map((value) => (
+                  <RadioGroupItem
+                    key={value}
+                    value={value.toString()}
+                    id={`r${value}`}
+                    className='mx-1'
+                  />
+                ))}
+              </RadioGroup>
+            </div>
+            <div className='flex flex-col items-center space-y-2'>
+              <Label>Color</Label>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    style={{ backgroundColor: currentColor || '#FFFFFF' }}
+                    className='w-24'
+                  ></Button>
+                </DialogTrigger>
+                <DialogContent className='flex flex-col items-center'>
+                  <DialogHeader>Choose a Color</DialogHeader>
+                  <SwatchesPicker
+                    color={currentColor || '#000000'}
+                    onChange={handleColorChange}
+                    presetColors={colorPaletteValues}
+                  />
+                  <DialogFooter>
+                    <DialogClose>
+                      <Button> Ok</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
         </div>
         <h1> Update Your Information:</h1>
         <Form {...form}>
