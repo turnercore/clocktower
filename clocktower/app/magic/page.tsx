@@ -3,8 +3,13 @@ import React, { useEffect, useRef } from 'react'
 import anime from 'animejs'
 
 const MagicPage = () => {
-  const wandRef = useRef(null)
   const headingRef = useRef(null)
+  const wandRef = useRef(null)
+  const mRef = useRef(null)
+  const aRef = useRef(null)
+  const gRef = useRef(null)
+  const iRef = useRef(null)
+  const cRef = useRef(null)
   const paragraph1Ref = useRef(null)
   const paragraph2Ref = useRef(null)
   const hintRef = useRef(null)
@@ -13,6 +18,13 @@ const MagicPage = () => {
     // Initial scaling and fading animation
     anime
       .timeline({ loop: false })
+      .add({
+        targets: headingRef.current,
+        scale: [0, 1], // Scale up the text
+        duration: 1000,
+        easing: 'easeInOutSine',
+        delay: 500,
+      })
       .add({
         targets: wandRef.current,
         // Wand should start roated 45 degrees counter-clockwise
@@ -26,13 +38,6 @@ const MagicPage = () => {
         rotate: ['35deg', '0deg'],
         duration: 200,
         easing: 'easeOutSine',
-      })
-      .add({
-        targets: headingRef.current,
-        scale: [0, 1], // Scale up the text
-        duration: 1000,
-        easing: 'easeInOutSine',
-        delay: 500,
       })
       .add({
         targets: paragraph1Ref.current,
@@ -56,23 +61,42 @@ const MagicPage = () => {
         easing: 'easeInOutSine',
       })
 
-    // Looping color change animation
-    anime({
-      targets: headingRef.current,
-      color: [
-        { value: '#ff4ecd' }, // Pink
-        { value: '#4ecbff' }, // Light blue
-        { value: '#4eff5e' }, // Green
-        { value: '#ffea4e' }, // Yellow
-        { value: '#f44242' }, // Red
-        { value: '#8a2be2' }, // Blue violet
-        { value: '#20b2aa' }, // Light sea green
-        { value: '#ff1493' }, // Deep pink
-        { value: '#ff4ecd' }, // Back to Pink to loop smoothly
-      ],
-      duration: 10000, // Adjust the duration for a smoother transition
-      loop: true,
-      easing: 'linear', // Use linear easing for consistent speed
+    const letters = [mRef, aRef, gRef, iRef, cRef]
+    letters.forEach((letter, index) => {
+      anime({
+        targets: letter.current,
+        color: [
+          { value: '#ff4ecd' }, // Pink
+          { value: '#ff7ae5' }, // Lighter Pink
+          { value: '#ff9ecd' }, // Even Lighter Pink
+          { value: '#ffb8d1' }, // Near Peach
+          { value: '#ffd3d8' }, // Pale Pink
+          { value: '#ffe9e1' }, // Almost White
+          // Pale Yellow
+          { value: '#fff9c4' },
+          // Yellow
+          { value: '#fff59d' },
+          // Yellow Orange
+          { value: '#fff176' },
+          // Orange
+          { value: '#ffee58' },
+          // Light Orange
+          { value: '#ffeb3b' },
+          // Pale Orange
+          { value: '#fff9c4' },
+          // Now reverse back to pink
+          { value: '#ffe9e1' },
+          { value: '#ffd3d8' },
+          { value: '#ffb8d1' },
+          { value: '#ff9ecd' },
+          { value: '#ff7ae5' },
+          { value: '#ff4ecd' }, // Back to Pink to loop smoothly
+        ],
+        duration: 7000, // Longer duration for smoother transition
+        loop: true,
+        easing: 'linear',
+        delay: 1750 + index * 200, // Adjusted stagger delay
+      })
     })
   }, [])
 
@@ -82,8 +106,15 @@ const MagicPage = () => {
         <p ref={wandRef} className='text-7xl font-bold mb-4 ml-8'>
           🪄
         </p>
-        <h1 ref={headingRef} className='text-8xl font-bold mb-4'>
-          Magic
+        <h1
+          ref={headingRef}
+          className='text-8xl font-bold mb-4 dark:text-black text-white'
+        >
+          <span ref={mRef}>M</span>
+          <span ref={aRef}>a</span>
+          <span ref={gRef}>g</span>
+          <span ref={iRef}>i</span>
+          <span ref={cRef}>c</span>
         </h1>
       </div>
 
