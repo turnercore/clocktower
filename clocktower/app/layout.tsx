@@ -58,7 +58,9 @@ export default async function RootLayout({
       <head>
         <link rel='stylesheet' href='https://use.typekit.net/ckd1nmz.css' />
       </head>
-      <body className={`${GeistSans.className} min-w-full`}>
+      <body
+        className={`${GeistSans.className} ${GeistMono.className} min-w-full`}
+      >
         <Providers>
           <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
             <Header user={user} />
