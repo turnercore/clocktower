@@ -17,7 +17,6 @@ import { GoHome } from 'react-icons/go'
 import { useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'
-import { is } from 'date-fns/locale'
 
 // Changing this to a client componenet
 export default function Header({ user }: { user: User | null }) {
