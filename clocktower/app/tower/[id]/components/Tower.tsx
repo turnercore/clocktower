@@ -10,11 +10,16 @@ import { TowerRow } from './TowerRow'
 
 interface TowerProps {
   towerId: UUID
+  publicKey?: string
 }
 
-export const Tower = async ({ towerId }: TowerProps) => {
+export const Tower = async ({ towerId, publicKey }: TowerProps) => {
   // Fetch the Tower Data
-  const { data: towerData, error: towerError } = await fetchTowerDataSA(towerId)
+  const { data: towerData, error: towerError } = await fetchTowerDataSA(
+    towerId,
+    publicKey,
+  )
+
   if (towerError) {
     console.error(towerError)
     return <p>Error loading tower data. {towerError}</p>
@@ -30,6 +35,8 @@ export const Tower = async ({ towerId }: TowerProps) => {
       </div>
     )
   }
+
+  // if publicKey, then make sure it matches the tower's public key
 
   // Fetch RowIds associated with this tower
   const { data: rowIds, error: rowIdsError } = await fetchRowIdsSA(towerId)

@@ -148,10 +148,12 @@ export type TowerDatabaseType = z.infer<typeof TowerDatabaseSchema>
 export const TowerSchema = z.object({
   id: UUIDSchema,
   name: z.string().trim().max(30, { message: 'Name is too long.' }).default(''),
-  users: z.array(UUIDSchema),
+  users: z.array(UUIDSchema).default([]),
   owner: UUIDSchema,
   colors: ColorPaletteSchema.nullable().default({}),
   rows: z.array(TowerRowSchema).nullable().default([]),
+  is_locked: z.coerce.boolean().default(false),
+  admin_users: z.array(UUIDSchema).default([]),
 })
 
 // Extend towerdatabse to add rows
