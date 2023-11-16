@@ -284,24 +284,21 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             )}
           </CardTitle>
           <CardContent>
-            <ScrollArea className='overflow-auto'>
-              <div className='flex flex-row width-full items-center space-x-6'>
-                {children}
-                {addedClocks.map((clock) => (
-                  <RealtimeClock key={clock.id} initialData={clock} />
-                ))}
-                {hasEditAccess && (
-                  <Button
-                    variant='ghost'
-                    className='h-24 w-24'
-                    onClick={addClock}
-                  >
-                    <TbClockPlus className='ml-1 h-8 w-8' />
-                  </Button>
-                )}
-              </div>
-              <ScrollBar orientation='horizontal' className='w-full' />
-            </ScrollArea>
+            <div className='flex flex-wrap'>
+              {children}
+              {addedClocks.map((clock) => (
+                <RealtimeClock key={clock.id} initialData={clock} />
+              ))}
+              {hasEditAccess && (
+                <Button
+                  variant='ghost'
+                  className='h-24 w-24'
+                  onClick={addClock}
+                >
+                  <TbClockPlus className='ml-1 h-8 w-8' />
+                </Button>
+              )}
+            </div>
           </CardContent>
         </Card>
       )}

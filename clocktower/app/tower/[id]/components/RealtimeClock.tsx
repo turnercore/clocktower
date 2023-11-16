@@ -284,24 +284,27 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   return (
     <>
       {!isDeleted && (
-        <div className='min-w-[150px] min-h-[150px]'>
-          <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
-            {hasEditAccess ? configuredPieChart : readOnlyPieChart}
-          </div>
-          <div className='flex flex-row items-center space-x-2 w-full mt-1'>
-            <h2 className='text-2xl w-full font-thin text-center'>
-              {clockData.name}
-            </h2>
+        <div className='flex flex-col items-center'>
+          <div className='flex flex-row relative'>
+            <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
+              {hasEditAccess ? configuredPieChart : readOnlyPieChart}
+            </div>
             <Suspense>
-              {hasEditAccess && (
-                <ClockSettingsDialog
-                  configuredPieChart={configuredPieChart}
-                  clockData={clockData}
-                  onStateChange={handleStateChange}
-                  onDelete={handleDelete}
-                />
-              )}
+              <div className='absolute right-0'>
+                {hasEditAccess && (
+                  <ClockSettingsDialog
+                    configuredPieChart={configuredPieChart}
+                    clockData={clockData}
+                    onStateChange={handleStateChange}
+                    onDelete={handleDelete}
+                  />
+                )}
+              </div>
             </Suspense>
+          </div>
+
+          <div className='flex flex-row items-center text-center space-x-2 mt-1'>
+            <h2 className='text-xl font-thin text-center'>{clockData.name}</h2>
           </div>
         </div>
       )}
