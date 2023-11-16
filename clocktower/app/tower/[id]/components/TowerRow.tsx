@@ -42,16 +42,16 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
 
   const clockIds = clocksData.map((clock) => clock.id)
 
+  // TODO replace the suspense with a loading clock component
   const clocks = clockIds.map((clockId, index) => (
     <Suspense key={index} fallback={<p>Loading clock...</p>}>
       <Clock key={clockId} clockId={clockId} />
     </Suspense>
   ))
 
-  // TODO replace the suspense with a loading clock component
   return (
-    <>
+    <Suspense>
       <RealtimeTowerRow initialData={initialData}>{clocks}</RealtimeTowerRow>
-    </>
+    </Suspense>
   )
 }

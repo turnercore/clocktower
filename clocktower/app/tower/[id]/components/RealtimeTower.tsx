@@ -17,6 +17,7 @@ import {
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js'
 import RealtimeTowerRow from './RealtimeTowerRow'
+import useEditAccess from '@/hooks/useEditAccess'
 
 interface TowerProps {
   initialData: TowerDatabaseType
@@ -31,6 +32,7 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   const [towerData, setTowerData] = useState<TowerDatabaseType>(initialData)
   const [addedRows, setAddedRows] = useState<TowerRowRow[]>([])
   const addedRowsRef = useRef<UUID[]>(addedRows.map((row) => row.id)) // Create a ref for addedRows
+  const hasEditAccess = useEditAccess(towerId)
 
   const supabase = createClientComponentClient<Database>()
 
@@ -158,12 +160,14 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
       {addedRows.map((row) => (
         <RealtimeTowerRow initialData={row} key={row.id} />
       ))}
-      <Button
-        onClick={handleAddRow}
-        className='max-w-[250px] self-center mx-auto'
-      >
-        Add Row
-      </Button>
+      {hasEditAccess && (
+        <Button
+          onClick={handleAddRow}
+          className='max-w-[250px] self-center mx-auto'
+        >
+          Add Row
+        </Button>
+      )}
     </div>
   )
 }

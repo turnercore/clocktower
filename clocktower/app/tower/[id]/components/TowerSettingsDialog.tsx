@@ -21,17 +21,20 @@ import {
   Input,
   Label,
   toast,
+  Switch,
 } from '@/components/ui'
 import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { UUID } from '@/types/schemas'
+import { TowerDatabaseType, type TowerType, type UUID } from '@/types/schemas'
 import { useRouter } from 'next/navigation'
+import toggleTowerLockSA from '../actions/toggleTowerLockSA'
+import useEditAccess from '@/hooks/useEditAccess'
 // Import other required components
 
 interface TowerSettingsDialogProps {
-  towerData: any // Replace with your tower type
+  towerData: TowerDatabaseType
 }
 
 const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
@@ -41,6 +44,9 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   const [towerName, setTowerName] = useState(towerData.name)
   const [currentUserId, setCurrentUserId] = useState<UUID | null>(null) // Replace with your user type
   const [isOwner, setIsOwner] = useState<boolean>(false)
+  const [isOpen, setIsOpen] = useState(false)
+  const [isTowerLocked, setIsTowerLocked] = useState(false)
+  const hasEditAccess = useEditAccess(towerData.id)
   // Get current user
   const supabase = createClientComponentClient()
 
@@ -53,7 +59,10 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
         if (!sessionData?.session?.user?.id) throw new Error('No user id found')
         const userId = sessionData.session.user.id
 
-        setCurrentUserId(userId as UUID)
+        setCurrentUserId(userId)
+
+        setIsTowerLocked(towerData.is_locked || false)
+
         if (userId === towerData.owner) {
           setIsOwner(true)
         }
@@ -122,63 +131,111 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
     }
   }
 
+  const handleTowerLockSwitch = async () => {
+    // set the public state
+    const oldIsTowerLocked = isTowerLocked
+    setIsTowerLocked(!isTowerLocked)
+
+    // Call server action
+    const { error } = await toggleTowerLockSA({ towerId: towerData.id })
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error changing locked status on tower.',
+        description: error,
+        variant: 'destructive',
+      })
+      setIsTowerLocked(oldIsTowerLocked)
+      return
+    }
+  }
+
+  console.log('hasEditAccess', hasEditAccess)
+
+  if (!hasEditAccess) return <></>
+
+  // Change this to be a form with validation!
   return (
-    <Dialog>
+    <Dialog open={isOpen}>
       <DialogTrigger asChild>
-        <Button title='Tower Settings' variant={'ghost'} className='ml-2'>
+        <Button
+          id='destroy-tower-button'
+          title='Tower Settings'
+          variant={'ghost'}
+          className='ml-2'
+          onClick={() => setIsOpen(!isOpen)}
+        >
           <BsGear className='h-5 w-5' />
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent
+        onEscapeKeyDown={() => setIsOpen(false)}
+        onInteractOutside={() => setIsOpen(false)}
+        onPointerDownOutside={() => setIsOpen(false)}
+      >
         <DialogHeader>
           <DialogTitle>Tower Settings</DialogTitle>
         </DialogHeader>
-        <div className='flex flex-row space-y-2 items-center'>
-          <Label htmlFor='name'>Tower Name: </Label>
+        <div className='flex flex-row space-x-4 items-center'>
+          <Label htmlFor='tower-name'>Name</Label>
           <Input
+            id='tower-name'
             defaultValue={towerName}
             disabled={!isOwner}
             onBlur={handleNameChange}
           />
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            {isOwner ? (
-              <Button variant='destructive' className='w-1/2 text-center'>
-                <GiDemolish className='w-full h-full' />
-              </Button>
-            ) : (
-              <Button variant='destructive' className='w-1/2 text-center'>
-                Leave
-              </Button>
-            )}
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>
-                {isOwner ? 'Demolish Tower?' : 'Leave Tower?'}
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                {isOwner
-                  ? "Are you sure? If so let's burn this sucker to the ground 🔥."
-                  : "Are you sure you want to leave? You'll have to be invited back."}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                className='vibrating-element bg-red-500'
-                onClick={handleLeaveTower}
-              >
+        <div className='flex flex-row space-x-4 items-center'>
+          <Label htmlFor='toggle-tower-lock'>User Editing</Label>
+          <Switch
+            id='toggle-tower-lock'
+            checked={isTowerLocked}
+            onClick={handleTowerLockSwitch}
+          />
+        </div>
+        <div className='flex flex-row space-y-2 items-center justify-between '>
+          <Button type='submit' onClick={() => setIsOpen(false)}>
+            Ok
+          </Button>
+          <div className='pb-2'>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
                 {isOwner ? (
-                  <GiDemolish className='w-full h-full' />
+                  <Button variant='destructive'>
+                    <GiDemolish className='w-full h-full' />
+                  </Button>
                 ) : (
-                  <FaPersonWalkingLuggage className='w-full h-full' />
+                  <Button variant='destructive'>Leave</Button>
                 )}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {isOwner ? 'Demolish Tower?' : 'Leave Tower?'}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {isOwner
+                      ? "Are you sure? If so let's burn this sucker to the ground 🔥."
+                      : "Are you sure you want to leave? You'll have to be invited back."}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className='vibrating-element bg-red-500'
+                    onClick={handleLeaveTower}
+                  >
+                    {isOwner ? (
+                      <GiDemolish className='w-full h-full' />
+                    ) : (
+                      <FaPersonWalkingLuggage className='w-full h-full' />
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
+        </div>
         {/* Loop through users and display avatars */}
       </DialogContent>
     </Dialog>

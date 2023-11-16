@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense } from 'react'
 import RealtimeClock from './RealtimeClock'
 import {
   AlertDialog,
@@ -32,6 +32,7 @@ import type {
 import insertNewClockSA from '../actions/insertNewClockSA'
 import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
+import useEditAccess from '@/hooks/useEditAccess'
 
 type RealtimeTowerRowProps = {
   initialData: TowerRowRow
@@ -42,13 +43,14 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   initialData,
   children,
 }) => {
-  const rowId = initialData.id as UUID
-  const towerId = initialData.tower_id as UUID
+  const rowId = initialData.id
+  const towerId = initialData.tower_id
   const [rowData, setRowData] = useState<TowerRowRow>(initialData)
   const [rowName, setRowName] = useState<string>(initialData.name || '')
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
   const [addedClocks, setAddedClocks] = useState<Array<ClockType>>([])
   const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
+  const hasEditAccess = useEditAccess(towerId)
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -236,44 +238,50 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   }
 
   return (
-    <>
+    <Suspense>
       {!isDeleted && (
         <Card className='flex flex-col space-y-2 mr-10 ml-2'>
           {/* Row Name and Settings*/}
           <CardTitle className='flex flex-row space-x-2 space-y-2 items-center mx-8 mt-3'>
-            <Input
-              name='rowName'
-              className='w-[200px] mt-2'
-              placeholder='Row'
-              defaultValue={rowName}
-              onBlur={handleRowNameChange}
-            />
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant='outline'>
-                  <TiDelete className='w-full h-full' />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    Delete Row{rowName ? ' ' + rowName : ''}?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will delete the row and all clocks contained within.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className='vibrating-element bg-red-500'
-                    onClick={handleRowDelete}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            {hasEditAccess ? (
+              <Input
+                name='rowName'
+                className='w-[200px] mt-2'
+                placeholder='Row'
+                defaultValue={rowName}
+                onBlur={handleRowNameChange}
+              />
+            ) : (
+              <p>{rowName}</p>
+            )}
+            {hasEditAccess && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant='outline'>
+                    <TiDelete className='w-full h-full' />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>
+                      Delete Row{rowName ? ' ' + rowName : ''}?
+                    </AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will delete the row and all clocks contained within.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className='vibrating-element bg-red-500'
+                      onClick={handleRowDelete}
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </CardTitle>
           <CardContent>
             <ScrollArea className='overflow-auto'>
@@ -282,20 +290,22 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                 {addedClocks.map((clock) => (
                   <RealtimeClock key={clock.id} initialData={clock} />
                 ))}
-                <Button
-                  variant='ghost'
-                  className='h-24 w-24'
-                  onClick={addClock}
-                >
-                  <TbClockPlus className='ml-1 h-8 w-8' />
-                </Button>
+                {hasEditAccess && (
+                  <Button
+                    variant='ghost'
+                    className='h-24 w-24'
+                    onClick={addClock}
+                  >
+                    <TbClockPlus className='ml-1 h-8 w-8' />
+                  </Button>
+                )}
               </div>
               <ScrollBar orientation='horizontal' className='w-full' />
             </ScrollArea>
           </CardContent>
         </Card>
-      )}{' '}
-    </>
+      )}
+    </Suspense>
   )
 }
 

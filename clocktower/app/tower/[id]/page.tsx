@@ -3,17 +3,23 @@ import { Tower } from './components/Tower'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 
-type ExpectedParams = {
+type pageParams = {
   id: UUID
+}
+
+type searchParams = {
   public_key?: string
 }
 
 export default async function TowerPage({
   params,
+  searchParams,
 }: {
-  params: ExpectedParams
+  params: pageParams
+  searchParams: searchParams
 }) {
-  const { id, public_key } = params
+  const { id } = params
+  const { public_key } = searchParams
 
   // Validate params:
   try {

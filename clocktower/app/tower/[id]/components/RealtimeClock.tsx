@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect, MouseEvent } from 'react'
+import React, { useState, useEffect, MouseEvent, Suspense } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { toast } from '@/components/ui'
@@ -14,6 +14,7 @@ import type {
   RealtimePostgresUpdatePayload,
 } from '@supabase/supabase-js'
 import extractErrorMessage from '@/tools/extractErrorMessage'
+import useEditAccess from '@/hooks/useEditAccess'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -21,9 +22,9 @@ interface RealtimeClockProps {
 
 // Define the React component
 const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
-  const clockId = initialData.id as UUID
-  const towerId = initialData.tower_id as UUID
-  const rowId = initialData.row_id as UUID
+  const clockId = initialData.id
+  const towerId = initialData.tower_id
+  const rowId = initialData.row_id
 
   // Create state variables
   const [clockData, setClockData] = useState<ClockType>(initialData)
@@ -31,6 +32,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     null,
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
+  const hasEditAccess = useEditAccess(towerId)
 
   // Init supabase
   const supabase = createClientComponentClient<Database>()
@@ -233,6 +235,8 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     }
   })
 
+  //TODO: Right now filled = 0 really means 1 thing is filled and null is 0, change that so 0 is 0 and 1 is 1
+
   //Css for the settings icon
   const configuredPieChart = (
     <PieChart
@@ -257,24 +261,47 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     />
   )
 
+  const readOnlyPieChart = (
+    <PieChart
+      data={updatedData}
+      lineWidth={
+        clockData.rounded ? clockData.line_width / 2 : clockData.line_width
+      } // Custom arc's width for the Donut chart
+      paddingAngle={
+        clockData.rounded ? clockData.line_width : clockData.line_width / 4
+      } // Padding between arcs
+      rounded={clockData.rounded ? true : false}
+      startAngle={-90} // Start from the top-right
+      segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
+      segmentsShift={(index: number) =>
+        index === hoveredSliceIndex ? 0.5 : -0.5
+      } // Slight grow on hover
+      viewBoxSize={[110, 110]} // Increase the viewbox dimensions
+      center={[55, 55]} // Move the center of the chart
+    />
+  )
+
   return (
     <>
       {!isDeleted && (
         <div className='min-w-[150px] min-h-[150px]'>
           <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
-            {configuredPieChart}
+            {hasEditAccess ? configuredPieChart : readOnlyPieChart}
           </div>
           <div className='flex flex-row items-center space-x-2 w-full mt-1'>
-            <h2 className='pl-8 text-2xl w-full font-thin text-center'>
+            <h2 className='text-2xl w-full font-thin text-center'>
               {clockData.name}
             </h2>
-
-            <ClockSettingsDialog
-              configuredPieChart={configuredPieChart}
-              clockData={clockData}
-              onStateChange={handleStateChange}
-              onDelete={handleDelete}
-            />
+            <Suspense>
+              {hasEditAccess && (
+                <ClockSettingsDialog
+                  configuredPieChart={configuredPieChart}
+                  clockData={clockData}
+                  onStateChange={handleStateChange}
+                  onDelete={handleDelete}
+                />
+              )}
+            </Suspense>
           </div>
         </div>
       )}
