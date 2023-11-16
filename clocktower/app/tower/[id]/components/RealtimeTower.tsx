@@ -153,7 +153,7 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   return (
     <div className='flex flex-col space-y-4'>
       <div className='flex flex-row items-center mx-auto space-x-5'>
-        <h1 className='text-lg'>{towerData?.name}</h1>
+        <h1 className='text-3xl'>{towerData?.name}</h1>
         <TowerSettingsDialog towerData={towerData} />
       </div>
       {children}
