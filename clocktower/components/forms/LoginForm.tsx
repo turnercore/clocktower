@@ -11,11 +11,11 @@ import {
   Input,
   toast,
 } from '@/components/ui'
-import { Session } from '@supabase/supabase-js'
+import { type Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
 import { GenericLoadingSkeleton } from '@/components/loading/GenericLoadingSkeleton'
 import { useRouter } from 'next/navigation'
-import { Database } from '@/types/supabase'
+import { type Database } from '@/types/supabase'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'

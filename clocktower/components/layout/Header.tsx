@@ -13,7 +13,7 @@ import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 import Link from 'next/link'
 import { GoHome } from 'react-icons/go'
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'
 import {
@@ -82,6 +82,11 @@ export default function Header() {
           </div>
         ) : (
           <>
+            {isLoading && !user && (
+              <div>
+                <Link href='/account/login'>Loading...</Link>
+              </div>
+            )}
             {!isLoading && (
               <Popover open={isLoginPopoverOpen}>
                 <PopoverTrigger asChild>

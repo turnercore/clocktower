@@ -5,6 +5,7 @@ import { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans } from 'geist/font'
 import { Providers } from '@/app/providers'
+import { Suspense } from 'react'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
@@ -46,11 +47,21 @@ export default async function RootLayout({
       <body className={`${GeistSans.className} min-w-full`}>
         <Providers>
           <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
-            <Header />
-            <main className='w-full flex-1 mt-3'>{children}</main>
+            <Suspense
+              fallback={
+                <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'></div>
+              }
+            >
+              <Header />
+            </Suspense>
+            <Suspense>
+              <main className='w-full flex-1 mt-3'>{children}</main>
+            </Suspense>
             <Toaster />
           </div>
-          <Footer />
+          <Suspense>
+            <Footer />
+          </Suspense>
         </Providers>
       </body>
     </html>

@@ -27,7 +27,7 @@ const ThemeAwareSocialIcon = ({
   className = defaultclassName,
 }) => {
   const { theme } = useTheme()
-  const [isDark, setIsDark] = useState(false)
+  const [isDark, setIsDark] = useState(true)
 
   // If they only gave us one icon then we'll just use it for both
   if (!iconDark && !iconLight) {

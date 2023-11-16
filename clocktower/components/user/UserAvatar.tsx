@@ -11,16 +11,20 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui'
 import {
-  User,
+  type User,
   createClientComponentClient,
 } from '@supabase/auth-helpers-nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Profile } from '@/types/schemas'
+import { type Profile } from '@/types/schemas'
 import { GoGear, GoSignOut } from 'react-icons/go'
 import hash from '@/tools/hash'
 
-export default function UserAvatar({ className = '' }) {
+interface UserAvatarProps {
+  className?: string
+}
+
+const UserAvatar = ({ className }: UserAvatarProps) => {
   const [user, setUser] = useState<User | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -61,7 +65,7 @@ export default function UserAvatar({ className = '' }) {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Avatar
-          className='h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl'
+          className={`h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl ${className}`}
           style={{ backgroundColor: profile.color || '#FFFFFF' }}
         >
           <AvatarImage
@@ -96,3 +100,5 @@ export default function UserAvatar({ className = '' }) {
     </DropdownMenu>
   )
 }
+
+export default UserAvatar
