@@ -1,3 +1,83 @@
+// generateName.ts
+// This file is a tool to generate random names for towers.
+
+const usernames = {
+  firstNames: [
+    'Creaky',
+    'Grim',
+    'Ticking',
+    'Rusty',
+    'Whirring',
+    'Gargantuan',
+    'Minuscule',
+    'Ancient',
+    'Eerie',
+    'Mysterious',
+    'Spectral',
+    'Malevolent',
+    'Haunted',
+    'Sinister',
+    'Ghastly',
+    'Chiming',
+    'Shadowy',
+    'Cryptic',
+    'Lurking',
+    'Petrifying',
+    'Clockwork',
+    'Mechanical',
+    'Gloomy',
+    'Twisted',
+    'Grotesque',
+    'Rattling',
+    'Bizarre',
+    'Phantom',
+    'Wailing',
+    'Gruesome',
+  ],
+  lastNames: [
+    'Timekeeper',
+    'Chronomancer',
+    'Cogmaster',
+    'Bellringer',
+    'Hourglass',
+    'Winder',
+    'Ticktock',
+    'Pendulum',
+    'Gearsnout',
+    'Sundial',
+    'Clockface',
+    'Oscillator',
+    'Springheel',
+    'Dialsmith',
+    'Numeral',
+    'Hands',
+    'Quartzfiend',
+    'Sprocket',
+    'Escapement',
+    'Timegrasp',
+    'Alarmclaw',
+    'Calibrator',
+    'Gearwraith',
+    'Counter',
+    'Balancewheel',
+    'Chronoghost',
+    'Hourhand',
+    'Clockfiend',
+    'Mainspring',
+    'Torsion',
+  ],
+}
+
+export const generateName = () => {
+  const firstName =
+    usernames.firstNames[
+      Math.floor(Math.random() * usernames.firstNames.length)
+    ]
+  const lastName =
+    usernames.lastNames[Math.floor(Math.random() * usernames.lastNames.length)]
+  return `${firstName} ${lastName}`
+}
+
 const clocktowerAdjectives = [
   'ancient',
   'atomic',
@@ -188,4 +268,19 @@ export const generateUsername = () => {
   const noun =
     clocktowerNouns[Math.floor(Math.random() * clocktowerNouns.length)]
   return `${adjective}-${noun}`
+}
+
+export const generatePublicKey = (length: number) => {
+  // pick x random nouns and adjectives from the lists
+  // Combine the lists clocktowerAdjectives + clocktowerNouns
+  const words = [...clocktowerAdjectives, ...clocktowerNouns]
+  const publicKeyWords = []
+  for (let i = 0; i < length; i++) {
+    publicKeyWords.push(
+      words[Math.floor(Math.random() * words.length)].toLowerCase(),
+    )
+  }
+  // Key should be word-word-word-word...
+  const publicKey = publicKeyWords.join('-')
+  return publicKey
 }

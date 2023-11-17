@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { generateUsername } from '@/tools/generateUsername'
+import { generateUsername } from '@/tools/nameGenerators'
 
 // UUID Schema and Type
 export const UUIDSchema = z.string().uuid()
@@ -141,6 +141,9 @@ export const TowerDatabaseSchema = z
     users: z.array(UUIDSchema).default([]),
     owner: UUIDSchema,
     colors: ColorPaletteSchema.nullable().default({}),
+    is_locked: z.coerce.boolean().default(false),
+    admin_users: z.array(UUIDSchema).or(z.null()).optional(),
+    pubic_key: z.string().or(z.null()).optional(),
   })
   .strip()
 export type TowerDatabaseType = z.infer<typeof TowerDatabaseSchema>
@@ -148,10 +151,13 @@ export type TowerDatabaseType = z.infer<typeof TowerDatabaseSchema>
 export const TowerSchema = z.object({
   id: UUIDSchema,
   name: z.string().trim().max(30, { message: 'Name is too long.' }).default(''),
-  users: z.array(UUIDSchema),
+  users: z.array(UUIDSchema).default([]),
   owner: UUIDSchema,
   colors: ColorPaletteSchema.nullable().default({}),
   rows: z.array(TowerRowSchema).nullable().default([]),
+  is_locked: z.coerce.boolean().default(false),
+  admin_users: z.array(UUIDSchema).or(z.null()),
+  pubic_key: z.string().or(z.null()),
 })
 
 // Extend towerdatabse to add rows

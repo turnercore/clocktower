@@ -10,7 +10,7 @@ import {
 } from '@/types/schemas' // Replace with the actual path to your schema
 import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
-import { generateName } from '../generateName'
+import { generateName } from '@/tools/nameGenerators'
 /**
  * Inserts a new tower into the "towers" table in the database.
  * @param newTowerId The new row to be inserted.

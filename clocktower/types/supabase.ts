@@ -174,27 +174,36 @@ export interface Database {
       }
       towers: {
         Row: {
+          admin_users: string[] | null
           colors: Json | null
           created_at: string
           id: string
+          is_locked: boolean
           name: string | null
           owner: string | null
+          public_key: string | null
           users: string[] | null
         }
         Insert: {
+          admin_users?: string[] | null
           colors?: Json | null
           created_at?: string
           id?: string
+          is_locked?: boolean
           name?: string | null
           owner?: string | null
+          public_key?: string | null
           users?: string[] | null
         }
         Update: {
+          admin_users?: string[] | null
           colors?: Json | null
           created_at?: string
           id?: string
+          is_locked?: boolean
           name?: string | null
           owner?: string | null
+          public_key?: string | null
           users?: string[] | null
         }
         Relationships: [

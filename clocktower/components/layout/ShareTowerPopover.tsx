@@ -11,10 +11,14 @@ import {
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
-import { toast } from '../ui'
+import { Switch, toast } from '../ui'
 import { UUID } from '@/types/schemas'
 import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
 import InvitedUsersList from './InvitedUsersList'
+import shareTowerPubliclySA from './actions/shareTowerPubliclySA'
+import { GoCopy } from 'react-icons/go'
+
+const domain = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
 export default function ShareTowerPopover() {
   const path = usePathname()
@@ -25,7 +29,9 @@ export default function ShareTowerPopover() {
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
   const [isTowerOwner, setIsTowerOwner] = useState(false)
   const [invitedUsers, setInvitedUsers] = useState<UUID[]>([])
+  const [isTowerPublic, setIsTowerPublic] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const [publicUrl, setPublicUrl] = useState('')
   const supabase = createClientComponentClient()
 
   useEffect(() => {
@@ -53,7 +59,7 @@ export default function ShareTowerPopover() {
 
       const { data: towerData, error: towerError } = await supabase
         .from('towers')
-        .select('owner, users')
+        .select('owner, users, public_key')
         .eq('id', towerId)
         .single()
 
@@ -68,6 +74,17 @@ export default function ShareTowerPopover() {
         (user: UUID) => user !== currentUserId,
       )
       setInvitedUsers(currentInvitedUsers || [])
+      // See if tower is public
+      console.log('checking if tower is public')
+      if (towerData.public_key) {
+        console.log('tower is public')
+        setIsTowerPublic(true)
+        const url = domain + path + `?public_key=${towerData.public_key}`
+        setPublicUrl(url)
+      } else {
+        setIsTowerPublic(false)
+        setPublicUrl('')
+      }
       setIsLoading(false)
     }
 
@@ -98,6 +115,35 @@ export default function ShareTowerPopover() {
     })
   }
 
+  const handleTowerPublicSwitch = async () => {
+    console.log('switching')
+    // Set local state
+    const oldTowerPublicState = isTowerPublic
+    setIsTowerPublic(!isTowerPublic)
+
+    // Update database
+    const { data, error } = await shareTowerPubliclySA({
+      towerId,
+      setPublic: !oldTowerPublicState,
+    })
+    if (error) {
+      // Switch back local state if error
+      setIsTowerPublic(oldTowerPublicState)
+      toast({
+        title: 'Error changing tower public status.',
+        description: error,
+        variant: 'destructive',
+      })
+      console.error(error)
+    }
+
+    const publicKey = data?.publicKey
+    if (publicKey) {
+      const url = domain + path + `?public_key=${publicKey}`
+      setPublicUrl(url)
+    }
+  }
+
   if (isLoading) return <></>
 
   return (
@@ -105,14 +151,16 @@ export default function ShareTowerPopover() {
     userId && (
       <Popover>
         <PopoverTrigger asChild>
-          <Button title='Invite Users' variant='outline'>
+          <Button title='Share Tower' variant='outline'>
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-80 grid gap-4'>
-          <div className='space-y-2'>
-            <h4 className='font-medium leading-none'>Invite User</h4>
-            <div className='grid grid-cols-3 items-center gap-4'>
+        <PopoverContent className='w-80'>
+          <div className='flex flex-col space-y-6'>
+            <h4 className='font-medium leading-none'>
+              Invite a User to this Tower
+            </h4>
+            <div className='flex flex-row items-center space-x-2'>
               <Label htmlFor='username'>Username</Label>
               <Input
                 id='username'
@@ -120,13 +168,40 @@ export default function ShareTowerPopover() {
                 onChange={(e) => setUsername(e.target.value)}
                 className='col-span-2 h-8'
               />
+              <Button onClick={handleInvite}>Invite</Button>
             </div>
-            <Button onClick={handleInvite}>Invite</Button>
+            <div className='flex flex-row items-center space-x-2'>
+              <Switch
+                checked={isTowerPublic}
+                id='isTowerPublic'
+                onClick={handleTowerPublicSwitch}
+              />
+              <Label htmlFor='isTowerPublic'>Share Tower Publicly</Label>
+            </div>
+            {isTowerPublic && (
+              <div className='flex flex-row items-center space-x-2'>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(publicUrl)
+                    toast({
+                      title: 'Copied to clipboard!',
+                      description:
+                        'The public URL has been copied to your clipboard.',
+                    })
+                  }}
+                >
+                  <GoCopy />
+                </Button>
+                <p className='font-medium leading-none p-2'>
+                  Copy Tower's Public URL
+                </p>
+              </div>
+            )}
           </div>
           {
             // If users are invited, show them
             invitedUsers.length > 0 && (
-              <div>
+              <div className='mt-8'>
                 <h1 className='mb-2'>
                   Invited Users{isTowerOwner ? ', Click to Remove' : ''}
                 </h1>
