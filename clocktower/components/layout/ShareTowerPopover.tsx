@@ -16,6 +16,7 @@ import { UUID } from '@/types/schemas'
 import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
 import InvitedUsersList from './InvitedUsersList'
 import shareTowerPubliclySA from './actions/shareTowerPubliclySA'
+import { GoCopy } from 'react-icons/go'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
@@ -154,10 +155,10 @@ export default function ShareTowerPopover() {
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className='w-80 grid gap-4'>
-          <div className='space-y-2'>
+        <PopoverContent className='w-80'>
+          <div className='flex flex-col space-y-6'>
             <h4 className='font-medium leading-none'>
-              Invite a User by username
+              Invite a User to this Tower
             </h4>
             <div className='flex flex-row items-center space-x-2'>
               <Label htmlFor='username'>Username</Label>
@@ -178,17 +179,29 @@ export default function ShareTowerPopover() {
               <Label htmlFor='isTowerPublic'>Share Tower Publicly</Label>
             </div>
             {isTowerPublic && (
-              <div>
-                <h4 className='font-medium leading-none'>Tower's Public URL</h4>
-                <p className='overflow-hidden'>{publicUrl}</p>
-                <Button>Clipboard</Button>
+              <div className='flex flex-row items-center space-x-2'>
+                <Button
+                  onClick={() => {
+                    navigator.clipboard.writeText(publicUrl)
+                    toast({
+                      title: 'Copied to clipboard!',
+                      description:
+                        'The public URL has been copied to your clipboard.',
+                    })
+                  }}
+                >
+                  <GoCopy />
+                </Button>
+                <p className='font-medium leading-none p-2'>
+                  Copy Tower's Public URL
+                </p>
               </div>
             )}
           </div>
           {
             // If users are invited, show them
             invitedUsers.length > 0 && (
-              <div>
+              <div className='mt-8'>
                 <h1 className='mb-2'>
                   Invited Users{isTowerOwner ? ', Click to Remove' : ''}
                 </h1>
