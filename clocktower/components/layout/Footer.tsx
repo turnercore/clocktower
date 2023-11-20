@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import ThemeAwareSocialIcon from '@/components/ThemeAwareSocialIcon'
+import ThemeAwareSocialIcon from '@/components/layout/ThemeAwareSocialIcon'
 
 const Footer = () => {
   const emojis = ['❤️', '🐶', '☕️', '❤️‍🩹', '🤖', '👾', '💻']
