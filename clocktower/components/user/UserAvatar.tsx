@@ -16,9 +16,10 @@ import {
 } from '@supabase/auth-helpers-nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { type Profile } from '@/types/schemas'
+import { type Profile, ProfileSchema } from '@/types/schemas'
 import { GoGear, GoSignOut } from 'react-icons/go'
 import hash from '@/tools/hash'
+import fetchSupabaseProfileSA from '@/tools/actions/fetchSupabaseProfileSA'
 
 interface UserAvatarProps {
   className?: string
@@ -41,15 +42,12 @@ const UserAvatar = ({ className }: UserAvatarProps) => {
         setUser(data.session.user)
 
         // Now get the profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.session.user.id)
-          .single()
-
-        if (profileError) throw profileError
-        if (!profileData) throw new Error('No profile data found')
-        setProfile(profileData)
+        const { data: profileData, error: profileError } = await fetchSupabaseProfileSA(data.session.user.id)
+        
+        // Validate output of fetchSupabaseProfileSA
+        const validatedProfileData = ProfileSchema.parse(profileData)
+        
+        setProfile(validatedProfileData)
 
         setIsLoading(false)
       } catch (error: any) {
