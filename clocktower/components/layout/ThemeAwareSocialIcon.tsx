@@ -28,6 +28,10 @@ const ThemeAwareSocialIcon = ({
 }) => {
   const { theme } = useTheme()
   const [isDark, setIsDark] = useState(true)
+  useEffect(() => {
+    // Set the theme in useEffect to avoid hydration issues
+    setIsDark(theme == 'dark')
+  }, [theme])
 
   // If they only gave us one icon then we'll just use it for both
   if (!iconDark && !iconLight) {
@@ -39,11 +43,6 @@ const ThemeAwareSocialIcon = ({
   if (!iconLight) {
     iconLight = iconDark
   }
-
-  useEffect(() => {
-    // Set the theme in useEffect to avoid hydration issues
-    setIsDark(theme == 'dark')
-  }, [theme])
 
   return (
     <Image

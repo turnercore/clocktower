@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
   DropdownMenuLabel,
+  Button,
 } from '@/components/ui'
 import {
   type User,
@@ -16,49 +17,52 @@ import {
 } from '@supabase/auth-helpers-nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { type Profile } from '@/types/schemas'
+import { type Profile, ProfileSchema } from '@/types/schemas'
 import { GoGear, GoSignOut } from 'react-icons/go'
 import hash from '@/tools/hash'
+import fetchSupabaseProfileSA from '@/tools/actions/fetchSupabaseProfileSA'
+import extractErrorMessage from '@/tools/extractErrorMessage'
+import { Router } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 interface UserAvatarProps {
   className?: string
+  user?: User | null
 }
 
-const UserAvatar = ({ className }: UserAvatarProps) => {
-  const [user, setUser] = useState<User | null>(null)
+const UserAvatar = ({ className, user }: UserAvatarProps) => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
+  const supabase = createClientComponentClient()
+
 
   //Get user on mount
   useEffect(() => {
     const getSupabaseUser = async () => {
+      if (!user) return
       try {
-        const supabase = createClientComponentClient()
-        const { data, error } = await supabase.auth.getSession()
-        if (error) throw error
-        if (!data.session?.user)
-          throw new Error('No user found in session data')
-        setUser(data.session.user)
-
         // Now get the profile
-        const { data: profileData, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', data.session.user.id)
-          .single()
-
-        if (profileError) throw profileError
-        if (!profileData) throw new Error('No profile data found')
-        setProfile(profileData)
+        const { data: profileData, error: profileError } = await fetchSupabaseProfileSA(user.id)
+        
+        // Validate output of fetchSupabaseProfileSA
+        const validatedProfileData = ProfileSchema.parse(profileData)
+        
+        setProfile(validatedProfileData)
 
         setIsLoading(false)
-      } catch (error: any) {
-        console.error(error.message)
+      } catch (error) {
+        console.error(extractErrorMessage(error, 'Error getting user'))
       }
     }
 
     getSupabaseUser()
-  }, [])
+  }, [user])
+
+  const signOut = () => {
+    router.push('/account/logout')
+    setProfile(null)
+  }
 
   if (!user || !profile) return <></>
   return (
@@ -88,13 +92,13 @@ const UserAvatar = ({ className }: UserAvatarProps) => {
               <span>Settings</span>
             </DropdownMenuItem>
           </Link>
-
-          <Link href='/account/logout'>
+          
+          <Button variant='link' onClick={signOut}>
             <DropdownMenuItem>
               <GoSignOut className='mr-2 h-4 w-4' />
               <span>Sign Out</span>
             </DropdownMenuItem>
-          </Link>
+          </Button>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
