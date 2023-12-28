@@ -13,7 +13,7 @@ import HeaderTriangleDecoration from './HeaderTriangleDecoration'
 import LoginForm from '../forms/LoginForm'
 import Link from 'next/link'
 import { GoHome } from 'react-icons/go'
-import { Suspense, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'
 import {
@@ -112,12 +112,10 @@ export default function Header() {
       </div>
       {/* Right side of header */}
       <div className='flex-1 flex justify-end'>
-        {user && (
           <div className='flex flex-row space-x-2'>
             {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
-            <UserAvatar />
+            <UserAvatar user={user} />
           </div>
-        )}
       </div>
     </div>
   )
