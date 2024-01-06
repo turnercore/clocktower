@@ -272,10 +272,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           </DialogTitle>
         </DialogHeader>
         <div className='flex flex-row space-x-2 items-center w-full'>
-          <Label> Name: </Label>
+          <Label> Clock Name: </Label>
           <Input
             type='text'
             placeholder='Clock Name'
+            aria-label='Clock Name'
             defaultValue={clockData.name}
             onBlur={handleNameChange}
           />
@@ -285,7 +286,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
             {configuredPieChart}
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant='destructive' className='w-1/2 text-center'>
+                <Button
+                  aria-label='Delete Clock'
+                  variant='destructive'
+                  className='w-1/2 text-center'
+                >
                   <BsTrash3Fill className='w-full h-full' />
                 </Button>
               </AlertDialogTrigger>
@@ -299,6 +304,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
+                    aria-label='Confirm Delete Clock'
                     className='vibrating-element bg-red-500'
                     onClick={handleDelete}
                   >
@@ -310,9 +316,13 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           </div>
           <div className='w-1/2 flex flex-col space-y-6 mx-5'>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label> {segments} Segments </Label>
+              <Label htmlFor={`seg-slider-${clockData.id}`}>
+                {' '}
+                {segments} Segments{' '}
+              </Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
+                  id={`seg-slider-${clockData.id}`}
                   defaultValue={[clockData.segments]}
                   min={1}
                   max={18}
@@ -325,8 +335,11 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               </div>
             </div>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label> Line Width </Label>
+              <Label htmlFor={`line-width-slider-${clockData.id}`}>
+                Line Width
+              </Label>
               <Slider
+                id={`line-width-slider-${clockData.id}`}
                 defaultValue={[clockData.line_width]}
                 min={1}
                 max={50}
@@ -335,16 +348,23 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               />
             </div>
             <div className='flex flex-row space-x-2 items-center'>
-              <Label className='flex items-center space-x-2'> Rounded </Label>
+              <Label
+                htmlFor={`rounded-slider-${clockData.id}`}
+                className='flex items-center space-x-2'
+              >
+                Rounded Clock
+              </Label>
               <Input
+                id={`rounded-slider-${clockData.id}`}
                 type='checkbox'
                 checked={clockData.rounded}
                 onChange={handleIsRoundedChange}
               />
             </div>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label> Color </Label>
+              <Label htmlFor={`color-picker-${clockData.id}`}> Color </Label>
               <RealtimeColorPicker
+                id={`color-picker-${clockData.id}`}
                 color={clockData.color}
                 onChange={handleColorChange}
               />
