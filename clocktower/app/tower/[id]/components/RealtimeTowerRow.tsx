@@ -33,6 +33,7 @@ import insertNewClockSA from '../actions/insertNewClockSA'
 import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
 import useEditAccess from '@/hooks/useEditAccess'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 type RealtimeTowerRowProps = {
   initialData: TowerRowRow
@@ -51,6 +52,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   const [addedClocks, setAddedClocks] = useState<Array<ClockType>>([])
   const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
   const hasEditAccess = useEditAccess(towerId)
+  const { reduceMotion } = useAccessibility()
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -275,12 +277,21 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className='vibrating-element bg-red-500'
-                      onClick={handleRowDelete}
-                    >
-                      Delete
-                    </AlertDialogAction>
+                    {reduceMotion ? (
+                      <AlertDialogAction
+                        className=' bg-red-500'
+                        onClick={handleRowDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    ) : (
+                      <AlertDialogAction
+                        className='vibrating-element bg-red-500'
+                        onClick={handleRowDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    )}
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

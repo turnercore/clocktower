@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import ThemeAwareSocialIcon from '@/components/layout/ThemeAwareSocialIcon'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 const Footer = () => {
   const emojis = ['❤️', '🐶', '☕️', '❤️‍🩹', '🤖', '👾', '💻']
@@ -8,6 +9,7 @@ const Footer = () => {
   const copywrite = `© ${currentYear} Turner Monroe`
   const darkGithub = '/img/github-mark/github-mark.svg'
   const lightGithub = '/img/github-mark/github-mark-white.svg'
+  const { reduceMotion } = useAccessibility()
 
   return (
     <>
@@ -24,18 +26,33 @@ const Footer = () => {
               </div>
             </div>
           )}
-          <div className='flex justify-center items-center vibrating-element'>
-            <Link href='https://github.com/turnercore/clocktower'>
-              <ThemeAwareSocialIcon
-                iconDark={darkGithub}
-                iconLight={lightGithub}
-                alt={'GitHub'}
-                width={98}
-                height={96}
-                className={'h-6 w-6 ml-2'}
-              />
-            </Link>
-          </div>
+          {reduceMotion ? (
+            <div className='flex justify-center items-center'>
+              <Link href='https://github.com/turnercore/clocktower'>
+                <ThemeAwareSocialIcon
+                  iconDark={darkGithub}
+                  iconLight={lightGithub}
+                  alt={'GitHub'}
+                  width={98}
+                  height={96}
+                  className={'h-6 w-6 ml-2'}
+                />
+              </Link>
+            </div>
+          ) : (
+            <div className='flex justify-center items-center vibrating-element'>
+              <Link href='https://github.com/turnercore/clocktower'>
+                <ThemeAwareSocialIcon
+                  iconDark={darkGithub}
+                  iconLight={lightGithub}
+                  alt={'GitHub'}
+                  width={98}
+                  height={96}
+                  className={'h-6 w-6 ml-2'}
+                />
+              </Link>
+            </div>
+          )}
         </div>
       </footer>
     </>

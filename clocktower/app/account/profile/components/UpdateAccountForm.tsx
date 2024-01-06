@@ -51,6 +51,8 @@ import hash from '@/tools/hash'
 import updateUserAvatarSetSA from '../actions/updateUserAvatarSet'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { DialogClose } from '@radix-ui/react-dialog'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
+
 // validation schema for form
 const formSchema = z
   .object({
@@ -159,6 +161,7 @@ const UpdateAccountForm = ({
   const [currentColor, setCurrentColor] = useState(profile.color)
   const [avatarSet, setAvatarSet] = useState(profile.avatar_set || 1)
   const supabase = createClientComponentClient()
+  const { reduceMotion } = useAccessibility()
 
   useEffect(() => {
     async function getUserFromSession() {
@@ -566,12 +569,22 @@ const UpdateAccountForm = ({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>🙅‍♀️ Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className='vibrating-element bg-red-500'
-                      onClick={handleDelete}
-                    >
-                      Delete
-                    </AlertDialogAction>
+                    {reduceMotion ? (
+                      // If reduce motion is on, don't vibrate the button
+                      <AlertDialogAction
+                        className='bg-red-500'
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    ) : (
+                      <AlertDialogAction
+                        className='vibrating-element bg-red-500'
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    )}
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
