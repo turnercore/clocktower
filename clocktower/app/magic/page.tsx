@@ -1,8 +1,10 @@
 'use client'
 import React, { useEffect, useRef } from 'react'
 import anime from 'animejs'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 const MagicPage = () => {
+  const { reduceMotion } = useAccessibility()
   const headingRef = useRef(null)
   const wandRef = useRef(null)
   const mRef = useRef(null)
@@ -99,6 +101,42 @@ const MagicPage = () => {
       })
     })
   }, [])
+
+  if (reduceMotion) {
+    return (
+      <div className='flex flex-col items-center mt-16'>
+        <div className='flex flex-row items-center'>
+          <p ref={wandRef} className='text-7xl font-bold mb-4 ml-8'>
+            🪄
+          </p>
+          <h1
+            ref={headingRef}
+            className='text-8xl font-bold mb-4 dark:text-black text-white'
+          >
+            <span ref={mRef}>M</span>
+            <span ref={aRef}>a</span>
+            <span ref={gRef}>g</span>
+            <span ref={iRef}>i</span>
+            <span ref={cRef}>c</span>
+          </h1>
+        </div>
+
+        <div className=' pl-28 mt-2'>
+          <p ref={paragraph1Ref} className='text-xl'>
+            What's going to happen next?
+          </p>
+          <div className='flex flex-row items-center'>
+            <p ref={hintRef} className='text-lg italic'>
+              Hint:{' '}
+            </p>
+            <p ref={paragraph2Ref} className='text-lg italic'>
+              Check your email.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className='flex flex-col items-center mt-16'>

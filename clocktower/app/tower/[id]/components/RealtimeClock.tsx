@@ -43,7 +43,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     null,
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
-  const { screenReaderMode, toggleScreenReaderMode } = useAccessibility()
+  const { screenReaderMode } = useAccessibility()
 
   const hasEditAccess = useEditAccess(towerId)
 
