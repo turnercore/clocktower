@@ -20,6 +20,8 @@ import {
   type User,
   createClientComponentClient,
 } from '@supabase/auth-helpers-nextjs'
+import { Accessibility } from 'lucide-react'
+import { AccessibilityOptionsDialog } from './AccessiblityOptionsDialog'
 
 // Changing this to a client componenet
 export default function Header() {
@@ -61,11 +63,11 @@ export default function Header() {
             <GoHome className='h-[1.2rem] w-[1.2rem]' />
           </Link>
         </Button>
+        <AccessibilityOptionsDialog />
         <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
       </div>
       {/* Center of Header */}
       <div className='flex-0 min-w-0'>
-
         <HeaderTriangleDecoration />
 
         {user ? (
@@ -112,10 +114,10 @@ export default function Header() {
       </div>
       {/* Right side of header */}
       <div className='flex-1 flex justify-end'>
-          <div className='flex flex-row space-x-2'>
-            {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
-            <UserAvatar user={user} />
-          </div>
+        <div className='flex flex-row space-x-2'>
+          {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
+          <UserAvatar user={user} />
+        </div>
       </div>
     </div>
   )

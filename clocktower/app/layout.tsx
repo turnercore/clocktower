@@ -4,7 +4,7 @@ import Footer from '@/components/layout/Footer'
 import { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/toaster'
 import { GeistSans } from 'geist/font'
-import { Providers } from '@/app/providers'
+import { Providers } from '@/providers/providers'
 import { Suspense } from 'react'
 
 const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'

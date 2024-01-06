@@ -25,6 +25,7 @@ import type {
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
 import generateUUID from '@/tools/generateId'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -42,6 +43,8 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     null,
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
+  const { screenReaderMode, toggleScreenReaderMode } = useAccessibility()
+
   const hasEditAccess = useEditAccess(towerId)
 
   // Init supabase
@@ -292,7 +295,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   )
 
   const randomId = generateUUID()
-  const reducedMotionChart = (
+  const screenReaderChart = (
     <Card>
       <CardHeader>
         <CardTitle>{`Clock ${clockData.name}`}</CardTitle>
@@ -332,12 +335,10 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     </Card>
   )
 
-  const reduceMotion = true
-
   let displayedChart: React.JSX.Element
 
-  if (reduceMotion) {
-    displayedChart = reducedMotionChart
+  if (screenReaderMode) {
+    displayedChart = screenReaderChart
   } else if (hasEditAccess) {
     displayedChart = configuredPieChart
   } else {
@@ -354,7 +355,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
             </div>
             <Suspense>
               <div className='absolute right-0'>
-                {hasEditAccess && !reduceMotion && (
+                {hasEditAccess && !screenReaderMode && (
                   <ClockSettingsDialog
                     configuredPieChart={configuredPieChart}
                     clockData={clockData}

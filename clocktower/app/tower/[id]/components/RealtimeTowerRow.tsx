@@ -287,7 +287,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             )}
           </CardTitle>
           <CardContent>
-            <div className='flex flex-wrap'>
+            <div className='flex flex-wrap items-center'>
               {children}
               {addedClocks.map((clock) => (
                 <RealtimeClock key={clock.id} initialData={clock} />
@@ -297,6 +297,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                   variant='ghost'
                   className='h-24 w-24'
                   onClick={addClock}
+                  aria-label='Add Clock'
                 >
                   <TbClockPlus className='ml-1 h-8 w-8' />
                 </Button>
