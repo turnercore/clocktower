@@ -281,13 +281,43 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     />
   )
 
+  const reducedMotionChart = (
+    <div className='reduced-motion-chart'>
+      <h3 aria-label='Clock Name'>{clockData.name}</h3>
+      <p>Segments: {clockData.segments}</p>
+      <p>
+        Filled: {clockData.filled !== null ? clockData.filled + 1 : 0} of
+        {clockData.segments}
+      </p>
+      <p>
+        Percentage Filled:
+        {clockData.filled !== null
+          ? (clockData.filled + 1) / clockData.segments
+          : 0}
+      </p>
+      {/* Add any additional information you want to display */}
+    </div>
+  )
+
+  const reduceMotion = true
+
+  let displayedChart: React.JSX.Element
+
+  if (reduceMotion) {
+    displayedChart = reducedMotionChart
+  } else if (hasEditAccess) {
+    displayedChart = configuredPieChart
+  } else {
+    displayedChart = readOnlyPieChart
+  }
+
   return (
     <>
       {!isDeleted && (
         <div className='flex flex-col items-center'>
           <div className='flex flex-row relative'>
             <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
-              {hasEditAccess ? configuredPieChart : readOnlyPieChart}
+              {displayedChart}
             </div>
             <Suspense>
               <div className='absolute right-0'>
