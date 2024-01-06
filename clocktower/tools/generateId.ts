@@ -1,6 +1,6 @@
 import { UUID } from '@/types/schemas'
-import { randomUUID } from 'crypto'
+import { v4 as uuv4 } from 'uuid'
 
 export default function generateUUID(): UUID {
-  return randomUUID()
+  return uuv4()
 }

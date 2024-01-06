@@ -2,7 +2,16 @@
 import React, { useState, useEffect, MouseEvent, Suspense } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Input, Label, toast } from '@/components/ui'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+  Input,
+  Label,
+  toast,
+} from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import { ClockRowData, ClockSchema, ClockType, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
@@ -284,29 +293,43 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const randomId = generateUUID()
   const reducedMotionChart = (
-    <div className='reduced-motion-chart'>
-      <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
-      <Input
-        id={`clock-name-${randomId}`}
-        value={clockData.name}
-        readOnly={hasEditAccess}
-      />
+    <Card>
+      <CardHeader>
+        <CardTitle>{`Clock ${clockData.name}`}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
+        <Input
+          id={`clock-name-${randomId}`}
+          type='text'
+          value={clockData.name}
+          readOnly={hasEditAccess}
+        />
 
-      <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
-      <Input
-        id={`clock-filled-${randomId}`}
-        type='number'
-        value={clockData.filled !== null ? clockData.filled + 1 : 0}
-        readOnly={!hasEditAccess}
-      />
-
-      <p>
-        Percentage Filled:
-        {clockData.filled !== null
-          ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
-          : 0}
-      </p>
-    </div>
+        <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
+        <Input
+          id={`clock-filled-${randomId}`}
+          type='number'
+          value={clockData.filled !== null ? clockData.filled + 1 : 0}
+          readOnly={!hasEditAccess}
+        />
+        <Label htmlFor={`clock-segments-${randomId}`}>Total Segments</Label>
+        <Input
+          id={`clock-segments-${randomId}`}
+          type='number'
+          value={clockData.segments}
+          readOnly={!hasEditAccess}
+        />
+      </CardContent>
+      <CardFooter>
+        <p>
+          Percentage Filled:
+          {clockData.filled !== null
+            ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
+            : 0}
+        </p>
+      </CardFooter>
+    </Card>
   )
 
   const reduceMotion = true
