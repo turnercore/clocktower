@@ -257,7 +257,10 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             {hasEditAccess && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant='outline'>
+                  <Button
+                    aria-label='Delete Row Confirmation Dialog'
+                    variant='outline'
+                  >
                     <TiDelete className='w-full h-full' />
                   </Button>
                 </AlertDialogTrigger>
