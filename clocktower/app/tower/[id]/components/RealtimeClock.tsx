@@ -15,6 +15,7 @@ import type {
 } from '@supabase/supabase-js'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
+import generateUUID from '@/tools/generateId'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -281,13 +282,19 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     />
   )
 
+  const randomId = generateUUID()
   const reducedMotionChart = (
     <div className='reduced-motion-chart'>
-      <Label>Clock Name</Label>
-      <Input value={clockData.name} readOnly={hasEditAccess} />
-
-      <Label>Filled Segments</Label>
+      <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
       <Input
+        id={`clock-name-${randomId}`}
+        value={clockData.name}
+        readOnly={hasEditAccess}
+      />
+
+      <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
+      <Input
+        id={`clock-filled-${randomId}`}
         type='number'
         value={clockData.filled !== null ? clockData.filled + 1 : 0}
         readOnly={!hasEditAccess}
