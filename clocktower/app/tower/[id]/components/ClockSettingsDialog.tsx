@@ -316,13 +316,10 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
           </div>
           <div className='w-1/2 flex flex-col space-y-6 mx-5'>
             <div className='flex flex-col space-y-2 w-full'>
-              <Label htmlFor={`seg-slider-${clockData.id}`}>
-                {' '}
-                {segments} Segments{' '}
-              </Label>
+              <Label>{segments} Segments</Label>
               <div className='flex flex-row space-x-2 items-center'>
                 <Slider
-                  id={`seg-slider-${clockData.id}`}
+                  aria-label='Clock Segments Slider'
                   defaultValue={[clockData.segments]}
                   min={1}
                   max={18}
