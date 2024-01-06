@@ -10,7 +10,7 @@ import { useAccessibility } from '@/providers/AccessibilityProvider'
 const WelcomePage = () => {
   const { width, height } = useWindowSize()
   const welcomeRef = useRef(null)
-  const { reduceMotion } = useAccessibility()
+  const { reduceMotion, screenReaderMode } = useAccessibility()
 
   useEffect(() => {
     anime.timeline({ loop: false }).add({
@@ -22,7 +22,7 @@ const WelcomePage = () => {
     })
   }, [])
 
-  if (reduceMotion) {
+  if (reduceMotion || screenReaderMode) {
     return (
       <div className='flex flex-col items-center justify-center h-screen p-4 pb-80'>
         <div ref={welcomeRef} className='text-center items-center'>

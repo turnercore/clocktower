@@ -9,7 +9,7 @@ const animatedLettersIndex = [8, 6, 2, 3]
 
 const SiteTitle = () => {
   const rotationRefs = title.split('').map(() => useRef<HTMLDivElement>(null))
-  const { reduceMotion } = useAccessibility()
+  const { reduceMotion, screenReaderMode } = useAccessibility()
 
   useEffect(() => {
     const timeline = anime.timeline({
@@ -37,7 +37,7 @@ const SiteTitle = () => {
     })
   }, [])
 
-  if (reduceMotion) {
+  if (reduceMotion || screenReaderMode) {
     return (
       <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
         {title}

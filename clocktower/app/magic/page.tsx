@@ -4,7 +4,7 @@ import anime from 'animejs'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 const MagicPage = () => {
-  const { reduceMotion } = useAccessibility()
+  const { reduceMotion, screenReaderMode } = useAccessibility()
   const headingRef = useRef(null)
   const wandRef = useRef(null)
   const mRef = useRef(null)
@@ -102,7 +102,7 @@ const MagicPage = () => {
     })
   }, [])
 
-  if (reduceMotion) {
+  if (reduceMotion || screenReaderMode) {
     return (
       <div className='flex flex-col items-center mt-16'>
         <div className='flex flex-row items-center'>
