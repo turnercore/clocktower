@@ -283,12 +283,11 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const reducedMotionChart = (
     <div className='reduced-motion-chart'>
-      <Label htmlFor='clock-name'>Clock Name</Label>
-      <Input id='clock-name' value={clockData.name} readOnly={hasEditAccess} />
+      <Label>Clock Name</Label>
+      <Input value={clockData.name} readOnly={hasEditAccess} />
 
-      <Label htmlFor='clock-filled'>Filled Segments</Label>
+      <Label>Filled Segments</Label>
       <Input
-        id='clock-filled'
         type='number'
         value={clockData.filled !== null ? clockData.filled + 1 : 0}
         readOnly={!hasEditAccess}
