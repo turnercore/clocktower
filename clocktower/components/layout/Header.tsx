@@ -57,7 +57,7 @@ export default function Header() {
   return (
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
       {/* Left side of header */}
-      <div className='flex-1 flex justify-start'>
+      <div className='flex-1 flex justify-start space-x-2'>
         <Button
           variant='outline'
           size='icon'
