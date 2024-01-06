@@ -17,13 +17,13 @@ const Home = async () => {
   return (
     <div className='relative flex flex-col text-center items-center mb-[100px]'>
       <SiteTitle />
-      <div className=' mb-8 flex flex-col items-center'>
+      <div className=' mb-8 flex flex-col items-center space-y-4'>
         <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
         {isLoggedIn ? (
-          <div>
+          <>
             <p>To make some clocks, select a tower from the dropdown above.</p>
             <Button variant='outline'>Or create a new tower!</Button>
-          </div>
+          </>
         ) : (
           <div className='flex flex-row space-x-3 items-center mx-auto'>
             <Button variant='outline' asChild>

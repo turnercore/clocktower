@@ -33,6 +33,7 @@ import insertNewClockSA from '../actions/insertNewClockSA'
 import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
 import useEditAccess from '@/hooks/useEditAccess'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 type RealtimeTowerRowProps = {
   initialData: TowerRowRow
@@ -51,6 +52,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   const [addedClocks, setAddedClocks] = useState<Array<ClockType>>([])
   const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
   const hasEditAccess = useEditAccess(towerId)
+  const { reduceMotion } = useAccessibility()
   const supabase = createClientComponentClient()
 
   // Update self when a server payload is received
@@ -257,7 +259,10 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             {hasEditAccess && (
               <AlertDialog>
                 <AlertDialogTrigger asChild>
-                  <Button variant='outline'>
+                  <Button
+                    aria-label='Delete Row Confirmation Dialog'
+                    variant='outline'
+                  >
                     <TiDelete className='w-full h-full' />
                   </Button>
                 </AlertDialogTrigger>
@@ -272,19 +277,28 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className='vibrating-element bg-red-500'
-                      onClick={handleRowDelete}
-                    >
-                      Delete
-                    </AlertDialogAction>
+                    {reduceMotion ? (
+                      <AlertDialogAction
+                        className=' bg-red-500'
+                        onClick={handleRowDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    ) : (
+                      <AlertDialogAction
+                        className='vibrating-element bg-red-500'
+                        onClick={handleRowDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    )}
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>
             )}
           </CardTitle>
           <CardContent>
-            <div className='flex flex-wrap'>
+            <div className='flex flex-wrap items-center space-x-4 space-y-4'>
               {children}
               {addedClocks.map((clock) => (
                 <RealtimeClock key={clock.id} initialData={clock} />
@@ -294,6 +308,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
                   variant='ghost'
                   className='h-24 w-24'
                   onClick={addClock}
+                  aria-label='Add Clock'
                 >
                   <TbClockPlus className='ml-1 h-8 w-8' />
                 </Button>

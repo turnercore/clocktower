@@ -20,6 +20,8 @@ import {
   type User,
   createClientComponentClient,
 } from '@supabase/auth-helpers-nextjs'
+import { Accessibility } from 'lucide-react'
+import { AccessibilityOptionsDialog } from './AccessiblityOptionsDialog'
 
 // Changing this to a client componenet
 export default function Header() {
@@ -55,17 +57,22 @@ export default function Header() {
   return (
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
       {/* Left side of header */}
-      <div className='flex-1 flex justify-start'>
-        <Button variant='outline' size='icon' asChild>
-          <Link href='/'>
+      <div className='flex-1 flex justify-start space-x-2'>
+        <Button
+          variant='outline'
+          size='icon'
+          asChild
+          aria-label='Home Page Button'
+        >
+          <Link aria-label='Home Page Link' href='/'>
             <GoHome className='h-[1.2rem] w-[1.2rem]' />
           </Link>
         </Button>
-        <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
+        <AccessibilityOptionsDialog />
+        <ModeToggle />
       </div>
       {/* Center of Header */}
       <div className='flex-0 min-w-0'>
-
         <HeaderTriangleDecoration />
 
         {user ? (
@@ -112,10 +119,10 @@ export default function Header() {
       </div>
       {/* Right side of header */}
       <div className='flex-1 flex justify-end'>
-          <div className='flex flex-row space-x-2'>
-            {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
-            <UserAvatar user={user} />
-          </div>
+        <div className='flex flex-row space-x-2'>
+          {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
+          <UserAvatar user={user} />
+        </div>
       </div>
     </div>
   )

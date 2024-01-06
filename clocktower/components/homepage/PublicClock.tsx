@@ -4,7 +4,18 @@ import React, { useState, useEffect, MouseEvent } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import PublicClockSettings from './PublicClockSettings'
-import { ClockSchema, ClockType, ColorPaletteType } from '@/types/schemas'
+import { type ClockType } from '@/types/schemas'
+import { useAccessibility } from '@/providers/AccessibilityProvider'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Input,
+  CardFooter,
+  Label,
+} from '../ui'
+import generateUUID from '@/tools/generateId'
 
 export type PublicClockType = Omit<
   ClockType,
@@ -96,6 +107,7 @@ const PublicClock: React.FC = () => {
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(
     null,
   )
+  const { screenReaderMode } = useAccessibility()
 
   useEffect(() => {
     const randomSegements = Math.floor(Math.random() * 10) + 2 // Random Number between 2 and 10
@@ -202,6 +214,36 @@ const PublicClock: React.FC = () => {
     }
   }
 
+  // Screen Reader Mode Settings
+  const handleNameInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newName = event.target.value
+    handleDataChange({ name: newName })
+  }
+
+  const handleFilledInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newFilled = parseInt(event.target.value, 10) - 1 // Adjust for 0-index
+    if (!isNaN(newFilled) && newFilled >= 0 && newFilled < clockData.segments) {
+      handleDataChange({ filled: newFilled })
+    }
+  }
+
+  const handleTotalSegmentsInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newSegments = parseInt(event.target.value, 10)
+    if (!isNaN(newSegments) && newSegments > 0) {
+      handleDataChange({ segments: newSegments })
+      if (clockData.filled !== null && clockData.filled >= newSegments) {
+        // Adjust filled segments if it exceeds the new total segments
+        handleDataChange({ filled: newSegments - 1 })
+      }
+    }
+  }
+
   const pieChart = (
     <PieChart
       data={updatedData}
@@ -224,6 +266,52 @@ const PublicClock: React.FC = () => {
       center={[55, 55]} // Move the center of the chart
     />
   )
+
+  const randomId = generateUUID()
+
+  const screenReaderClock = (
+    <Card>
+      <CardHeader>
+        <CardTitle>{`Clock ${clockData.name}`}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
+        <Input
+          id={`clock-name-${randomId}`}
+          type='text'
+          defaultValue={clockData.name}
+          onChange={handleNameInputChange}
+        />
+
+        <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
+        <Input
+          id={`clock-filled-${randomId}`}
+          type='number'
+          defaultValue={clockData.filled !== null ? clockData.filled + 1 : 0}
+          onChange={handleFilledInputChange}
+        />
+        <Label htmlFor={`clock-segments-${randomId}`}>Total Segments</Label>
+        <Input
+          id={`clock-segments-${randomId}`}
+          type='number'
+          defaultValue={clockData.segments}
+          onChange={handleTotalSegmentsInputChange}
+        />
+      </CardContent>
+      <CardFooter>
+        <p>
+          Percentage Filled:
+          {clockData.filled !== null
+            ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
+            : 0}
+        </p>
+      </CardFooter>
+    </Card>
+  )
+
+  if (screenReaderMode) {
+    return <div className='flex flex-col space-y-4'>{screenReaderClock}</div>
+  }
 
   return (
     <>

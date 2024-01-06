@@ -26,6 +26,7 @@ import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
 import { Database } from '@/types/supabase'
 import { capitalizeFirstLetterOfEveryWord } from '@/tools/capitalizeFirstLetterOfEveryWord'
+import { Label } from '../ui'
 
 const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
@@ -197,6 +198,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
           <CommandGroup>
             {towers.map((tower) => (
               <CommandItem
+                aria-label={`Select ${tower.name}`}
                 key={tower.id}
                 onSelect={(currentValue) => {
                   if (currentValue === selectedTowerName) return
@@ -207,8 +209,11 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                   navigateToSelectedTower(tower.id)
                 }}
               >
-                <GiWhiteTower className='mr-2 h-4 w-4' />
-                {tower.name}
+                <GiWhiteTower
+                  id={`tower-${tower.id}`}
+                  className='mr-2 h-4 w-4'
+                />
+                <Label htmlFor={`tower-${tower.id}`}> {tower.name} </Label>
               </CommandItem>
             ))}
             <CommandItem key='new' onSelect={handleCreateNewTower}>
