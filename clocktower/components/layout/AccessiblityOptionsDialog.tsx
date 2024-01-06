@@ -70,26 +70,28 @@ export function AccessibilityOptionsDialog({
             Change the theme and other accessibility options.
           </DialogDescription>
         </DialogHeader>
+        <div className='flex items-center space-x-2'>
+          <Switch
+            id='screen-reader-mode'
+            checked={screenReaderMode}
+            onCheckedChange={toggleScreenReaderMode}
+          />
+          <Label htmlFor='screen-reader-mode'>Screen Reader Mode Toggle</Label>
+        </div>
+
         <div className='flex flex-col space-y-4 mt-4'>
-          <div className='flex flex-row space-x-4 items-center'>
-            <Label htmlFor='theme-toggle'>Theme: </Label>
-            <ModeToggle />
-          </div>
           <div className='flex items-center space-x-2'>
             <Switch
               id='reduced-motion-mode'
               checked={reduceMotion}
               onCheckedChange={toggleReduceMotion}
             />
-            <Label htmlFor='reduced-motion-mode'>Reduced Motion</Label>
+            <Label htmlFor='reduced-motion-mode'>Reduced Motion Toggle</Label>
           </div>
-          <div className='flex items-center space-x-2'>
-            <Switch
-              id='airplane-mode'
-              checked={screenReaderMode}
-              onCheckedChange={toggleScreenReaderMode}
-            />
-            <Label htmlFor='screen-reader-mode'>Screen Reader Mode</Label>
+
+          <div className='flex flex-row space-x-4 items-center'>
+            <Label htmlFor='theme-toggle'>Theme: </Label>
+            <ModeToggle />
           </div>
         </div>
         <DialogClose aria-label='Close Accessiblity Settings' />

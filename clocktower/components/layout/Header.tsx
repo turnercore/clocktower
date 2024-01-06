@@ -58,8 +58,13 @@ export default function Header() {
     <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'>
       {/* Left side of header */}
       <div className='flex-1 flex justify-start'>
-        <Button variant='outline' size='icon' asChild>
-          <Link href='/'>
+        <Button
+          variant='outline'
+          size='icon'
+          asChild
+          aria-label='Home Page Button'
+        >
+          <Link aria-label='Home Page Link' href='/'>
             <GoHome className='h-[1.2rem] w-[1.2rem]' />
           </Link>
         </Button>
