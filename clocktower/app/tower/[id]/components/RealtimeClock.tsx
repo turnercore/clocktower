@@ -2,7 +2,7 @@
 import React, { useState, useEffect, MouseEvent, Suspense } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { toast } from '@/components/ui'
+import { Input, Label, toast } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import { ClockRowData, ClockSchema, ClockType, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
@@ -283,19 +283,23 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const reducedMotionChart = (
     <div className='reduced-motion-chart'>
-      <h3 aria-label='Clock Name'>{clockData.name}</h3>
-      <p>Segments: {clockData.segments}</p>
-      <p>
-        Filled: {clockData.filled !== null ? clockData.filled + 1 : 0} of
-        {clockData.segments}
-      </p>
+      <Label htmlFor='clock-name'>Clock Name</Label>
+      <Input id='clock-name' value={clockData.name} readOnly={hasEditAccess} />
+
+      <Label htmlFor='clock-filled'>Filled Segments</Label>
+      <Input
+        id='clock-filled'
+        type='number'
+        value={clockData.filled !== null ? clockData.filled + 1 : 0}
+        readOnly={!hasEditAccess}
+      />
+
       <p>
         Percentage Filled:
         {clockData.filled !== null
-          ? (clockData.filled + 1) / clockData.segments
+          ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
           : 0}
       </p>
-      {/* Add any additional information you want to display */}
     </div>
   )
 
@@ -321,7 +325,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
             </div>
             <Suspense>
               <div className='absolute right-0'>
-                {hasEditAccess && (
+                {hasEditAccess && !reduceMotion && (
                   <ClockSettingsDialog
                     configuredPieChart={configuredPieChart}
                     clockData={clockData}
