@@ -197,6 +197,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
           <CommandGroup>
             {towers.map((tower) => (
               <CommandItem
+                aria-label={`Select ${tower.name}`}
                 key={tower.id}
                 onSelect={(currentValue) => {
                   if (currentValue === selectedTowerName) return
