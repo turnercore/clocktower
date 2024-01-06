@@ -69,7 +69,7 @@ export default function Header() {
           </Link>
         </Button>
         <AccessibilityOptionsDialog />
-        <ModeToggle className='hover:scale-105 hover:shadow active:scale-100 active:shadow-inner' />
+        <ModeToggle />
       </div>
       {/* Center of Header */}
       <div className='flex-0 min-w-0'>
