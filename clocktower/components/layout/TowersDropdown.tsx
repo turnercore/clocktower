@@ -209,8 +209,11 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                   navigateToSelectedTower(tower.id)
                 }}
               >
-                <GiWhiteTower className='mr-2 h-4 w-4' />
-                <Label> {tower.name} </Label>
+                <GiWhiteTower
+                  id={`tower-${tower.id}`}
+                  className='mr-2 h-4 w-4'
+                />
+                <Label htmlFor={`tower-${tower.id}`}> {tower.name} </Label>
               </CommandItem>
             ))}
             <CommandItem key='new' onSelect={handleCreateNewTower}>
