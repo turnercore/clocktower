@@ -298,7 +298,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             )}
           </CardTitle>
           <CardContent>
-            <div className='flex flex-wrap items-center'>
+            <div className='flex flex-wrap items-center space-x-4 space-y-4'>
               {children}
               {addedClocks.map((clock) => (
                 <RealtimeClock key={clock.id} initialData={clock} />

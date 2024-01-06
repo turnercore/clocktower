@@ -154,34 +154,37 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     }
   }
 
-  // This one actually updates the server
-  const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
-    let newFilledValue: number | null
+  // Shared function to update the filled state and synchronize with the server
+  const updateFilledValue = async (inputFilledValue: number | null) => {
+    // Guard against invalid input
+    let validFilledValue = inputFilledValue
 
-    if (
-      clockData.filled === dataIndex ||
-      (clockData.filled !== null && dataIndex < clockData.filled)
-    ) {
-      newFilledValue = dataIndex === 0 ? null : dataIndex - 1
-    } else {
-      newFilledValue = dataIndex
+    if (validFilledValue !== null) {
+      if (validFilledValue < 0) {
+        validFilledValue = 0
+      }
+
+      if (validFilledValue >= clockData.segments) {
+        // Correct for too high of a value
+        validFilledValue = clockData.segments - 1
+      }
     }
 
-    // Optimistically update local state
+    if (validFilledValue === clockData.filled) {
+      return // Guard against unnecessary updates
+    }
+
     setClockData((prevState) => ({
       ...prevState,
-      filled: newFilledValue,
+      filled: validFilledValue,
     }))
 
-    // Prepare data for server update
     const newClockData = {
-      filled: newFilledValue,
+      filled: validFilledValue,
     }
 
-    // Update the server
     const { error } = await updateClockDataSA({ clockId, newClockData })
 
-    // In case of an error, revert to previous state
     if (error) {
       console.error(error)
       toast({
@@ -194,6 +197,34 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
         filled: clockData.filled, // Revert to previous filled value
       }))
     }
+  }
+
+  // Function to handle slice click
+  const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
+    const newFilledValue =
+      clockData.filled === dataIndex ||
+      (clockData.filled !== null && dataIndex < clockData.filled)
+        ? dataIndex === 0
+          ? null
+          : dataIndex - 1
+        : dataIndex
+
+    await updateFilledValue(newFilledValue)
+  }
+
+  // Function to handle input change for screen readers
+  const handleFilledInputChange = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const filledValue = parseInt(event.target.value, 10) - 1
+    if (
+      isNaN(filledValue) ||
+      filledValue < 0 ||
+      filledValue >= clockData.segments
+    ) {
+      return // Guard against invalid input
+    }
+    updateFilledValue(filledValue)
   }
 
   // Handle mouse over slice
@@ -294,6 +325,65 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     />
   )
 
+  // Function to handle changes in clock name
+  const handleNameInputChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newName = event.target.value
+    const oldName = clockData.name
+
+    // Optimistically update local state
+    setClockData((prevState) => ({ ...prevState, name: newName }))
+
+    // Update the server
+    const response = await updateClockDataSA({
+      clockId,
+      newClockData: { name: newName },
+    })
+
+    if (response.error) {
+      console.error('Failed to update name:', response.error)
+      toast({
+        title: 'Failed to update name',
+        description: response.error,
+        variant: 'destructive',
+      })
+      // Revert the local state
+      setClockData((prevState) => ({ ...prevState, name: oldName }))
+    }
+  }
+
+  // Function to handle changes in total segments
+  const handleTotalSegmentsInputChange = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newSegments = parseInt(event.target.value, 10)
+    if (isNaN(newSegments) || newSegments < 1) {
+      return // Guard against invalid input
+    }
+
+    const oldSegments = clockData.segments
+    // Optimistically update local state
+    setClockData((prevState) => ({ ...prevState, segments: newSegments }))
+
+    // Update the server
+    const response = await updateClockDataSA({
+      clockId,
+      newClockData: { segments: newSegments },
+    })
+
+    if (response.error) {
+      console.error('Failed to update segments:', response.error)
+      toast({
+        title: 'Failed to update segments',
+        description: response.error,
+        variant: 'destructive',
+      })
+      // Revert the local state
+      setClockData((prevState) => ({ ...prevState, segments: oldSegments }))
+    }
+  }
+
   const randomId = generateUUID()
   const screenReaderChart = (
     <Card>
@@ -305,23 +395,26 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
         <Input
           id={`clock-name-${randomId}`}
           type='text'
-          value={clockData.name}
-          readOnly={hasEditAccess}
+          defaultValue={clockData.name}
+          readOnly={!hasEditAccess}
+          onChange={handleNameInputChange}
         />
 
         <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
         <Input
           id={`clock-filled-${randomId}`}
           type='number'
-          value={clockData.filled !== null ? clockData.filled + 1 : 0}
+          defaultValue={clockData.filled !== null ? clockData.filled + 1 : 0}
           readOnly={!hasEditAccess}
+          onChange={handleFilledInputChange}
         />
         <Label htmlFor={`clock-segments-${randomId}`}>Total Segments</Label>
         <Input
           id={`clock-segments-${randomId}`}
           type='number'
-          value={clockData.segments}
+          defaultValue={clockData.segments}
           readOnly={!hasEditAccess}
+          onChange={handleTotalSegmentsInputChange}
         />
       </CardContent>
       <CardFooter>

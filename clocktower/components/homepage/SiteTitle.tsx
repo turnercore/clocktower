@@ -37,25 +37,19 @@ const SiteTitle = () => {
     })
   }, [])
 
-  if (reduceMotion || screenReaderMode) {
-    return (
-      <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
-        {title}
-      </h1>
-    )
-  }
-
   return (
     <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
-      {title.split('').map((letter, index) => (
-        <div
-          key={index}
-          ref={rotationRefs[index]}
-          className='inline-block pr-2 pb-7'
-        >
-          {letter}
-        </div>
-      ))}
+      {reduceMotion || screenReaderMode
+        ? title
+        : title.split('').map((letter, index) => (
+            <div
+              key={index}
+              ref={rotationRefs[index]}
+              className='inline-block pr-2 pb-7'
+            >
+              {letter}
+            </div>
+          ))}
     </h1>
   )
 }
