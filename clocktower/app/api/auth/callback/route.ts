@@ -16,7 +16,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(fromUrl)
   } else {
     const url = req.nextUrl.clone()
-    url.pathname = '/account/login'
+    url.pathname = '/'
+    url.search = ''
+    url.searchParams.set('login', 'success')
     return NextResponse.redirect(url)
   }
 }

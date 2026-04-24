@@ -5,6 +5,8 @@ import { Suspense } from 'react'
 import SiteTitle from '@/components/homepage/SiteTitle'
 import { createClient } from '@/lib/supabase/server'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
+import CreateNewTowerButton from '@/components/homepage/CreateNewTowerButton'
+import LoginSuccessToast from '@/components/homepage/LoginSuccessToast'
 
 const Home = async () => {
   let isLoggedIn = false
@@ -18,13 +20,14 @@ const Home = async () => {
 
   return (
     <div className='relative flex flex-col text-center items-center mb-[100px]'>
+      <LoginSuccessToast />
       <SiteTitle />
       <div className=' mb-8 flex flex-col items-center space-y-4'>
         <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
         {isLoggedIn ? (
           <>
             <p>To make some clocks, select a tower from the dropdown above.</p>
-            <Button variant='outline'>Or create a new tower!</Button>
+            <CreateNewTowerButton />
           </>
         ) : (
           <div className='flex flex-row space-x-3 items-center mx-auto'>
