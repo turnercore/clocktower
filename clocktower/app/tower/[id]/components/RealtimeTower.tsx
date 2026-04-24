@@ -30,6 +30,7 @@ import {
   TowerClockScaleProvider,
   useTowerClockScale,
 } from './TowerClockScaleContext'
+import { RowDragProvider } from './RowDragContext'
 
 interface TowerProps {
   initialData: TowerDatabaseType
@@ -171,10 +172,14 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
             <TowerSettingsDialog towerData={towerData} />
             <TowerClockScaleControl />
           </div>
-          {children}
-          {addedRows.map((row) => (
-            <RealtimeTowerRow initialData={row} key={row.id} />
-          ))}
+          <RowDragProvider>
+            <div className='flex flex-col gap-4'>
+              {children}
+              {addedRows.map((row) => (
+                <RealtimeTowerRow initialData={row} key={row.id} />
+              ))}
+            </div>
+          </RowDragProvider>
           {hasEditAccess && (
             <Button
               onClick={handleAddRow}

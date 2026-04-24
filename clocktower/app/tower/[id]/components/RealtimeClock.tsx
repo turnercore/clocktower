@@ -32,6 +32,7 @@ import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 import { useClockDrag } from './ClockDragContext'
 import { useTowerClockScale } from './TowerClockScaleContext'
+import { useRowDrag } from './RowDragContext'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -72,6 +73,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     startDrag,
     upsertClock,
   } = useClockDrag()
+  const { draggingRowId } = useRowDrag()
   const { clockScale } = useTowerClockScale()
   const clockRef = React.useRef<HTMLDivElement | null>(null)
   const pendingDragRef = React.useRef<{
@@ -439,6 +441,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const handleClockPointerDown = (event: React.PointerEvent) => {
     if (!hasEditAccess || screenReaderMode || !clockRef.current) return
+    if (draggingRowId) return
     if (isAnyPopupOpen()) return
     if (event.button !== 0) return
 

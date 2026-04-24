@@ -35,11 +35,27 @@ import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 import { useClockDrag } from './ClockDragContext'
+import { GripVertical } from 'lucide-react'
+import { useRowDrag } from './RowDragContext'
 
 type RealtimeTowerRowProps = {
   initialData: TowerRowRow
   initialClocks?: ClockType[]
 }
+
+const isAnyPopupOpen = () =>
+  Boolean(
+    document.querySelector(
+      [
+        '[role="dialog"]',
+        '[role="alertdialog"]',
+        '[role="menu"]',
+        '[role="listbox"]',
+        '[role="tooltip"]',
+        '[data-radix-popper-content-wrapper]',
+      ].join(','),
+    ),
+  )
 
 const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   initialData,
@@ -51,14 +67,24 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   const [rowName, setRowName] = useState<string>(initialData.name || '')
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
   const hasEditAccess = useEditAccess(towerId)
-  const { reduceMotion } = useAccessibility()
+  const { reduceMotion, screenReaderMode } = useAccessibility()
   const {
+    draggingClockId,
     getRowClocks,
     registerRow,
     registerRowElement,
     removeClockById,
     upsertClock,
   } = useClockDrag()
+  const {
+    draggingRowId,
+    getRowOrder,
+    registerRow: registerDraggableRow,
+    registerRowElement: registerDraggableRowElement,
+    removeRowById,
+    startRowDrag,
+  } = useRowDrag()
+  const rowCardRef = React.useRef<HTMLDivElement | null>(null)
   const supabase = createClient()
   const rowClocks = getRowClocks(rowId)
 
@@ -75,6 +101,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     if (newData.name !== rowName) {
       setRowName(newData.name || '')
     }
+    setRowData(newData)
   }
 
   const handleRealtimeTowerRowDelete = (
@@ -89,6 +116,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
 
     // Delete local state and update the tower
     setIsDeleted(true)
+    removeRowById(rowId)
   }
 
   const handleRealtimeClockInsert = (
@@ -107,6 +135,10 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   useEffect(() => {
     registerRow(rowId, initialClocks)
   }, [initialClocks, registerRow, rowId])
+
+  useEffect(() => {
+    registerDraggableRow(rowData)
+  }, [registerDraggableRow, rowData])
 
   useEffect(() => {
     const subscription = supabase
@@ -209,13 +241,25 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
       })
       // Revert if error
       setRowName(oldRowName)
+      setRowData((previousRowData) => ({
+        ...previousRowData,
+        name: oldRowName,
+        position: getRowOrder(rowId),
+      }))
+      return
     }
+    setRowData((previousRowData) => ({
+      ...previousRowData,
+      name: newRowName,
+      position: getRowOrder(rowId),
+    }))
   }
 
   // Update the server and delete the row
   const handleRowDelete = async () => {
     // Update local state
     setIsDeleted(true)
+    removeRowById(rowId)
     // Delete from the server
     const { error } = await deleteTowerRowSA({ rowId, towerId })
     if (error) {
@@ -225,16 +269,48 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
         description: error,
       })
       setIsDeleted(false)
+      registerDraggableRow(rowData)
       return
     }
+  }
+
+  const handleRowDragPointerDown = (event: React.PointerEvent) => {
+    if (draggingClockId) return
+    if (isAnyPopupOpen()) return
+
+    event.preventDefault()
+    event.stopPropagation()
+    if (!rowCardRef.current) return
+
+    startRowDrag(rowData, rowCardRef.current, event)
   }
 
   return (
     <Suspense>
       {!isDeleted && (
-        <Card className='flex flex-col space-y-2 mr-10 ml-2'>
+        <Card
+          ref={(element) => {
+            rowCardRef.current = element
+            registerDraggableRowElement(rowId, element)
+          }}
+          className={`flex flex-col space-y-2 mr-10 ml-2 transition-opacity ${
+            draggingRowId === rowId ? 'opacity-30' : 'opacity-100'
+          }`}
+          style={{ order: getRowOrder(rowId) }}
+        >
           {/* Row Name and Settings*/}
           <CardTitle className='flex flex-row space-x-2 space-y-2 items-center mx-8 mt-3'>
+            {hasEditAccess && !screenReaderMode && (
+              <Button
+                aria-label={`Move row ${rowName || 'untitled'}`}
+                className='mt-2 h-9 w-9 touch-none'
+                variant='outline'
+                size='icon'
+                onPointerDown={handleRowDragPointerDown}
+              >
+                <GripVertical className='h-4 w-4' aria-hidden='true' />
+              </Button>
+            )}
             {hasEditAccess ? (
               <Input
                 name='rowName'
