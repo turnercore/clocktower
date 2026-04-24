@@ -70,7 +70,7 @@ const AvatarWithPresence = ({
 
   const avatar = (
     <div
-      className='relative inline-block'
+      className='relative inline-block rounded-full transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'
       aria-label={`${username}${isOnline ? ' is online' : ''}`}
     >
       <Avatar
