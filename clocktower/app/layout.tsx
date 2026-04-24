@@ -7,6 +7,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { Geist } from 'next/font/google'
 import { Providers } from '@/providers/providers'
 import { Suspense } from 'react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 
 const geistSans = Geist({
   subsets: ['latin'],
@@ -70,6 +71,7 @@ export default async function RootLayout({
             <Footer />
           </Suspense>
         </Providers>
+        <SpeedInsights />
       </body>
     </html>
   )
