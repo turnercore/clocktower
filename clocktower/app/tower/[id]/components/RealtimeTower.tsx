@@ -19,6 +19,15 @@ import {
 import RealtimeTowerRow from './RealtimeTowerRow'
 import useEditAccess from '@/hooks/useEditAccess'
 import { ClockDragProvider } from './ClockDragContext'
+import { Search } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
+import {
+  CLOCK_SCALE_STEP,
+  MAX_CLOCK_SCALE,
+  MIN_CLOCK_SCALE,
+  TowerClockScaleProvider,
+  useTowerClockScale,
+} from './TowerClockScaleContext'
 
 interface TowerProps {
   initialData: TowerDatabaseType
@@ -152,26 +161,50 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   }
 
   return (
-    <ClockDragProvider>
-      <div className='flex flex-col space-y-4'>
-      <div className='flex flex-row items-center mx-auto space-x-5'>
-        <h1 className='text-3xl'>{towerData?.name}</h1>
-        <TowerSettingsDialog towerData={towerData} />
+    <TowerClockScaleProvider towerId={towerId}>
+      <ClockDragProvider>
+        <div className='flex flex-col space-y-4'>
+          <div className='flex flex-wrap items-center justify-center gap-4 px-4'>
+            <h1 className='text-3xl'>{towerData?.name}</h1>
+            <TowerClockScaleControl />
+            <TowerSettingsDialog towerData={towerData} />
+          </div>
+          {children}
+          {addedRows.map((row) => (
+            <RealtimeTowerRow initialData={row} key={row.id} />
+          ))}
+          {hasEditAccess && (
+            <Button
+              onClick={handleAddRow}
+              className='max-w-[250px] self-center mx-auto'
+            >
+              Add Row
+            </Button>
+          )}
+        </div>
+      </ClockDragProvider>
+    </TowerClockScaleProvider>
+  )
+}
+
+const TowerClockScaleControl = () => {
+  const { clockScale, setClockScale } = useTowerClockScale()
+
+  return (
+    <div className='flex min-w-[180px] items-center gap-2 text-muted-foreground'>
+      <Search className='h-4 w-4 shrink-0' aria-hidden='true' />
+      <span className='sr-only' id='tower-clock-scale-label'>
+        Clock scale
+      </span>
+      <Slider
+        aria-labelledby='tower-clock-scale-label'
+        value={[clockScale]}
+        min={MIN_CLOCK_SCALE}
+        max={MAX_CLOCK_SCALE}
+        step={CLOCK_SCALE_STEP}
+        onValueChange={(value) => setClockScale(value[0])}
+      />
       </div>
-      {children}
-      {addedRows.map((row) => (
-        <RealtimeTowerRow initialData={row} key={row.id} />
-      ))}
-      {hasEditAccess && (
-        <Button
-          onClick={handleAddRow}
-          className='max-w-[250px] self-center mx-auto'
-        >
-          Add Row
-        </Button>
-      )}
-      </div>
-    </ClockDragProvider>
   )
 }
 

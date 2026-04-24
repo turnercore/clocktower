@@ -32,6 +32,7 @@ import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 import { GripVertical } from 'lucide-react'
 import { useClockDrag } from './ClockDragContext'
+import { useTowerClockScale } from './TowerClockScaleContext'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -58,7 +59,15 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     startDrag,
     upsertClock,
   } = useClockDrag()
+  const { clockScale } = useTowerClockScale()
   const clockRef = React.useRef<HTMLDivElement | null>(null)
+  const pendingDragRef = React.useRef<{
+    pointerId: number
+    startX: number
+    startY: number
+    started: boolean
+  } | null>(null)
+  const suppressNextClickRef = React.useRef(false)
 
   const hasEditAccess = useEditAccess(towerId)
 
@@ -415,6 +424,56 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     }
   }
 
+  const handleClockPointerDown = (event: React.PointerEvent) => {
+    if (!hasEditAccess || screenReaderMode || !clockRef.current) return
+    if (event.button !== 0) return
+
+    const target = event.target as HTMLElement
+    if (
+      target.closest(
+        'button, input, textarea, select, a, [role="button"], [data-clock-drag-ignore]',
+      )
+    ) {
+      return
+    }
+
+    pendingDragRef.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      started: false,
+    }
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      const pendingDrag = pendingDragRef.current
+      if (!pendingDrag || pendingDrag.pointerId !== moveEvent.pointerId) return
+
+      const distanceX = moveEvent.clientX - pendingDrag.startX
+      const distanceY = moveEvent.clientY - pendingDrag.startY
+      const distance = Math.hypot(distanceX, distanceY)
+      if (!pendingDrag.started && distance < 6) return
+
+      moveEvent.preventDefault()
+      if (pendingDrag.started || !clockRef.current) return
+
+      pendingDragRef.current = { ...pendingDrag, started: true }
+      suppressNextClickRef.current = true
+      startDrag(clockData, clockRef.current, moveEvent)
+    }
+
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      if (pendingDragRef.current?.pointerId !== upEvent.pointerId) return
+      window.removeEventListener('pointermove', handlePointerMove)
+      window.removeEventListener('pointerup', handlePointerUp)
+      window.removeEventListener('pointercancel', handlePointerUp)
+      pendingDragRef.current = null
+    }
+
+    window.addEventListener('pointermove', handlePointerMove)
+    window.addEventListener('pointerup', handlePointerUp)
+    window.addEventListener('pointercancel', handlePointerUp)
+  }
+
   const screenReaderChart = (
     <Card>
       <CardHeader>
@@ -475,7 +534,19 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
             draggingClockId === clockId
               ? 'scale-95 opacity-30'
               : 'scale-100 opacity-100'
+          } ${
+            hasEditAccess && !screenReaderMode
+              ? 'cursor-grab active:cursor-grabbing'
+              : ''
           }`}
+          onClickCapture={(event) => {
+            if (!suppressNextClickRef.current) return
+            suppressNextClickRef.current = false
+            event.preventDefault()
+            event.stopPropagation()
+          }}
+          onPointerDown={handleClockPointerDown}
+          style={!screenReaderMode ? { width: `${128 * clockScale}px` } : {}}
         >
           {hasEditAccess && !screenReaderMode && (
             <button
@@ -493,7 +564,10 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
             </button>
           )}
           <div className='flex flex-row relative'>
-            <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
+            <div
+              className='flex flex-col items-center rounded-full'
+              style={{ width: `${128 * clockScale}px` }}
+            >
               {displayedChart}
             </div>
             <Suspense>

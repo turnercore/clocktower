@@ -1,6 +1,6 @@
 // TowerRow.tsx
 import { createClient } from '@/lib/supabase/server'
-import { TowerRowRow, UUID } from '@/types/schemas'
+import { ClockSchema, ClockType, TowerRowRow, UUID } from '@/types/schemas'
 import RealtimeTowerRow from './RealtimeTowerRow'
 import React, { Suspense } from 'react'
 
@@ -36,10 +36,24 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
   }
 
   const initialData: TowerRowRow = rowData as TowerRowRow //TODO: Fix the types to make this not necessary
+  const initialClocks: ClockType[] = clocksData.reduce((acc, clock, index) => {
+    const parseResult = ClockSchema.safeParse({
+      ...clock,
+      color: clock.color || '#E38627',
+      name: clock.name || '',
+      position: clock.position ?? index,
+      users: clock.users || [],
+    })
+    if (parseResult.success) acc.push(parseResult.data)
+    return acc
+  }, [] as ClockType[])
 
   return (
     <Suspense>
-      <RealtimeTowerRow initialData={initialData} initialClocks={clocksData} />
+      <RealtimeTowerRow
+        initialData={initialData}
+        initialClocks={initialClocks}
+      />
     </Suspense>
   )
 }

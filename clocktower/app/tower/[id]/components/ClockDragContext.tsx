@@ -11,6 +11,7 @@ import React, {
 import { toast } from '@/components/ui'
 import { ClockType, UUID } from '@/types/schemas'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
+import { PieChart } from 'react-minimal-pie-chart'
 
 type RowClockMap = Record<UUID, ClockType[]>
 
@@ -24,13 +25,12 @@ type DragPreview = {
 
 type DragState = {
   clockId: UUID
-  sourceRowId: UUID
-  activeRowId: UUID
-  pointerOffsetX: number
-  pointerOffsetY: number
-  width: number
-  height: number
 }
+
+type PointerPosition = Pick<
+  React.PointerEvent | PointerEvent,
+  'clientX' | 'clientY'
+>
 
 type ClockDragContextValue = {
   draggingClockId: UUID | null
@@ -43,7 +43,7 @@ type ClockDragContextValue = {
   startDrag: (
     clock: ClockType,
     element: HTMLDivElement,
-    event: React.PointerEvent,
+    event: PointerPosition,
   ) => void
   upsertClock: (clock: ClockType) => void
 }
@@ -162,7 +162,10 @@ export const ClockDragProvider = ({
         const centerX = rect.left + rect.width / 2
         const centerY = rect.top + rect.height / 2
 
-        if (pointerY < centerY || (Math.abs(pointerY - centerY) < 24 && pointerX < centerX)) {
+        if (
+          pointerY < centerY ||
+          (Math.abs(pointerY - centerY) < 24 && pointerX < centerX)
+        ) {
           index = i
           break
         }
@@ -308,19 +311,11 @@ export const ClockDragProvider = ({
   )
 
   const startDrag = useCallback(
-    (clock: ClockType, element: HTMLDivElement, event: React.PointerEvent) => {
+    (clock: ClockType, element: HTMLDivElement, event: PointerPosition) => {
       const rect = element.getBoundingClientRect()
       const previousRows = rowClocksRef.current
 
-      setDragState({
-        clockId: clock.id,
-        sourceRowId: clock.row_id,
-        activeRowId: clock.row_id,
-        pointerOffsetX: event.clientX - rect.left,
-        pointerOffsetY: event.clientY - rect.top,
-        width: rect.width,
-        height: rect.height,
-      })
+      setDragState({ clockId: clock.id })
       setDragPreview({
         clock,
         width: rect.width,
@@ -357,11 +352,6 @@ export const ClockDragProvider = ({
         }
 
         lastDragTarget.current = target
-        setDragState((previousState) =>
-          previousState
-            ? { ...previousState, activeRowId: target.rowId }
-            : previousState,
-        )
         moveDraggedClock(clock.id, target.rowId, target.index)
       }
 
@@ -432,15 +422,35 @@ export const ClockDragProvider = ({
   )
 }
 
-const ClockDragPreview = ({ clock }: { clock: ClockType }) => (
-  <div className='flex flex-col items-center'>
-    <div
-      className='h-[110px] w-[110px] rounded-full'
-      style={{ backgroundColor: clock.color || '#E38627' }}
-    />
-    <h2 className='mt-1 text-xl font-thin text-center'>{clock.name}</h2>
-  </div>
-)
+const ClockDragPreview = ({ clock }: { clock: ClockType }) => {
+  const chartData = Array.from({ length: clock.segments }, (_, index) => ({
+    title: `Segment ${index + 1}`,
+    value: 10,
+    color:
+      clock.filled !== null && index <= clock.filled
+        ? clock.color || '#E38627'
+        : 'gray',
+  }))
+
+  return (
+    <div className='flex flex-col items-center'>
+      <div className='h-[110px] w-[110px]'>
+        <PieChart
+          data={chartData}
+          lineWidth={clock.rounded ? clock.line_width / 2 : clock.line_width}
+          paddingAngle={
+            clock.rounded ? clock.line_width : clock.line_width / 4
+          }
+          rounded={clock.rounded}
+          startAngle={-90}
+          viewBoxSize={[110, 110]}
+          center={[55, 55]}
+        />
+      </div>
+      <h2 className='mt-1 text-xl font-thin text-center'>{clock.name}</h2>
+    </div>
+  )
+}
 
 export const useClockDrag = () => {
   const context = useContext(ClockDragContext)
