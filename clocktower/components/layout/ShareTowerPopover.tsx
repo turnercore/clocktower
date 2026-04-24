@@ -28,6 +28,7 @@ export default function ShareTowerPopover() {
   const [username, setUsername] = useState('')
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
   const [isTowerOwner, setIsTowerOwner] = useState(false)
+  const [canShareTower, setCanShareTower] = useState(false)
   const [invitedUsers, setInvitedUsers] = useState<UUID[]>([])
   const [isTowerPublic, setIsTowerPublic] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
@@ -42,6 +43,7 @@ export default function ShareTowerPopover() {
           setIsOnTowerPage(true)
         } else {
           setIsOnTowerPage(false)
+          setCanShareTower(false)
           return
         }
 
@@ -54,6 +56,8 @@ export default function ShareTowerPopover() {
 
         if (!sessionData.session?.user) {
           console.error('No user found in session data')
+          setUserId(null)
+          setCanShareTower(false)
           return
         }
 
@@ -62,16 +66,24 @@ export default function ShareTowerPopover() {
 
         const { data: towerData, error: towerError } = await supabase
           .from('towers')
-          .select('owner, users, public_key')
+          .select('owner, users, admin_users, is_locked, public_key')
           .eq('id', towerId)
           .single()
 
         if (towerError) {
           console.error(towerError)
+          setCanShareTower(false)
           return
         }
 
-        setIsTowerOwner(towerData.owner === currentUserId)
+        const currentUserIsOwner = towerData.owner === currentUserId
+        const currentUserIsAdmin = Boolean(
+          towerData.admin_users?.includes(currentUserId),
+        )
+        setIsTowerOwner(currentUserIsOwner)
+        setCanShareTower(
+          currentUserIsOwner || (currentUserIsAdmin && !towerData.is_locked),
+        )
         // filter out current user
         const currentInvitedUsers = (towerData.users ?? []).filter(
           (user: UUID) => user !== currentUserId,
@@ -139,6 +151,7 @@ export default function ShareTowerPopover() {
         variant: 'destructive',
       })
       console.error(error)
+      return
     }
 
     const publicKey = data?.publicKey
@@ -154,7 +167,8 @@ export default function ShareTowerPopover() {
 
   return (
     isOnTowerPage &&
-    userId && (
+    userId &&
+    canShareTower && (
       <Popover>
         <PopoverTrigger asChild>
           <Button

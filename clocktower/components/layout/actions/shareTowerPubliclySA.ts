@@ -37,16 +37,17 @@ export default async function shareTowerPubliclySA({
     // get tower
     const { data: towerData, error: towerError } = await supabase
       .from('towers')
-      .select('owner, admin_users')
+      .select('owner, admin_users, is_locked')
       .eq('id', towerId)
       .single()
     if (towerError) throw towerError
 
-    // Make sure the user requesting this is the owner of the tower or an admin
-    const isAdmin =
-      towerData?.admin_users?.includes(userId) || towerData?.owner === userId
+    // Owners can always share. Admins can share while the tower is unlocked.
+    const isOwner = towerData?.owner === userId
+    const isAdmin = towerData?.admin_users?.includes(userId)
+    const canShareTower = isOwner || (isAdmin && !towerData?.is_locked)
 
-    if (!isAdmin)
+    if (!canShareTower)
       throw new Error(
         'Requesting user does not have permission to set this tower public.',
       )

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 const inputSchema = z.object({
   inputUserId: UUIDSchema,
   inputInvitedUsername: z.string(),
-  inputTowerId: z.string(),
+  inputTowerId: UUIDSchema,
 })
 
 type ReturnType = {
@@ -28,8 +28,28 @@ export default async function serverActionSA({
       inputTowerId: towerId,
     } = inputSchema.parse({ inputUserId, inputInvitedUsername, inputTowerId })
 
-    // If we get here, the data is valid and can be used exactly as you would expect
-    // to use it in the rest of your server action.
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession()
+    if (sessionError) throw sessionError
+    const requestingUserId = sessionData.session?.user.id
+    if (!requestingUserId) throw new Error('Requesting user not found.')
+    if (requestingUserId !== userId) {
+      throw new Error('Requesting user does not match the active session.')
+    }
+
+    const { data: towerData, error: towerError } = await supabase
+      .from('towers')
+      .select('owner, admin_users, is_locked')
+      .eq('id', towerId)
+      .single()
+    if (towerError) throw towerError
+
+    const isOwner = towerData.owner === requestingUserId
+    const isAdmin = towerData.admin_users?.includes(requestingUserId)
+    const canInviteToTower = isOwner || (isAdmin && !towerData.is_locked)
+    if (!canInviteToTower) {
+      throw new Error('Requesting user does not have permission to invite users.')
+    }
 
     // Check if the user with the entered username exists
     const { data: profilesData, error: profilesError } = await supabase
