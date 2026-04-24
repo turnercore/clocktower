@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -190,49 +191,47 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
             onClick={handleTowerLockSwitch}
           />
         </div>
-        <div className='flex flex-row space-y-2 items-center justify-between '>
-          <Button type='submit' onClick={() => setIsOpen(false)}>
-            Ok
-          </Button>
-          <div className='pb-2'>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                {isOwner ? (
-                  <Button variant='destructive'>
+        <DialogFooter className='items-center gap-2 pt-4'>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              {isOwner ? (
+                <Button variant='destructive'>
+                  <GiDemolish className='w-full h-full' />
+                </Button>
+              ) : (
+                <Button variant='destructive'>Leave</Button>
+              )}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  {isOwner ? 'Demolish Tower?' : 'Leave Tower?'}
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  {isOwner
+                    ? "Are you sure? If so let's burn this sucker to the ground 🔥."
+                    : "Are you sure you want to leave? You'll have to be invited back."}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className='vibrating-element bg-red-500'
+                  onClick={handleLeaveTower}
+                >
+                  {isOwner ? (
                     <GiDemolish className='w-full h-full' />
-                  </Button>
-                ) : (
-                  <Button variant='destructive'>Leave</Button>
-                )}
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>
-                    {isOwner ? 'Demolish Tower?' : 'Leave Tower?'}
-                  </AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {isOwner
-                      ? "Are you sure? If so let's burn this sucker to the ground 🔥."
-                      : "Are you sure you want to leave? You'll have to be invited back."}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className='vibrating-element bg-red-500'
-                    onClick={handleLeaveTower}
-                  >
-                    {isOwner ? (
-                      <GiDemolish className='w-full h-full' />
-                    ) : (
-                      <FaPersonWalkingLuggage className='w-full h-full' />
-                    )}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        </div>
+                  ) : (
+                    <FaPersonWalkingLuggage className='w-full h-full' />
+                  )}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button type='submit' onClick={() => setIsOpen(false)}>
+            Save
+          </Button>
+        </DialogFooter>
         {/* Loop through users and display avatars */}
       </DialogContent>
     </Dialog>
