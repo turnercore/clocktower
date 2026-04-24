@@ -9,6 +9,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
   toast,
 } from '@/components/ui'
 import hash from '@/tools/hash'
@@ -17,6 +21,7 @@ import { AlertDialog, AlertDialogCancel } from '@radix-ui/react-alert-dialog'
 import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 
 interface AvatarWithPresenceProps {
   user: ProfileRow
@@ -60,35 +65,58 @@ const AvatarWithPresence = ({
     return null
   }
 
+  const username = user.username || 'Clocktower user'
+
   const avatar = (
-    <div className='relative inline-block'>
+    <div
+      className='relative inline-block'
+      aria-label={`${username}${isOnline ? ' is online' : ''}`}
+    >
       <Avatar
         onClick={() => {}}
         style={{ backgroundColor: user.color || '#FFFFFF' }}
       >
         <AvatarImage
           src={`https://robohash.org/${hash(
-            user.username || 'clocktower',
+            username,
           )}?set=set${user.avatar_set}&size=64x64`}
-          alt={user.username || 'Avatar'}
+          alt={username}
         />
         <AvatarFallback delayMs={600}>
-          {user.username?.slice(0, 1).toUpperCase()}
+          {username.slice(0, 1).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       {/* Presence Indicator */}
       {isOnline && (
-        <span className='w-3 h-3 bg-green-500 absolute bottom-0 right-0 rounded-full border-2 border-white'></span>
+        <span
+          className='absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-slate-950'
+          aria-hidden='true'
+        ></span>
       )}
     </div>
   )
 
+  const tooltip = (trigger: ReactNode) => (
+    <TooltipProvider delayDuration={200}>
+      <Tooltip>
+        <TooltipTrigger asChild>{trigger}</TooltipTrigger>
+        <TooltipContent>
+          <p>{username}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  )
+
   return isInteractable ? (
     <AlertDialog>
-      <AlertDialogTrigger>{avatar}</AlertDialogTrigger>
+      {tooltip(
+        <AlertDialogTrigger aria-label={`Manage ${username}`}>
+          {avatar}
+        </AlertDialogTrigger>,
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>Are you sure?</AlertDialogHeader>
-        <p>Are you sure you want to defenestrate {user.username}?</p>
+        <p>Are you sure you want to defenestrate {username}?</p>
         <AlertDialogFooter>
           <AlertDialogCancel>🙅‍♀️ Cancel</AlertDialogCancel>
           <AlertDialogAction
@@ -101,7 +129,7 @@ const AvatarWithPresence = ({
       </AlertDialogContent>
     </AlertDialog>
   ) : (
-    avatar
+    tooltip(avatar)
   )
 }
 
