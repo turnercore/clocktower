@@ -171,6 +171,12 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     router.push(`/tower/${towerId}`)
   }
 
+  const handleSelectTower = (tower: TowerDatabaseType) => {
+    setSelectedTowerName(tower.name || '')
+    setOpen(false)
+    navigateToSelectedTower(tower.id)
+  }
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -195,10 +201,16 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                   aria-label={`Select ${tower.name}`}
                   key={tower.id}
                   value={tower.id}
+                  keywords={[tower.name || '']}
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    handleSelectTower(tower)
+                  }}
+                  onClick={() => {
+                    handleSelectTower(tower)
+                  }}
                   onSelect={() => {
-                    setSelectedTowerName(tower.name || '')
-                    setOpen(false)
-                    navigateToSelectedTower(tower.id)
+                    handleSelectTower(tower)
                   }}
                 >
                   <GiWhiteTower className='mr-2 h-4 w-4' />
@@ -210,6 +222,11 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                 value='new-tower'
                 keywords={['new', 'tower', 'create']}
                 forceMount
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  handleCreateNewTower()
+                }}
+                onClick={handleCreateNewTower}
                 onSelect={handleCreateNewTower}
               >
                 <GoPlusCircle className='mr-2 h-4 w-4' />

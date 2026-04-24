@@ -108,13 +108,14 @@ export default async function updateUserDataSA(
     if (color) userData['color'] = color
 
     // Update it on the server now
-    const { error: updateProfileError } = await supabase
-      .from('profiles')
-      .update(userData)
-      .eq('id', user.id)
-      .single()
+    if (Object.keys(userData).length > 0) {
+      const { error: updateProfileError } = await supabase
+        .from('profiles')
+        .update(userData)
+        .eq('id', user.id)
 
-    if (updateProfileError) throw updateProfileError
+      if (updateProfileError) throw updateProfileError
+    }
 
     return { data: { success: true } }
   } catch (error) {

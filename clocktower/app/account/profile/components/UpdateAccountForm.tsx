@@ -81,13 +81,13 @@ const formSchema = z
     password: z
       .string()
       .trim()
-      .email('Please enter a valid email address')
+      .min(8, 'Password must be at least 8 characters.')
       .or(z.literal('')) // Accept an empty string as valid
       .optional(),
     confirmPassword: z
       .string()
       .trim()
-      .email('Please enter a valid email address')
+      .min(8, 'Password must be at least 8 characters.')
       .or(z.literal('')) // Accept an empty string as valid
       .optional(),
   })
@@ -537,7 +537,7 @@ const UpdateAccountForm = ({
 
             <div className='flex flex-row space-x-4'>
               <Button type='submit' disabled={isSubmitting}>
-                Submit
+                Save
               </Button>
               <Button
                 type='reset'
