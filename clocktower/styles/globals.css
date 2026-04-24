@@ -127,3 +127,108 @@
   cursor: pointer;
   outline: none;
 }
+
+.clock-settings-dialog-content {
+  --clock-settings-origin-x: 50vw;
+  --clock-settings-origin-y: 50vh;
+  overflow: visible;
+  transform-origin: calc(var(--clock-settings-origin-x) - 50vw + 50%)
+    calc(var(--clock-settings-origin-y) - 50vh + 50%);
+}
+
+.clock-settings-dialog-content::before {
+  content: '';
+  position: fixed;
+  left: var(--clock-settings-origin-x);
+  top: var(--clock-settings-origin-y);
+  z-index: -1;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle, hsl(var(--primary) / 0.28), transparent 65%),
+    hsl(var(--background));
+  border: 1px solid hsl(var(--primary) / 0.35);
+  box-shadow: 0 0 0.9rem hsl(var(--primary) / 0.24);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0);
+}
+
+.clock-settings-dialog-content[data-state='open'] {
+  animation: clock-settings-genie-in 320ms cubic-bezier(0.16, 1, 0.3, 1)
+    both;
+}
+
+.clock-settings-dialog-content[data-state='closed'] {
+  animation: clock-settings-genie-out 220ms cubic-bezier(0.7, 0, 0.84, 0)
+    both;
+}
+
+.clock-settings-dialog-content[data-state='open']::before {
+  animation: clock-settings-origin-flare 320ms ease-out both;
+}
+
+.clock-settings-dialog-content[data-state='closed']::before {
+  animation: clock-settings-origin-flare 220ms ease-in reverse both;
+}
+
+@keyframes clock-settings-genie-in {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(
+        calc(var(--clock-settings-origin-x) - 50vw),
+        calc(var(--clock-settings-origin-y) - 50vh)
+      )
+      scaleX(0.08) scaleY(0.18);
+    filter: blur(8px);
+  }
+  56% {
+    opacity: 1;
+    transform: translate(-50%, -50%)
+      translate(
+        calc((var(--clock-settings-origin-x) - 50vw) * 0.18),
+        calc((var(--clock-settings-origin-y) - 50vh) * 0.18)
+      )
+      scaleX(0.55) scaleY(1.08);
+    filter: blur(1px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes clock-settings-genie-out {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) translate(0, 0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%)
+      translate(
+        calc(var(--clock-settings-origin-x) - 50vw),
+        calc(var(--clock-settings-origin-y) - 50vh)
+      )
+      scaleX(0.06) scaleY(0.16);
+    filter: blur(7px);
+  }
+}
+
+@keyframes clock-settings-origin-flare {
+  0% {
+    opacity: 0.9;
+    transform: translate(-50%, -50%) scale(0.1);
+  }
+  55% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(4.25);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(7);
+  }
+}

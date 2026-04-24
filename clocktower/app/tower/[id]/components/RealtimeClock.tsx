@@ -46,7 +46,6 @@ const isAnyPopupOpen = () =>
         '[role="alertdialog"]',
         '[role="menu"]',
         '[role="listbox"]',
-        '[role="tooltip"]',
         '[data-radix-popper-content-wrapper]',
       ].join(','),
     ),
@@ -66,6 +65,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
   const [settingsOpen, setSettingsOpen] = useState<boolean>(false)
+  const [settingsOrigin, setSettingsOrigin] = useState({ x: 0, y: 0 })
   const { screenReaderMode } = useAccessibility()
   const {
     draggingClockId,
@@ -399,7 +399,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const handleClockPointerDown = (event: React.PointerEvent) => {
     if (!hasEditAccess || screenReaderMode || !clockRef.current) return
     if (draggingRowId) return
-    if (isAnyPopupOpen() && !document.querySelector('[role="tooltip"]')) return
+    if (isAnyPopupOpen()) return
     if (event.button !== 0) return
 
     const target = event.target as HTMLElement
@@ -467,6 +467,15 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
     event.preventDefault()
     event.stopPropagation()
+
+    const clockBounds = clockRef.current?.getBoundingClientRect()
+    if (clockBounds) {
+      setSettingsOrigin({
+        x: clockBounds.left + clockBounds.width / 2,
+        y: clockBounds.top + Math.min(clockBounds.width, clockBounds.height) / 2,
+      })
+    }
+
     setSettingsOpen(true)
   }
 
@@ -584,6 +593,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
                     onDelete={handleDelete}
                     open={settingsOpen}
                     onOpenChange={setSettingsOpen}
+                    origin={settingsOrigin}
                   />
                 )}
               </div>

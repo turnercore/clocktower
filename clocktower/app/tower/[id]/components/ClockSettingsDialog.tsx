@@ -18,7 +18,12 @@ import {
   Slider,
   toast,
 } from '@/components/ui'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
@@ -32,6 +37,7 @@ type ClockSettingsDialogProps = {
   onDelete: () => void
   open: boolean
   onOpenChange: (open: boolean) => void
+  origin: { x: number; y: number }
 }
 
 const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
@@ -41,6 +47,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   onDelete,
   open,
   onOpenChange,
+  origin,
 }) => {
   const [segments, setSegments] = React.useState<number>(clockData.segments)
 
@@ -253,7 +260,15 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className='origin-center data-[state=open]:duration-300 data-[state=open]:zoom-in-50'>
+      <DialogContent
+        className='clock-settings-dialog-content'
+        style={
+          {
+            '--clock-settings-origin-x': `${origin.x}px`,
+            '--clock-settings-origin-y': `${origin.y}px`,
+          } as React.CSSProperties
+        }
+      >
         <DialogHeader>
           <DialogTitle className=' text-center text-2xl'>
             Clock Settings
