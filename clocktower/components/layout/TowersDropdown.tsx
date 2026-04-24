@@ -188,12 +188,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
         <Command>
           <CommandInput placeholder='Search Towers...' />
           <CommandList>
-            <CommandEmpty>
-              No tower found. Perhaps you should <br />
-              <Button type='button' onClick={handleCreateNewTower}>
-                Create a new one.
-              </Button>
-            </CommandEmpty>
+            <CommandEmpty>No tower found.</CommandEmpty>
             <CommandGroup>
               {towers.map((tower) => (
                 <CommandItem
@@ -213,6 +208,8 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
               <CommandItem
                 key='new'
                 value='new-tower'
+                keywords={['new', 'tower', 'create']}
+                forceMount
                 onSelect={handleCreateNewTower}
               >
                 <GoPlusCircle className='mr-2 h-4 w-4' />

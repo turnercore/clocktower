@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
   DropdownMenuLabel,
-  Button,
 } from '@/components/ui'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
@@ -83,19 +82,17 @@ const UserAvatar = ({ className, user }: UserAvatarProps) => {
           {profile.username}
         </DropdownMenuLabel>
         <DropdownMenuGroup>
-          <Link href='/account/profile'>
-            <DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href='/account/profile'>
               <GoGear className='mr-2 h-4 w-4' />
               <span>Settings</span>
-            </DropdownMenuItem>
-          </Link>
+            </Link>
+          </DropdownMenuItem>
           
-          <Button variant='link' onClick={signOut}>
-            <DropdownMenuItem>
-              <GoSignOut className='mr-2 h-4 w-4' />
-              <span>Sign Out</span>
-            </DropdownMenuItem>
-          </Button>
+          <DropdownMenuItem onSelect={signOut}>
+            <GoSignOut className='mr-2 h-4 w-4' />
+            <span>Sign Out</span>
+          </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
