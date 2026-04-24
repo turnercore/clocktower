@@ -102,7 +102,7 @@ const InvitedUsersList = ({
   if (!profiles.length || profiles.length === 0 || !towerId) return <></>
 
   return (
-    <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto'>
+    <div className='flex flex-row space-x-2 items-center justify-start overflow-x-auto py-1'>
       {profiles
         .slice(0, isExpanded ? profiles.length : maxAvatars)
         .map((user) => (

@@ -70,27 +70,29 @@ const AvatarWithPresence = ({
 
   const avatar = (
     <div
-      className='relative inline-block rounded-full transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+      className='relative inline-flex h-11 w-11 items-center justify-center overflow-visible rounded-full'
       aria-label={`${username}${isOnline ? ' is online' : ''}`}
     >
-      <Avatar
-        onClick={() => {}}
-        style={{ backgroundColor: user.color || '#FFFFFF' }}
-      >
-        <AvatarImage
-          src={`https://robohash.org/${hash(
-            avatarSeed,
-          )}?set=set${user.avatar_set}&size=64x64`}
-          alt={username}
-        />
-        <AvatarFallback delayMs={600}>
-          {username.slice(0, 1).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+      <div className='rounded-full transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'>
+        <Avatar
+          onClick={() => {}}
+          style={{ backgroundColor: user.color || '#FFFFFF' }}
+        >
+          <AvatarImage
+            src={`https://robohash.org/${hash(
+              avatarSeed,
+            )}?set=set${user.avatar_set}&size=64x64`}
+            alt={username}
+          />
+          <AvatarFallback delayMs={600}>
+            {username.slice(0, 1).toUpperCase()}
+          </AvatarFallback>
+        </Avatar>
+      </div>
       {/* Presence Indicator */}
       {isOnline && (
         <span
-          className='absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-slate-950'
+          className='absolute bottom-0.5 right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-500 dark:border-slate-950'
           aria-hidden='true'
         ></span>
       )}
