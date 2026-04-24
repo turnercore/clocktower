@@ -8,6 +8,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
+  CommandList,
 } from '@/components/ui/command'
 import {
   Popover,
@@ -22,8 +23,6 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
-import { capitalizeFirstLetterOfEveryWord } from '@/tools/capitalizeFirstLetterOfEveryWord'
-import { Label } from '../ui'
 
 const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
@@ -188,36 +187,39 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
       <PopoverContent className='w-[200px] p-0'>
         <Command>
           <CommandInput placeholder='Search Towers...' />
-          <CommandEmpty>
-            No tower found. Perhaps you should <br />
-            <Button>Create a new one.</Button>
-          </CommandEmpty>
-          <CommandGroup>
-            {towers.map((tower) => (
+          <CommandList>
+            <CommandEmpty>
+              No tower found. Perhaps you should <br />
+              <Button type='button' onClick={handleCreateNewTower}>
+                Create a new one.
+              </Button>
+            </CommandEmpty>
+            <CommandGroup>
+              {towers.map((tower) => (
+                <CommandItem
+                  aria-label={`Select ${tower.name}`}
+                  key={tower.id}
+                  value={tower.id}
+                  onSelect={() => {
+                    setSelectedTowerName(tower.name || '')
+                    setOpen(false)
+                    navigateToSelectedTower(tower.id)
+                  }}
+                >
+                  <GiWhiteTower className='mr-2 h-4 w-4' />
+                  <span>{tower.name}</span>
+                </CommandItem>
+              ))}
               <CommandItem
-                aria-label={`Select ${tower.name}`}
-                key={tower.id}
-                onSelect={(currentValue) => {
-                  if (currentValue === selectedTowerName) return
-                  setSelectedTowerName(
-                    capitalizeFirstLetterOfEveryWord(currentValue),
-                  )
-                  setOpen(false)
-                  navigateToSelectedTower(tower.id)
-                }}
+                key='new'
+                value='new-tower'
+                onSelect={handleCreateNewTower}
               >
-                <GiWhiteTower
-                  id={`tower-${tower.id}`}
-                  className='mr-2 h-4 w-4'
-                />
-                <Label htmlFor={`tower-${tower.id}`}> {tower.name} </Label>
+                <GoPlusCircle className='mr-2 h-4 w-4' />
+                <span>New Tower</span>
               </CommandItem>
-            ))}
-            <CommandItem key='new' onSelect={handleCreateNewTower}>
-              <GoPlusCircle className='mr-2 h-4 w-4' />
-              <p>New Tower</p>
-            </CommandItem>
-          </CommandGroup>
+            </CommandGroup>
+          </CommandList>
         </Command>
       </PopoverContent>
     </Popover>
