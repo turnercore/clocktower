@@ -63,7 +63,7 @@ export const updateAndSyncPositions = async (
   } catch (error) {
     return error instanceof Error
       ? { error: error.message ? error.message : 'Unknown error' }
-      : { error: 'Unknown error from fetchClockData.' }
+      : { error: 'Unknown error from updateAndSyncPositions.' }
   }
 }
 
@@ -123,6 +123,6 @@ function sortByPosition(entities: SortableEntity[]): SortResult {
   } catch (error) {
     return error instanceof Error
       ? { error: error.message }
-      : { error: 'Unknown error from fetchTowerRowData.' }
+      : { error: 'Unknown error from sortByPosition.' }
   }
 }

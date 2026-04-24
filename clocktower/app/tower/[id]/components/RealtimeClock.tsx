@@ -27,6 +27,12 @@ import { useAccessibility } from '@/providers/AccessibilityProvider'
 import { useClockDrag } from './ClockDragContext'
 import { useTowerClockScale } from './TowerClockScaleContext'
 import { useRowDrag } from './RowDragContext'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -59,6 +65,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     null,
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
+  const [settingsOpen, setSettingsOpen] = useState<boolean>(false)
   const { screenReaderMode } = useAccessibility()
   const {
     draggingClockId,
@@ -76,6 +83,9 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     startY: number
     started: boolean
   } | null>(null)
+  const pendingSliceClickTimeoutRef = React.useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
   const suppressNextClickRef = React.useRef(false)
 
   const hasEditAccess = useEditAccess(towerId)
@@ -91,6 +101,14 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       registerClockElement(clockId, null)
     }
   }, [clockId, registerClockElement])
+
+  useEffect(() => {
+    return () => {
+      if (pendingSliceClickTimeoutRef.current) {
+        clearTimeout(pendingSliceClickTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // Create the chart data, this is not used just to make the piechart work
   const chartData = Array.from({ length: clockData.segments }, (_, i) => ({
@@ -187,15 +205,24 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   // Function to handle slice click
   const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
-    const newFilledValue =
-      clockData.filled === dataIndex ||
-      (clockData.filled !== null && dataIndex < clockData.filled)
-        ? dataIndex === 0
-          ? null
-          : dataIndex - 1
-        : dataIndex
+    if (event.detail > 1) return
 
-    await updateFilledValue(newFilledValue)
+    if (pendingSliceClickTimeoutRef.current) {
+      clearTimeout(pendingSliceClickTimeoutRef.current)
+    }
+
+    pendingSliceClickTimeoutRef.current = setTimeout(() => {
+      const newFilledValue =
+        clockData.filled === dataIndex ||
+        (clockData.filled !== null && dataIndex < clockData.filled)
+          ? dataIndex === 0
+            ? null
+            : dataIndex - 1
+          : dataIndex
+
+      updateFilledValue(newFilledValue)
+      pendingSliceClickTimeoutRef.current = null
+    }, 220)
   }
 
   // Function to handle input change for screen readers
@@ -372,7 +399,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const handleClockPointerDown = (event: React.PointerEvent) => {
     if (!hasEditAccess || screenReaderMode || !clockRef.current) return
     if (draggingRowId) return
-    if (isAnyPopupOpen()) return
+    if (isAnyPopupOpen() && !document.querySelector('[role="tooltip"]')) return
     if (event.button !== 0) return
 
     const target = event.target as HTMLElement
@@ -419,6 +446,28 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     window.addEventListener('pointermove', handlePointerMove)
     window.addEventListener('pointerup', handlePointerUp)
     window.addEventListener('pointercancel', handlePointerUp)
+  }
+
+  const handleClockDoubleClick = (event: React.MouseEvent) => {
+    if (!hasEditAccess || screenReaderMode) return
+
+    const target = event.target as HTMLElement
+    if (
+      target.closest(
+        'button, input, textarea, select, a, [role="button"], [data-clock-drag-ignore]',
+      )
+    ) {
+      return
+    }
+
+    if (pendingSliceClickTimeoutRef.current) {
+      clearTimeout(pendingSliceClickTimeoutRef.current)
+      pendingSliceClickTimeoutRef.current = null
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    setSettingsOpen(true)
   }
 
   const screenReaderChart = (
@@ -493,15 +542,38 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
             event.stopPropagation()
           }}
           onPointerDown={handleClockPointerDown}
+          onDoubleClick={handleClockDoubleClick}
           style={!screenReaderMode ? { width: `${128 * clockScale}px` } : {}}
         >
           <div className='flex flex-row relative'>
-            <div
-              className='flex flex-col items-center rounded-full'
-              style={{ width: `${128 * clockScale}px` }}
-            >
-              {displayedChart}
-            </div>
+            <TooltipProvider delayDuration={250}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    className='relative flex flex-col items-center rounded-full'
+                    style={{ width: `${128 * clockScale}px` }}
+                    aria-label={
+                      hasEditAccess && !screenReaderMode
+                        ? 'Double click to edit clock'
+                        : undefined
+                    }
+                  >
+                    {displayedChart}
+                    {settingsOpen && (
+                      <div
+                        aria-hidden='true'
+                        className='pointer-events-none absolute left-1/2 top-1/2 z-10 h-16 w-16 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-primary/70 bg-primary/10 animate-ping'
+                      />
+                    )}
+                  </div>
+                </TooltipTrigger>
+                {hasEditAccess && !screenReaderMode && (
+                  <TooltipContent side='top'>
+                    double click to edit clock
+                  </TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
             <Suspense>
               <div className='absolute right-0'>
                 {hasEditAccess && !screenReaderMode && (
@@ -510,6 +582,8 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
                     clockData={clockData}
                     onStateChange={handleStateChange}
                     onDelete={handleDelete}
+                    open={settingsOpen}
+                    onOpenChange={setSettingsOpen}
                   />
                 )}
               </div>

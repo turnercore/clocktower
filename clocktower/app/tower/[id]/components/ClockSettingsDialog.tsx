@@ -18,18 +18,11 @@ import {
   Slider,
   toast,
 } from '@/components/ui'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { BsTrash3Fill } from 'react-icons/bs'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
-import { GiSettingsKnobs } from 'react-icons/gi'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
 type ClockSettingsDialogProps = {
@@ -37,6 +30,8 @@ type ClockSettingsDialogProps = {
   clockData: ClockType
   onStateChange: (key: keyof ClockType, value: any) => void
   onDelete: () => void
+  open: boolean
+  onOpenChange: (open: boolean) => void
 }
 
 const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
@@ -44,6 +39,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   clockData,
   onStateChange,
   onDelete,
+  open,
+  onOpenChange,
 }) => {
   const [segments, setSegments] = React.useState<number>(clockData.segments)
 
@@ -255,17 +252,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   }
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button
-          variant='ghost'
-          size='icon'
-          className='hover:scale-105 opacity-60 hover:opacity-100'
-        >
-          <GiSettingsKnobs className='w-3/4 h-3/4 hover:scale-105' />
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className='origin-center data-[state=open]:duration-300 data-[state=open]:zoom-in-50'>
         <DialogHeader>
           <DialogTitle className=' text-center text-2xl'>
             Clock Settings

@@ -66,25 +66,27 @@ const UserAvatar = ({ className, user }: UserAvatarProps) => {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className={`group relative h-[45px] w-[45px] rounded-full drop-shadow-md transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
+          className={`group relative inline-flex h-11 w-11 items-center justify-center overflow-visible rounded-full ${className}`}
           aria-label='Open user menu'
           type='button'
         >
-          <Avatar
-            className='h-full w-full'
-            style={{ backgroundColor: profile.color || '#FFFFFF' }}
-          >
-            <AvatarImage
+          <div className='relative h-10 w-10 rounded-full drop-shadow-md transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl group-focus-visible:scale-110 group-focus-visible:outline-none group-focus-visible:ring-2 group-focus-visible:ring-primary group-focus-visible:ring-offset-2 group-focus-visible:ring-offset-background'>
+            <Avatar
+              className='h-10 w-10'
               style={{ backgroundColor: profile.color || '#FFFFFF' }}
-              src={`https://robohash.org/${hash(
-                profile.username || 'clocktower',
-              )}?set=set${profile.avatar_set}&size=64x64`}
-            />
-            <AvatarFallback>CT</AvatarFallback>
-          </Avatar>
-          <span className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/35 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100'>
-            <Menu className='h-5 w-5 text-white/85' aria-hidden='true' />
-          </span>
+            >
+              <AvatarImage
+                style={{ backgroundColor: profile.color || '#FFFFFF' }}
+                src={`https://robohash.org/${hash(
+                  profile.username || 'clocktower',
+                )}?set=set${profile.avatar_set}&size=64x64`}
+              />
+              <AvatarFallback>CT</AvatarFallback>
+            </Avatar>
+            <span className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/35 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100'>
+              <Menu className='h-5 w-5 text-white/85' aria-hidden='true' />
+            </span>
+          </div>
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56'>

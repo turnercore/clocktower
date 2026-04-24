@@ -1,4 +1,4 @@
-// TowerRow.tsx
+// Tower.tsx
 import { type UUID } from '@/types/schemas'
 import RealtimeTower from './RealtimeTower'
 import { Button } from '@/components/ui'
