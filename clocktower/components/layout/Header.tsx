@@ -19,6 +19,7 @@ import InvitedUsersList from './InvitedUsersList'
 import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { AccessibilityOptionsDialog } from './AccessiblityOptionsDialog'
+import CreateNewTowerButton from '../homepage/CreateNewTowerButton'
 
 // Changing this to a client componenet
 export default function Header() {
@@ -75,6 +76,7 @@ export default function Header() {
         {user ? (
           <div className='flex flex-row space-x-2 pr-6'>
             <TowersDropdown user={user} />
+            <CreateNewTowerButton iconOnly />
             {
               // If on tower page, show share tower button
               isOnTowerPage && (

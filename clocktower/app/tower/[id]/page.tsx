@@ -3,23 +3,23 @@ import { Tower } from './components/Tower'
 import Link from 'next/link'
 import { Button } from '@/components/ui'
 
-type pageParams = {
-  id: UUID
-}
+type PageParams = Promise<{
+  id: string
+}>
 
-type searchParams = {
+type PageSearchParams = Promise<{
   public_key?: string
+}>
+
+type TowerPageProps = {
+  params: PageParams
+  searchParams: PageSearchParams
 }
 
-export default async function TowerPage({
-  params,
-  searchParams,
-}: {
-  params: pageParams
-  searchParams: searchParams
-}) {
-  const { id } = params
-  const { public_key } = searchParams
+export default async function TowerPage(props: TowerPageProps) {
+  const { id } = await props.params
+  const { public_key } = await props.searchParams
+  let towerId: UUID
 
   // Validate params:
   try {
@@ -27,7 +27,7 @@ export default async function TowerPage({
       throw new Error('Missing id')
     }
 
-    UUIDSchema.parse(id)
+    towerId = UUIDSchema.parse(id)
   } catch (error) {
     return (
       <div className='flex flex-col items-center mt-28 text-center mb-[250px]'>
@@ -43,7 +43,7 @@ export default async function TowerPage({
 
   return (
     <div className='mb-[250px]'>
-      <Tower towerId={id} publicKey={public_key || ''} />
+      <Tower towerId={towerId} publicKey={public_key || ''} />
     </div>
   )
 }

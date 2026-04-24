@@ -4,7 +4,6 @@ import { ChevronsUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
@@ -22,7 +21,6 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
-import Link from 'next/link'
 
 const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
@@ -32,7 +30,9 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
   const [open, setOpen] = useState(false)
   const [towers, setTowers] = useState<TowerDatabaseType[]>([])
   const [selectedTowerName, setSelectedTowerName] = useState('')
+  const [towerSearch, setTowerSearch] = useState('')
   const [userId, setUserId] = useState<UUID | null>(user?.id || null)
+  const [isCreating, setIsCreating] = useState(false)
 
   // Handle realtime changes to the towers list if a tower is addded
   const handleRealtimeInsertTower = async (payload: any) => {
@@ -72,14 +72,19 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
 
   // Handle creating a new tower
   const handleCreateNewTower = async () => {
+    if (isCreating) return
+
     const newTowerId = crypto.randomUUID()
+    setIsCreating(true)
     setOpen(false)
     const { error } = await insertNewTowerSA(newTowerId)
     if (error) {
       console.error(error)
+      setIsCreating(false)
       return
     }
     router.push(`/tower/${newTowerId}`)
+    setIsCreating(false)
   }
 
   // Get the towers for the user
@@ -175,6 +180,13 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     navigateToSelectedTower(tower.id)
   }
 
+  const normalizedTowerSearch = towerSearch.trim().toLowerCase()
+  const filteredTowers = normalizedTowerSearch
+    ? towers.filter((tower) =>
+        (tower.name || '').toLowerCase().includes(normalizedTowerSearch),
+      )
+    : towers
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -189,32 +201,31 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className='w-[200px] p-0'>
-        <Command>
-          <CommandInput placeholder='Search Towers...' />
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder='Search Towers...'
+            value={towerSearch}
+            onValueChange={setTowerSearch}
+          />
           <CommandList>
-            <CommandEmpty>No tower found.</CommandEmpty>
             <CommandGroup>
-              {towers.map((tower) => (
+              {filteredTowers.length === 0 && (
+                <div className='px-2 py-3 text-sm text-muted-foreground'>
+                  No tower found.
+                </div>
+              )}
+              {filteredTowers.map((tower) => (
                 <CommandItem
                   aria-label={`Select ${tower.name}`}
                   key={tower.id}
                   value={tower.id}
                   keywords={[tower.name || '']}
-                  asChild
                   onSelect={() => {
                     handleSelectTower(tower)
                   }}
                 >
-                  <Link
-                    href={`/tower/${tower.id}`}
-                    onClick={() => {
-                      setSelectedTowerName(tower.name || '')
-                      setOpen(false)
-                    }}
-                  >
-                    <GiWhiteTower className='mr-2 h-4 w-4' />
-                    <span>{tower.name}</span>
-                  </Link>
+                  <GiWhiteTower className='mr-2 h-4 w-4' />
+                  <span>{tower.name}</span>
                 </CommandItem>
               ))}
               <CommandItem
@@ -222,16 +233,11 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                 value='new-tower'
                 keywords={['new', 'tower', 'create']}
                 forceMount
-                asChild
+                disabled={isCreating}
                 onSelect={handleCreateNewTower}
               >
-                <button
-                  type='button'
-                  onClick={handleCreateNewTower}
-                >
-                  <GoPlusCircle className='mr-2 h-4 w-4' />
-                  <span>New Tower</span>
-                </button>
+                <GoPlusCircle className='mr-2 h-4 w-4' />
+                <span>{isCreating ? 'Creating tower...' : 'New Tower'}</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

@@ -4,8 +4,17 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button, toast } from '@/components/ui'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
+import { GoPlusCircle } from 'react-icons/go'
 
-export default function CreateNewTowerButton() {
+type CreateNewTowerButtonProps = {
+  className?: string
+  iconOnly?: boolean
+}
+
+export default function CreateNewTowerButton({
+  className = '',
+  iconOnly = false,
+}: CreateNewTowerButtonProps) {
   const router = useRouter()
   const [isCreating, setIsCreating] = useState(false)
 
@@ -33,10 +42,19 @@ export default function CreateNewTowerButton() {
     <Button
       variant='outline'
       type='button'
+      size={iconOnly ? 'icon' : 'default'}
       disabled={isCreating}
       onClick={handleCreateNewTower}
+      className={className}
+      aria-label={iconOnly ? 'Create new tower' : undefined}
     >
-      {isCreating ? 'Creating tower...' : 'Or create a new tower!'}
+      {iconOnly ? (
+        <GoPlusCircle className='h-[1.2rem] w-[1.2rem]' />
+      ) : isCreating ? (
+        'Creating tower...'
+      ) : (
+        'Or create a new tower!'
+      )}
     </Button>
   )
 }

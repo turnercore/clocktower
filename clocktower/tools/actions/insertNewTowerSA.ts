@@ -55,6 +55,7 @@ const insertNewTowerSA = async (
     const { error: upsertError } = await supabase
       .from('towers_users')
       .upsert({ user_id: userId, tower_id: towerId })
+    if (upsertError) throw upsertError
 
     // Create a first row
     const defaultRowData: TowerRowRow = {
@@ -95,6 +96,7 @@ const insertNewTowerSA = async (
     const { error: clockError } = await supabase
       .from('clocks')
       .insert(defaultClockData)
+    if (clockError) throw clockError
 
     // If not, Return the inserted row.
     return { data: { success: true } }
