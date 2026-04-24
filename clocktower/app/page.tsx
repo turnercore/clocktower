@@ -41,7 +41,7 @@ const Home = async () => {
         )}
       </div>
 
-      <div className='flex w-[min(320px,80vw)] items-center flex-col'>
+      <div className='flex w-[min(280px,72vw)] items-center flex-col'>
         <Suspense fallback={<p>🕘</p>}>
           <PublicClock />
         </Suspense>
