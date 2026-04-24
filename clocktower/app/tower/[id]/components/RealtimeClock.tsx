@@ -1,7 +1,6 @@
 'use client'
 import React, { useState, useEffect, MouseEvent, Suspense, useId } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
-import { createClient } from '@/lib/supabase/client'
 import {
   Card,
   CardContent,
@@ -18,15 +17,10 @@ import {
   clockFilledFromInput,
   clockFilledPercentage,
 } from '@/tools/clockFilled'
-import { ClockRowData, ClockSchema, ClockType, UUID } from '@/types/schemas'
+import { ClockSchema, ClockType, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
-import type { Database } from '@/types/supabase'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
-import type {
-  RealtimePostgresDeletePayload,
-  RealtimePostgresUpdatePayload,
-} from '@supabase/supabase-js'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
@@ -86,36 +80,9 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const hasEditAccess = useEditAccess(towerId)
 
-  // Init supabase
-  const supabase = createClient()
-
-  const handleRealtimeClockUpdate = (
-    payload: RealtimePostgresUpdatePayload<ClockRowData>,
-  ) => {
-    const newData = payload.new
-    if (newData.id !== clockId) return
-    if (newData !== clockData) {
-      setClockData(newData)
-      if (
-        newData.row_id !== clockData.row_id ||
-        newData.position !== clockData.position
-      ) {
-        upsertClock(newData)
-      }
-    }
-  }
-
-  const handleRealtimeClockDelete = (
-    payload: RealtimePostgresDeletePayload<ClockRowData>,
-  ) => {
-    if (isDeleted) return
-    const deletedData = payload.old
-    if (deletedData.id !== clockId) return
-
-    // We be deleted
-    setIsDeleted(true)
-    removeClockById(clockId)
-  }
+  useEffect(() => {
+    setClockData(initialData)
+  }, [initialData])
 
   useEffect(() => {
     registerClockElement(clockId, clockRef.current)
@@ -124,43 +91,6 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       registerClockElement(clockId, null)
     }
   }, [clockId, registerClockElement])
-
-  //Subscribe to changes in the clock on the server and handle them appropriately
-  useEffect(() => {
-    const subscription = supabase
-      .channel(`clock_${clockId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'clocks',
-          filter: `id=eq.${clockId}`,
-        },
-        handleRealtimeClockUpdate,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'clocks',
-          filter: `id=eq.${clockId}`,
-        },
-        handleRealtimeClockDelete,
-      )
-      .subscribe()
-    // Cleanup function to unsubscribe from real-time updates
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [
-    clockId,
-    towerId,
-    supabase,
-    handleRealtimeClockUpdate,
-    handleRealtimeClockDelete,
-  ])
 
   // Create the chart data, this is not used just to make the piechart work
   const chartData = Array.from({ length: clockData.segments }, (_, i) => ({

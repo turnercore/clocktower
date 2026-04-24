@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { type Profile, ProfileSchema } from '@/types/schemas'
 import { GoGear, GoSignOut } from 'react-icons/go'
+import { Menu } from 'lucide-react'
 import hash from '@/tools/hash'
 import fetchSupabaseProfileSA from '@/tools/actions/fetchSupabaseProfileSA'
 import extractErrorMessage from '@/tools/extractErrorMessage'
@@ -64,18 +65,27 @@ const UserAvatar = ({ className, user }: UserAvatarProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Avatar
-          className={`h-[45px] w-[45px] hover:scale-110 drop-shadow-md hover:drop-shadow-xl ${className}`}
-          style={{ backgroundColor: profile.color || '#FFFFFF' }}
+        <button
+          className={`group relative h-[45px] w-[45px] rounded-full drop-shadow-md transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background ${className}`}
+          aria-label='Open user menu'
+          type='button'
         >
-          <AvatarImage
+          <Avatar
+            className='h-full w-full'
             style={{ backgroundColor: profile.color || '#FFFFFF' }}
-            src={`https://robohash.org/${hash(
-              profile.username || 'clocktower',
-            )}?set=set${profile.avatar_set}&size=64x64`}
-          />
-          <AvatarFallback>CT</AvatarFallback>
-        </Avatar>
+          >
+            <AvatarImage
+              style={{ backgroundColor: profile.color || '#FFFFFF' }}
+              src={`https://robohash.org/${hash(
+                profile.username || 'clocktower',
+              )}?set=set${profile.avatar_set}&size=64x64`}
+            />
+            <AvatarFallback>CT</AvatarFallback>
+          </Avatar>
+          <span className='pointer-events-none absolute inset-0 flex items-center justify-center rounded-full bg-black/35 opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100'>
+            <Menu className='h-5 w-5 text-white/85' aria-hidden='true' />
+          </span>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className='w-56'>
         <DropdownMenuLabel className='text-center'>

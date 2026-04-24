@@ -114,6 +114,8 @@ export const RowDragProvider = ({
 
   const removeRowById = useCallback(
     (rowId: UUID) => {
+      if (!rowsByIdRef.current[rowId]) return
+
       const nextRows = normalizeRows(
         sortRows(Object.values(rowsByIdRef.current)).filter(
           (row) => row.id !== rowId,

@@ -6,6 +6,7 @@ import { Database } from '@/types/supabase'
 import {
   ClockSchema,
   ServerActionReturn,
+  TowerRowRowSchema,
   TowerSchema,
   TowerType,
   UUID,
@@ -15,6 +16,7 @@ import extractErrorMessage from '@/tools/extractErrorMessage'
 
 export const fetchCompleteTowerDataSA = async (
   towerId: UUID,
+  publicKey?: string,
 ): Promise<ServerActionReturn<TowerType>> => {
   try {
     // Get the form data into a javascript object
@@ -25,54 +27,62 @@ export const fetchCompleteTowerDataSA = async (
     // Fetch the tower data
     const supabase = await createClient()
     const { data: towerDataFetchResult, error: towerDataFetchResultError } =
-      await fetchTowerDataSA(towerId)
+      await fetchTowerDataSA(towerId, publicKey)
 
     if (towerDataFetchResultError) throw new Error(towerDataFetchResultError)
     const towerData = towerDataFetchResult
 
-    // Get all rows in the tower
-    const { data: towerRows, error: rowError } = await fetchAllRowsInTower(
-      towerId,
-      supabase,
-    )
+    const [
+      { data: towerRows, error: rowError },
+      { data: towerClocks, error: clockError },
+    ] = await Promise.all([
+      fetchAllRowsInTower(towerId, supabase),
+      fetchAllClocksInTower(towerId, supabase),
+    ])
 
     if (rowError) throw rowError
-
-    // Get all clocks in the tower
-    const { data: towerClocks, error: clockError } =
-      await fetchAllClocksInTower(towerId, supabase)
     if (clockError) throw clockError
 
-    // Ensure that all clocks are the correct type
+    const clocksByRowId = new Map<UUID, (typeof ClockSchema)['_output'][]>()
+    towerClocks?.forEach((clock, index) => {
+      const parseResult = ClockSchema.safeParse({
+        ...clock,
+        color: clock.color || '#E38627',
+        name: clock.name || '',
+        position: clock.position ?? index,
+        users: clock.users || [],
+      })
 
-    // create the return object
+      if (!parseResult.success) {
+        console.error(parseResult.error)
+        return
+      }
+
+      const rowClocks = clocksByRowId.get(parseResult.data.row_id) || []
+      rowClocks.push(parseResult.data)
+      clocksByRowId.set(parseResult.data.row_id, rowClocks)
+    })
 
     const towerReturn = {
       ...towerData,
+      pubic_key: (towerData as any)?.public_key ?? null,
       rows:
         towerRows && towerRows.length > 0
-          ? towerRows.map((row) => {
-              // filter the clocks for the current row
-              const rowClocks =
-                towerClocks?.filter((clock) => clock.row_id === row.id) || []
-
-              // validate rowClocks using ClockSchema
-              const validatedRowClocks = rowClocks.reduce((acc, clock) => {
-                try {
-                  // Validate each clock, and if valid, add to the accumulator array
-                  acc.push(ClockSchema.parse(clock))
-                } catch (error) {
-                  console.error(error)
-                  // This will skip over any clocks that are not validated by ClockSchema
-                  // Could be changed to throw an error
-                  // Could cause weird behavior if clocks are missing or incorrect
-                }
-                return acc
-              }, [] as (typeof ClockSchema)['_output'][])
-
-              return {
+          ? towerRows.flatMap((row, index) => {
+              const parsedRow = TowerRowRowSchema.safeParse({
                 ...row,
-                clocks: validatedRowClocks,
+                color: row.color || '#FFA500',
+                name: row.name || '',
+                position: row.position ?? index,
+                users: row.users || [],
+              })
+              if (!parsedRow.success) {
+                console.error(parsedRow.error)
+                return []
+              }
+              return {
+                ...parsedRow.data,
+                clocks: clocksByRowId.get(parsedRow.data.id) || [],
               }
             })
           : [],
@@ -97,6 +107,7 @@ const fetchAllRowsInTower = async (
     .from('tower_rows')
     .select('*')
     .eq('tower_id', towerId)
+    .order('position', { ascending: true })
   return { data, error }
 }
 
@@ -108,5 +119,6 @@ const fetchAllClocksInTower = async (
     .from('clocks')
     .select('*')
     .eq('tower_id', towerId)
+    .order('position', { ascending: true })
   return { data, error }
 }

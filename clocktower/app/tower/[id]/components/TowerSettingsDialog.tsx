@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -28,10 +28,11 @@ import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
 import { createClient } from '@/lib/supabase/client'
-import { TowerDatabaseType, type TowerType, type UUID } from '@/types/schemas'
+import { TowerDatabaseType } from '@/types/schemas'
 import { useRouter } from 'next/navigation'
 import toggleTowerLockSA from '../actions/toggleTowerLockSA'
 import useEditAccess from '@/hooks/useEditAccess'
+import { useTowerAccess } from './TowerAccessContext'
 // Import other required components
 
 interface TowerSettingsDialogProps {
@@ -43,36 +44,16 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
 }) => {
   const router = useRouter()
   const [towerName, setTowerName] = useState(towerData.name)
-  const [currentUserId, setCurrentUserId] = useState<UUID | null>(null) // Replace with your user type
-  const [isOwner, setIsOwner] = useState<boolean>(false)
   const [isOpen, setIsOpen] = useState(false)
-  const [isTowerLocked, setIsTowerLocked] = useState(false)
+  const [isTowerLocked, setIsTowerLocked] = useState(towerData.is_locked)
   const hasEditAccess = useEditAccess(towerData.id)
-  // Get current user
+  const { currentUserId, isOwner } = useTowerAccess()
   const supabase = createClient()
 
   useEffect(() => {
-    const getCurrentUser = async () => {
-      try {
-        const { data: sessionData, error: sessionError } =
-          await supabase.auth.getSession()
-        if (sessionError) throw sessionError
-        if (!sessionData?.session?.user?.id) throw new Error('No user id found')
-        const userId = sessionData.session.user.id
-
-        setCurrentUserId(userId)
-
-        setIsTowerLocked(towerData.is_locked || false)
-
-        if (userId === towerData.owner) {
-          setIsOwner(true)
-        }
-      } catch (error) {
-        console.error(error)
-      }
-    }
-    getCurrentUser()
-  }, [])
+    setTowerName(towerData.name)
+    setIsTowerLocked(towerData.is_locked || false)
+  }, [towerData])
 
   const handleNameChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -147,8 +128,6 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
       return
     }
   }
-
-  console.log('hasEditAccess', hasEditAccess)
 
   if (!hasEditAccess) return <></>
 

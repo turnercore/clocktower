@@ -288,6 +288,7 @@ export const ClockDragProvider = ({
 
       if (
         existingClock &&
+        JSON.stringify(existingClock) === JSON.stringify(clock) &&
         existingClock.position === clock.position &&
         existingClock.row_id === clock.row_id
       ) {
@@ -305,7 +306,11 @@ export const ClockDragProvider = ({
 
   const removeClockById = useCallback(
     (clockId: UUID) => {
-      const { nextRows } = removeClock(rowClocksRef.current, clockId)
+      const { nextRows, removedClock } = removeClock(
+        rowClocksRef.current,
+        clockId,
+      )
+      if (!removedClock) return
       syncRowClocks(normalizeRowPositions(nextRows))
     },
     [syncRowClocks],

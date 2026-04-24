@@ -20,15 +20,9 @@ import {
   ScrollBar,
   toast,
 } from '@/components/ui'
-import { createClient } from '@/lib/supabase/client'
 import { TbClockPlus } from 'react-icons/tb'
 import { UUID, ClockType, TowerRowRow } from '@/types/schemas'
 import { TiDelete } from 'react-icons/ti'
-import type {
-  RealtimePostgresDeletePayload,
-  RealtimePostgresInsertPayload,
-  RealtimePostgresUpdatePayload,
-} from '@supabase/supabase-js'
 import insertNewClockSA from '../actions/insertNewClockSA'
 import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
@@ -85,52 +79,12 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     startRowDrag,
   } = useRowDrag()
   const rowCardRef = React.useRef<HTMLDivElement | null>(null)
-  const supabase = createClient()
   const rowClocks = getRowClocks(rowId)
 
-  // Update self when a server payload is received
-  const handleRealtimeTowerRowUpdate = (
-    payload: RealtimePostgresUpdatePayload<TowerRowRow>,
-  ) => {
-    const eventType = payload.eventType
-    if (eventType !== 'UPDATE') return
-    const newData = payload.new
-    // Make sure it pertains to this row
-    if (newData.id !== rowId) return
-
-    if (newData.name !== rowName) {
-      setRowName(newData.name || '')
-    }
-    setRowData(newData)
-  }
-
-  const handleRealtimeTowerRowDelete = (
-    payload: RealtimePostgresDeletePayload<TowerRowRow>,
-  ) => {
-    if (isDeleted) return
-    const eventType = payload.eventType
-    if (eventType !== 'DELETE') return
-    const oldData = payload.old
-    // Make sure it pertains to this row
-    if (oldData.id !== rowId) return
-
-    // Delete local state and update the tower
-    setIsDeleted(true)
-    removeRowById(rowId)
-  }
-
-  const handleRealtimeClockInsert = (
-    payload: RealtimePostgresInsertPayload<ClockType>,
-  ) => {
-    if (isDeleted) return
-    const eventType = payload.eventType
-    if (eventType !== 'INSERT') return
-    const newData = payload.new
-    // Make sure it pertains to this row
-    if (newData.row_id !== rowId) return
-
-    upsertClock(newData)
-  }
+  useEffect(() => {
+    setRowData(initialData)
+    setRowName(initialData.name || '')
+  }, [initialData])
 
   useEffect(() => {
     registerRow(rowId, initialClocks)
@@ -139,47 +93,6 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   useEffect(() => {
     registerDraggableRow(rowData)
   }, [registerDraggableRow, rowData])
-
-  useEffect(() => {
-    const subscription = supabase
-      .channel(`tower_row_${rowId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'tower_rows',
-          filter: `id=eq.${rowId}`,
-        },
-        handleRealtimeTowerRowUpdate,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'DELETE',
-          schema: 'public',
-          table: 'tower_rows',
-          filter: `id=eq.${rowId}`,
-        },
-        handleRealtimeTowerRowDelete,
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'clocks',
-          filter: `row_id=eq.${rowId}`,
-        },
-        handleRealtimeClockInsert,
-      )
-      .subscribe()
-
-    // Cleanup function to unsubscribe from real-time updates
-    return () => {
-      subscription.unsubscribe()
-    }
-  }, [supabase, rowId])
 
   const addClock = async () => {
     // Define default Clock
