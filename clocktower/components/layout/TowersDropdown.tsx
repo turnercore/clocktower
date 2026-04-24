@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { isValidUUID } from '@/tools/isValidUUID'
 import { TowerDatabaseType, UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
@@ -23,6 +22,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
+import Link from 'next/link'
 
 const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
@@ -165,8 +165,6 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
   }, [params.id, towers, path])
 
   const navigateToSelectedTower = (towerId: UUID) => {
-    // If the value is not a valid UUID, do nothing
-    if (!isValidUUID(towerId)) return
     // Navigate to the tower page
     router.push(`/tower/${towerId}`)
   }
@@ -202,19 +200,21 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                   key={tower.id}
                   value={tower.id}
                   keywords={[tower.name || '']}
-                  onMouseDown={(event) => {
-                    event.preventDefault()
-                    handleSelectTower(tower)
-                  }}
-                  onClick={() => {
-                    handleSelectTower(tower)
-                  }}
+                  asChild
                   onSelect={() => {
                     handleSelectTower(tower)
                   }}
                 >
-                  <GiWhiteTower className='mr-2 h-4 w-4' />
-                  <span>{tower.name}</span>
+                  <Link
+                    href={`/tower/${tower.id}`}
+                    onClick={() => {
+                      setSelectedTowerName(tower.name || '')
+                      setOpen(false)
+                    }}
+                  >
+                    <GiWhiteTower className='mr-2 h-4 w-4' />
+                    <span>{tower.name}</span>
+                  </Link>
                 </CommandItem>
               ))}
               <CommandItem
@@ -222,15 +222,16 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                 value='new-tower'
                 keywords={['new', 'tower', 'create']}
                 forceMount
-                onMouseDown={(event) => {
-                  event.preventDefault()
-                  handleCreateNewTower()
-                }}
-                onClick={handleCreateNewTower}
+                asChild
                 onSelect={handleCreateNewTower}
               >
-                <GoPlusCircle className='mr-2 h-4 w-4' />
-                <span>New Tower</span>
+                <button
+                  type='button'
+                  onClick={handleCreateNewTower}
+                >
+                  <GoPlusCircle className='mr-2 h-4 w-4' />
+                  <span>New Tower</span>
+                </button>
               </CommandItem>
             </CommandGroup>
           </CommandList>
