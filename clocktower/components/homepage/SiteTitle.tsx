@@ -43,14 +43,14 @@ const SiteTitle = () => {
   }, [reduceMotion, rotationRefs, screenReaderMode])
 
   return (
-    <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>
+    <h1 className='mt-4 mb-3 text-center text-9xl font-extrabold leading-none tracking-tighter'>
       {reduceMotion || screenReaderMode
         ? title
         : title.split('').map((letter, index) => (
             <div
               key={index}
               ref={rotationRefs[index]}
-              className='inline-block pr-2 pb-7'
+              className='inline-block pr-2 pb-1'
             >
               {letter}
             </div>

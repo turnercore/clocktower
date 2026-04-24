@@ -1,6 +1,6 @@
 //PublicClock.tsx
 'use client'
-import React, { useState, useEffect, MouseEvent, useId } from 'react'
+import React, { useState, useEffect, MouseEvent, useId, useRef } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import {
@@ -112,6 +112,10 @@ const PublicClock: React.FC = () => {
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(
     null,
   )
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const pendingSliceClickTimeoutRef = useRef<ReturnType<
+    typeof setTimeout
+  > | null>(null)
   const { screenReaderMode } = useAccessibility()
 
   useEffect(() => {
@@ -129,6 +133,14 @@ const PublicClock: React.FC = () => {
     }))
   }, [])
 
+  useEffect(() => {
+    return () => {
+      if (pendingSliceClickTimeoutRef.current) {
+        clearTimeout(pendingSliceClickTimeoutRef.current)
+      }
+    }
+  }, [])
+
   // Create the chart data
   const chartData = Array.from({ length: clockData.segments }, (_, i) => ({
     title: `Segment ${i + 1}`,
@@ -138,22 +150,46 @@ const PublicClock: React.FC = () => {
 
   // This one actually updates the server
   const handleSliceClick = (event: MouseEvent, dataIndex: number) => {
-    let newFilledValue: number | null
+    if (event.detail > 1) return
 
-    if (
-      clockData.filled === dataIndex ||
-      (clockData.filled !== null && dataIndex < clockData.filled)
-    ) {
-      newFilledValue = dataIndex === 0 ? null : dataIndex - 1
-    } else {
-      newFilledValue = dataIndex
+    if (pendingSliceClickTimeoutRef.current) {
+      clearTimeout(pendingSliceClickTimeoutRef.current)
     }
 
-    // update local state
-    setClockData((prevState) => ({
-      ...prevState,
-      filled: newFilledValue,
-    }))
+    pendingSliceClickTimeoutRef.current = setTimeout(() => {
+      const newFilledValue =
+        clockData.filled === dataIndex ||
+        (clockData.filled !== null && dataIndex < clockData.filled)
+          ? dataIndex === 0
+            ? null
+            : dataIndex - 1
+          : dataIndex
+
+      // update local state
+      setClockData((prevState) => ({
+        ...prevState,
+        filled: newFilledValue,
+      }))
+      pendingSliceClickTimeoutRef.current = null
+    }, 220)
+  }
+
+  const handleClockDoubleClick = (event: React.MouseEvent) => {
+    const target = event.target as HTMLElement
+    if (
+      target.closest('button, input, textarea, select, a, [role="button"]')
+    ) {
+      return
+    }
+
+    if (pendingSliceClickTimeoutRef.current) {
+      clearTimeout(pendingSliceClickTimeoutRef.current)
+      pendingSliceClickTimeoutRef.current = null
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+    setSettingsOpen(true)
   }
 
   // Handle mouse over slice
@@ -318,7 +354,11 @@ const PublicClock: React.FC = () => {
   }
 
   return (
-    <>
+    <div
+      className='flex w-full flex-col items-center'
+      onDoubleClick={handleClockDoubleClick}
+      aria-label='Double click to edit clock'
+    >
       {pieChart}
 
       <div className='flex flex-col'>
@@ -329,13 +369,15 @@ const PublicClock: React.FC = () => {
           <PublicClockSettings
             clockData={clockData}
             colorPalette={colorPalette}
+            open={settingsOpen}
             onSettingsChange={handleDataChange}
+            onOpenChange={setSettingsOpen}
             pieChart={pieChart}
           />
         </div>
       </div>
       <span className='text-sm mt-6'>(Yes, they sync in realtime)</span>
-    </>
+    </div>
   )
 }
 

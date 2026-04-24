@@ -18,14 +18,18 @@ type PublicClockSettingsProps = {
   pieChart: React.ReactElement
   colorPalette: string[]
   clockData: PublicClockType
+  open?: boolean
   onSettingsChange: (updatedClockData: Partial<PublicClockType>) => void
+  onOpenChange?: (open: boolean) => void
 }
 
 const PublicClockSettings: FC<PublicClockSettingsProps> = ({
   pieChart,
   clockData,
   colorPalette,
+  open,
   onSettingsChange,
+  onOpenChange,
 }) => {
   // All handler functions will now invoke onSettingsChange with the updated field
 
@@ -53,7 +57,7 @@ const PublicClockSettings: FC<PublicClockSettingsProps> = ({
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         <Button variant='ghost' size='icon'>
           <GiSettingsKnobs className='w-3/4 h-3/4' />

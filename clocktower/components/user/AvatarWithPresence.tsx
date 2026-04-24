@@ -69,8 +69,9 @@ const AvatarWithPresence = ({
       className='relative inline-flex h-11 w-11 items-center justify-center overflow-visible rounded-full'
       aria-label={`${username}${isOnline ? ' is online' : ''}`}
     >
-      <div className='rounded-full transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'>
+      <div className='relative h-10 w-10 rounded-full transition-transform duration-150 hover:scale-110 hover:drop-shadow-xl focus-visible:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background'>
         <Avatar
+          className='h-10 w-10'
           onClick={() => {}}
           style={{ backgroundColor: user.color || '#FFFFFF' }}
         >
@@ -109,8 +110,14 @@ const AvatarWithPresence = ({
   return isInteractable ? (
     <AlertDialog>
       {tooltip(
-        <AlertDialogTrigger aria-label={`Manage ${username}`}>
-          {avatar}
+        <AlertDialogTrigger asChild>
+          <button
+            className='inline-flex h-11 w-11 items-center justify-center rounded-full border-0 bg-transparent p-0 align-middle'
+            type='button'
+            aria-label={`Manage ${username}`}
+          >
+            {avatar}
+          </button>
         </AlertDialogTrigger>,
       )}
       <AlertDialogContent>

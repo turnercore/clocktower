@@ -22,13 +22,15 @@ const Home = async () => {
     <div className='relative flex flex-col text-center items-center mb-[100px]'>
       <LoginSuccessToast />
       <SiteTitle />
-      <div className=' mb-8 flex flex-col items-center space-y-4'>
-        <p className='text-2xl mb-2'>Shared game clocks for tabletop RPGs</p>
+      <div className='mb-8 flex flex-col items-center gap-5'>
+        <p className='text-2xl leading-tight'>
+          Shared game clocks for tabletop RPGs
+        </p>
         {isLoggedIn ? (
-          <>
+          <div className='flex flex-col items-center gap-4'>
             <p>To make some clocks, select a tower from the dropdown above.</p>
             <CreateNewTowerButton />
-          </>
+          </div>
         ) : (
           <div className='flex flex-row space-x-3 items-center mx-auto'>
             <Button variant='outline' asChild>
@@ -39,7 +41,7 @@ const Home = async () => {
         )}
       </div>
 
-      <div className='max-h-[500px] w-[500px] flex items-center flex-col'>
+      <div className='flex w-[min(320px,80vw)] items-center flex-col'>
         <Suspense fallback={<p>🕘</p>}>
           <PublicClock />
         </Suspense>
