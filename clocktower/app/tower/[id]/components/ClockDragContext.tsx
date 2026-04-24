@@ -27,6 +27,12 @@ type DragState = {
   clockId: UUID
 }
 
+type DragOrigin = {
+  rowId: UUID
+  index: number
+  rect: DOMRect
+}
+
 type PointerPosition = Pick<
   React.PointerEvent | PointerEvent,
   'clientX' | 'clientY'
@@ -49,6 +55,9 @@ type ClockDragContextValue = {
 }
 
 const ClockDragContext = createContext<ClockDragContextValue | null>(null)
+
+const CLOCK_DRAG_ORIGIN_HOLD_MARGIN_PX = 24
+const CLOCK_DRAG_ROW_LINE_TOLERANCE_PX = 24
 
 const sortClocks = (clocks: ClockType[]) =>
   [...clocks].sort((a, b) => a.position - b.position)
@@ -120,7 +129,22 @@ export const ClockDragProvider = ({
   }, [])
 
   const getInsertionTarget = useCallback(
-    (pointerX: number, pointerY: number, draggingClockId: UUID) => {
+    (
+      pointerX: number,
+      pointerY: number,
+      draggingClockId: UUID,
+      origin?: DragOrigin,
+    ) => {
+      if (
+        origin &&
+        pointerX >= origin.rect.left - CLOCK_DRAG_ORIGIN_HOLD_MARGIN_PX &&
+        pointerX <= origin.rect.right + CLOCK_DRAG_ORIGIN_HOLD_MARGIN_PX &&
+        pointerY >= origin.rect.top - CLOCK_DRAG_ORIGIN_HOLD_MARGIN_PX &&
+        pointerY <= origin.rect.bottom + CLOCK_DRAG_ORIGIN_HOLD_MARGIN_PX
+      ) {
+        return { rowId: origin.rowId, index: origin.index }
+      }
+
       let activeRowId: UUID | null = null
 
       rowElements.current.forEach((element, rowId) => {
@@ -155,21 +179,51 @@ export const ClockDragProvider = ({
         (clock) => clock.id !== draggingClockId,
       )
       let index = visibleClocks.length
+      const visibleClockRects = visibleClocks
+        .map((clock, clockIndex) => {
+          const element = clockElements.current.get(clock.id)
+          if (!element) return null
+          const rect = element.getBoundingClientRect()
+          return {
+            clockIndex,
+            centerX: rect.left + rect.width / 2,
+            centerY: rect.top + rect.height / 2,
+            rect,
+          }
+        })
+        .filter((clockRect) => clockRect !== null)
 
-      for (let i = 0; i < visibleClocks.length; i++) {
-        const element = clockElements.current.get(visibleClocks[i].id)
-        if (!element) continue
-        const rect = element.getBoundingClientRect()
-        const centerX = rect.left + rect.width / 2
-        const centerY = rect.top + rect.height / 2
+      if (visibleClockRects.length === 0) {
+        return { rowId: activeRowId, index }
+      }
 
-        if (
-          pointerY < centerY ||
-          (Math.abs(pointerY - centerY) < 24 && pointerX < centerX)
-        ) {
-          index = i
-          break
+      const nearestLineCenterY = visibleClockRects.reduce(
+        (nearestCenterY, clockRect) =>
+          Math.abs(pointerY - clockRect.centerY) <
+          Math.abs(pointerY - nearestCenterY)
+            ? clockRect.centerY
+            : nearestCenterY,
+        visibleClockRects[0].centerY,
+      )
+      const clocksOnNearestLine = visibleClockRects
+        .filter(
+          (clockRect) =>
+            Math.abs(clockRect.centerY - nearestLineCenterY) <=
+            CLOCK_DRAG_ROW_LINE_TOLERANCE_PX,
+        )
+        .sort((a, b) => a.centerX - b.centerX)
+
+      if (clocksOnNearestLine.length > 0) {
+        index = clocksOnNearestLine[clocksOnNearestLine.length - 1].clockIndex + 1
+
+        for (const clockRect of clocksOnNearestLine) {
+          if (pointerX < clockRect.centerX) {
+            index = clockRect.clockIndex
+            break
+          }
         }
+
+        return { rowId: activeRowId, index }
       }
 
       return { rowId: activeRowId, index }
