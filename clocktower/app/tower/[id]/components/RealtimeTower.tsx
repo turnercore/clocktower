@@ -18,6 +18,7 @@ import {
 } from '@supabase/supabase-js'
 import RealtimeTowerRow from './RealtimeTowerRow'
 import useEditAccess from '@/hooks/useEditAccess'
+import { ClockDragProvider } from './ClockDragContext'
 
 interface TowerProps {
   initialData: TowerDatabaseType
@@ -151,7 +152,8 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   }
 
   return (
-    <div className='flex flex-col space-y-4'>
+    <ClockDragProvider>
+      <div className='flex flex-col space-y-4'>
       <div className='flex flex-row items-center mx-auto space-x-5'>
         <h1 className='text-3xl'>{towerData?.name}</h1>
         <TowerSettingsDialog towerData={towerData} />
@@ -168,7 +170,8 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
           Add Row
         </Button>
       )}
-    </div>
+      </div>
+    </ClockDragProvider>
   )
 }
 

@@ -2,8 +2,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { TowerRowRow, UUID } from '@/types/schemas'
 import RealtimeTowerRow from './RealtimeTowerRow'
-import { Clock } from './Clock'
-import { Database } from '@/types/supabase'
 import React, { Suspense } from 'react'
 
 interface TowerRowServerProps {
@@ -28,7 +26,7 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
   // Fetch clocks associated with this row
   const { data: clocksData, error: clocksError } = await supabase
     .from('clocks')
-    .select('id')
+    .select('*')
     .eq('row_id', rowId)
     .order('position', { ascending: true })
 
@@ -39,18 +37,9 @@ export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
 
   const initialData: TowerRowRow = rowData as TowerRowRow //TODO: Fix the types to make this not necessary
 
-  const clockIds = clocksData.map((clock) => clock.id)
-
-  // TODO replace the suspense with a loading clock component
-  const clocks = clockIds.map((clockId, index) => (
-    <Suspense key={index} fallback={<p>Loading clock...</p>}>
-      <Clock key={clockId} clockId={clockId} />
-    </Suspense>
-  ))
-
   return (
     <Suspense>
-      <RealtimeTowerRow initialData={initialData}>{clocks}</RealtimeTowerRow>
+      <RealtimeTowerRow initialData={initialData} initialClocks={clocksData} />
     </Suspense>
   )
 }

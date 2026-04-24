@@ -224,7 +224,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
               {filteredTowers.map((tower) => (
                 <button
                   aria-label={`Select ${tower.name}`}
-                  className='relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
+                  className='relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none transition-colors hover:bg-black/10 focus:bg-black/10 dark:hover:bg-white/10 dark:focus:bg-white/10'
                   key={tower.id}
                   type='button'
                   onClick={() => {
@@ -239,7 +239,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                 key='new'
                 disabled={isCreating}
                 type='button'
-                className='relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50'
+                className='relative flex w-full cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none transition-colors hover:bg-black/10 focus:bg-black/10 disabled:pointer-events-none disabled:opacity-50 dark:hover:bg-white/10 dark:focus:bg-white/10'
                 onClick={handleCreateNewTower}
               >
                 <GoPlusCircle className='mr-2 h-4 w-4' />

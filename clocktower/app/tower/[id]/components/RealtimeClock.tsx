@@ -30,6 +30,8 @@ import type {
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
+import { GripVertical } from 'lucide-react'
+import { useClockDrag } from './ClockDragContext'
 
 interface RealtimeClockProps {
   initialData: ClockType
@@ -49,6 +51,14 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   )
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
   const { screenReaderMode } = useAccessibility()
+  const {
+    draggingClockId,
+    registerClockElement,
+    removeClockById,
+    startDrag,
+    upsertClock,
+  } = useClockDrag()
+  const clockRef = React.useRef<HTMLDivElement | null>(null)
 
   const hasEditAccess = useEditAccess(towerId)
 
@@ -62,6 +72,12 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     if (newData.id !== clockId) return
     if (newData !== clockData) {
       setClockData(newData)
+      if (
+        newData.row_id !== clockData.row_id ||
+        newData.position !== clockData.position
+      ) {
+        upsertClock(newData)
+      }
     }
   }
 
@@ -74,7 +90,16 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
     // We be deleted
     setIsDeleted(true)
+    removeClockById(clockId)
   }
+
+  useEffect(() => {
+    registerClockElement(clockId, clockRef.current)
+
+    return () => {
+      registerClockElement(clockId, null)
+    }
+  }, [clockId, registerClockElement])
 
   //Subscribe to changes in the clock on the server and handle them appropriately
   useEffect(() => {
@@ -123,6 +148,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   // Delete the clock
   const handleDelete = async () => {
     setIsDeleted(true)
+    removeClockById(clockId)
     const { error } = await deleteClockSA({ clockId, towerId })
     if (error) {
       toast({
@@ -131,6 +157,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
         description: error,
       })
       setIsDeleted(false)
+      upsertClock(clockData)
     }
   }
 
@@ -442,7 +469,29 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   return (
     <>
       {!isDeleted && (
-        <div className='flex flex-col items-center'>
+        <div
+          ref={clockRef}
+          className={`relative flex flex-col items-center transition-transform duration-150 ${
+            draggingClockId === clockId
+              ? 'scale-95 opacity-30'
+              : 'scale-100 opacity-100'
+          }`}
+        >
+          {hasEditAccess && !screenReaderMode && (
+            <button
+              type='button'
+              aria-label={`Move clock ${clockData.name || 'untitled'}`}
+              className='absolute left-0 top-0 z-10 flex h-7 w-7 touch-none items-center justify-center rounded-md border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground active:cursor-grabbing'
+              onPointerDown={(event) => {
+                event.preventDefault()
+                event.stopPropagation()
+                if (!clockRef.current) return
+                startDrag(clockData, clockRef.current, event)
+              }}
+            >
+              <GripVertical className='h-4 w-4' aria-hidden='true' />
+            </button>
+          )}
           <div className='flex flex-row relative'>
             <div className='flex flex-col items-center max-w-[400px] min-w-fit rounded-full'>
               {displayedChart}

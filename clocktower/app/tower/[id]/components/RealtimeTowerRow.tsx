@@ -34,26 +34,33 @@ import { updateRowNameSA } from '../actions/updateRowNameSA'
 import { deleteTowerRowSA } from '../actions/deleteTowerRowSA'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
+import { useClockDrag } from './ClockDragContext'
 
 type RealtimeTowerRowProps = {
   initialData: TowerRowRow
-  children?: React.ReactNode
+  initialClocks?: ClockType[]
 }
 
 const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   initialData,
-  children,
+  initialClocks = [],
 }) => {
   const rowId = initialData.id
   const towerId = initialData.tower_id
   const [rowData, setRowData] = useState<TowerRowRow>(initialData)
   const [rowName, setRowName] = useState<string>(initialData.name || '')
   const [isDeleted, setIsDeleted] = useState<boolean>(false)
-  const [addedClocks, setAddedClocks] = useState<Array<ClockType>>([])
-  const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
   const hasEditAccess = useEditAccess(towerId)
   const { reduceMotion } = useAccessibility()
+  const {
+    getRowClocks,
+    registerRow,
+    registerRowElement,
+    removeClockById,
+    upsertClock,
+  } = useClockDrag()
   const supabase = createClient()
+  const rowClocks = getRowClocks(rowId)
 
   // Update self when a server payload is received
   const handleRealtimeTowerRowUpdate = (
@@ -94,17 +101,12 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Make sure it pertains to this row
     if (newData.row_id !== rowId) return
 
-    // Ensure the clock is not already in the addedClocksRef
-    if (addedClocksRef.current.includes(newData.id)) return
-
-    // Add the clock locally
-    setAddedClocks((prevClocks) => {
-      const updatedClocks = [...prevClocks, newData]
-      // Update the ref inside the setState callback
-      addedClocksRef.current = updatedClocks.map((c) => c.id)
-      return updatedClocks
-    })
+    upsertClock(newData)
   }
+
+  useEffect(() => {
+    registerRow(rowId, initialClocks)
+  }, [initialClocks, registerRow, rowId])
 
   useEffect(() => {
     const subscription = supabase
@@ -151,7 +153,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
     // Define default Clock
     const newClock: ClockType = {
       id: crypto.randomUUID() as UUID,
-      position: 420 + addedClocksRef.current.length,
+      position: rowClocks.length,
       name: '',
       segments: 6,
       row_id: rowId,
@@ -165,26 +167,14 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
       color: '#E38627', // Default color, this should probably be a const or random from a palette
     }
 
-    // Update local state
-    const oldClocks = addedClocks
-    setAddedClocks((prevClocks) => {
-      const updatedClocks = [...prevClocks, newClock]
-      // Update the ref inside the setState callback
-      addedClocksRef.current = updatedClocks.map((clock) => clock.id)
-      return updatedClocks
-    })
+    upsertClock(newClock)
 
     // Update the server
     const { error } = await insertNewClockSA(newClock)
 
     if (error) {
       console.error('Error adding clock:', error)
-      // If there was an error, revert the state
-      setAddedClocks(() => {
-        // Update the ref inside the setState callback
-        addedClocksRef.current = oldClocks.map((clock) => clock.id)
-        return oldClocks
-      })
+      removeClockById(newClock.id)
     }
   }
 
@@ -298,9 +288,11 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
             )}
           </CardTitle>
           <CardContent>
-            <div className='flex flex-wrap items-center space-x-4 space-y-4'>
-              {children}
-              {addedClocks.map((clock) => (
+            <div
+              ref={(element) => registerRowElement(rowId, element)}
+              className='flex min-h-32 flex-wrap items-center gap-4'
+            >
+              {rowClocks.map((clock) => (
                 <RealtimeClock key={clock.id} initialData={clock} />
               ))}
               {hasEditAccess && (
