@@ -66,6 +66,7 @@ const AvatarWithPresence = ({
   }
 
   const username = user.username || 'Clocktower user'
+  const avatarSeed = user.username || 'clocktower'
 
   const avatar = (
     <div
@@ -78,7 +79,7 @@ const AvatarWithPresence = ({
       >
         <AvatarImage
           src={`https://robohash.org/${hash(
-            username,
+            avatarSeed,
           )}?set=set${user.avatar_set}&size=64x64`}
           alt={username}
         />
