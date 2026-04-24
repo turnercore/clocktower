@@ -385,6 +385,11 @@ export const ClockDragProvider = ({
         x: rect.left,
         y: rect.top,
       })
+      const dragOrigin: DragOrigin = {
+        rowId: clock.row_id,
+        index: clock.position,
+        rect,
+      }
       lastDragTarget.current = {
         rowId: clock.row_id,
         index: clock.position,
@@ -395,6 +400,7 @@ export const ClockDragProvider = ({
           moveEvent.clientX,
           moveEvent.clientY,
           clock.id,
+          dragOrigin,
         )
 
         setDragPreview({

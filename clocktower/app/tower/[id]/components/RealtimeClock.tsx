@@ -51,6 +51,8 @@ const isAnyPopupOpen = () =>
     ),
   )
 
+const CLOCK_DRAG_DEADZONE_PX = 18
+
 // Define the React component
 const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const clockInputId = useId()
@@ -425,7 +427,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       const distanceX = moveEvent.clientX - pendingDrag.startX
       const distanceY = moveEvent.clientY - pendingDrag.startY
       const distance = Math.hypot(distanceX, distanceY)
-      if (!pendingDrag.started && distance < 6) return
+      if (!pendingDrag.started && distance < CLOCK_DRAG_DEADZONE_PX) return
 
       moveEvent.preventDefault()
       if (pendingDrag.started || !clockRef.current) return
