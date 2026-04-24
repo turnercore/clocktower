@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
+import { isSupabaseConfigured } from '@/lib/supabase/config'
 import { type Session } from '@supabase/supabase-js'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,7 +27,7 @@ export default function LoginForm({ onClick }: { onClick?: () => void }) {
   const [isLoading, setIsLoading] = useState(true)
   const [userSession, setUserSession] = useState<Session | null>(null)
   const [usePassword, setUsePassword] = useState(false)
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
   const router = useRouter()
 
   const loginFormSchema = z.object({
@@ -59,6 +60,12 @@ export default function LoginForm({ onClick }: { onClick?: () => void }) {
   }, [])
 
   const getSession = async () => {
+    if (!isSupabaseConfigured()) {
+      setUserSession(null)
+      setIsLoading(false)
+      return false
+    }
+
     const { data, error } = await supabase.auth.getSession()
     if (data.session && !error) {
       setUserSession(data.session)

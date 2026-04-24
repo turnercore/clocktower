@@ -1,6 +1,6 @@
 'use server'
 // dataUtilities.ts
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import {
   UUID,
   TowerDatabaseType,
@@ -9,7 +9,6 @@ import {
   ServerActionReturn,
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { cookies } from 'next/headers'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { z } from 'zod'
 
@@ -25,7 +24,7 @@ export async function fetchTowerDataSA(
     const publicKey = inputPublicKey ? z.string().parse(inputPublicKey) : ''
 
     // Get the tower data from the database
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('towers')
       .select('*')

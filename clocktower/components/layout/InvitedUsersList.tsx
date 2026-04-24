@@ -9,7 +9,7 @@ import {
 } from '@/components/ui'
 import { ProfileRow, UUID } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AvatarWithPresence from '@/components/user/AvatarWithPresence'
@@ -24,7 +24,7 @@ const InvitedUsersList = ({
   isInteractable = false,
 }: InvitedUsersListProps) => {
   // Grab invited users from towerId
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
   const params = useParams()
   const path = usePathname()
   const windowSize = useWindowSize()

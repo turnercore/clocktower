@@ -32,7 +32,7 @@ export default async function TowerPage({
     return (
       <div className='flex flex-col items-center mt-28 text-center mb-[250px]'>
         <h1 className='text-xl mb-4'>
-          Can't find your tower, or the id is invalid. Go home, you're drunk.
+          Can&apos;t find your tower, or the id is invalid. Go home, you&apos;re drunk.
         </h1>
         <Button variant='outline' asChild>
           <Link href='/'>Take me home.</Link>

@@ -8,7 +8,7 @@ import {
   TowerDatabaseType,
   UUID,
 } from '@/types/schemas'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/supabase'
 import { type RealtimePostgresUpdatePayload } from '@supabase/supabase-js'
 
@@ -27,7 +27,7 @@ const RealtimeColorPicker: React.FC<RealtimeColorPickerProps> = ({
   const [currentColor, setCurrentColor] = useState<HexColorCode>(color)
   const params = useSearchParams()
   const towerId = id ? id : params.get('id')
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
 
   const handleTowerColorsUpdate = (
     payload: RealtimePostgresUpdatePayload<TowerDatabaseType>,

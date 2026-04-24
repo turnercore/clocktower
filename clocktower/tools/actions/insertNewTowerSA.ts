@@ -8,8 +8,7 @@ import {
   TowerRowRow,
   ClockType,
 } from '@/types/schemas' // Replace with the actual path to your schema
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { generateName } from '@/tools/nameGenerators'
 /**
  * Inserts a new tower into the "towers" table in the database.
@@ -22,7 +21,7 @@ const insertNewTowerSA = async (
   try {
     // Validate Input
     const towerId = UUIDSchema.parse(inputTowerId)
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
     // Get user session
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession()
@@ -68,9 +67,10 @@ const insertNewTowerSA = async (
     }
 
     // Insert the new row into the database with supabase.
-    const { error: rowError } = await supabase
-      .from('tower_rows')
-      .insert(defaultRowData)
+    const { error: rowError } = await supabase.from('tower_rows').insert({
+      ...defaultRowData,
+      color: defaultRowData.color ?? undefined,
+    })
     // If there was an error inserting the row, throw the error.
     if (rowError) throw rowError
 

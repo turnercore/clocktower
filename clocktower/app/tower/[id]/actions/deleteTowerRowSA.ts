@@ -1,6 +1,5 @@
 'use server'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
@@ -24,7 +23,7 @@ export const deleteTowerRowSA = async ({
   try {
     // validate input data
     inputSchema.parse({ rowId, towerId })
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     const { error } = await supabase
       .from('tower_rows')
       .delete()

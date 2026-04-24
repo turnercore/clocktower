@@ -1,6 +1,6 @@
 'use server'
 // updateClockData.ts
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import {
   ServerActionReturn,
@@ -9,7 +9,6 @@ import {
   UUIDSchema,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 // Define the function's arguments and return types
@@ -31,7 +30,7 @@ export const updateClockDataSA = async ({
     inputSchema.parse({ clockId, newClockData })
 
     // 2. Get the user's cookies and create a Supabase client
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
 
     // 3. Call the Supabase client and get the response
     const { data, error } = await supabase

@@ -11,10 +11,8 @@ import {
   DropdownMenuLabel,
   Button,
 } from '@/components/ui'
-import {
-  type User,
-  createClientComponentClient,
-} from '@supabase/auth-helpers-nextjs'
+import type { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { type Profile, ProfileSchema } from '@/types/schemas'
@@ -22,7 +20,6 @@ import { GoGear, GoSignOut } from 'react-icons/go'
 import hash from '@/tools/hash'
 import fetchSupabaseProfileSA from '@/tools/actions/fetchSupabaseProfileSA'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { Router } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 interface UserAvatarProps {
@@ -34,7 +31,7 @@ const UserAvatar = ({ className, user }: UserAvatarProps) => {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
 
   //Get user on mount

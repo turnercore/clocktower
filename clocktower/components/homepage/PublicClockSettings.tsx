@@ -15,7 +15,7 @@ import { GiSettingsKnobs } from 'react-icons/gi'
 import { PublicClockType } from './PublicClock'
 
 type PublicClockSettingsProps = {
-  pieChart: JSX.Element
+  pieChart: React.ReactElement
   colorPalette: string[]
   clockData: PublicClockType
   onSettingsChange: (updatedClockData: Partial<PublicClockType>) => void

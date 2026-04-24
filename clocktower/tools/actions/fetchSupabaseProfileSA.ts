@@ -1,14 +1,13 @@
 'use server'
 import type { Profile, ServerActionReturn } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import extractErrorMessage from '../extractErrorMessage'
 import { generateUsername } from '../nameGenerators'
 
 const fetchSupabaseProfileSA = async (
   userId: string,
 ): Promise<ServerActionReturn<Profile>> => {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   try {
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
@@ -38,14 +37,13 @@ const fetchSupabaseProfileSA = async (
 }
 
 const createNewProfile = async (newProfileId: string) => {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
 
   const newProfile = {
     id: newProfileId,
     username: generateUsername(),
     color: '#FFFFFF',
     avatar_set: 1,
-    reduce_motion: false,
   }
 
   const { error } = await supabase.from('profiles').upsert(newProfile)

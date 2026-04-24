@@ -20,7 +20,7 @@ import {
   ScrollBar,
   toast,
 } from '@/components/ui'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { TbClockPlus } from 'react-icons/tb'
 import { UUID, ClockType, TowerRowRow } from '@/types/schemas'
 import { TiDelete } from 'react-icons/ti'
@@ -53,7 +53,7 @@ const RealtimeTowerRow: React.FC<RealtimeTowerRowProps> = ({
   const addedClocksRef = React.useRef<UUID[]>(addedClocks.map((c) => c.id))
   const hasEditAccess = useEditAccess(towerId)
   const { reduceMotion } = useAccessibility()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   // Update self when a server payload is received
   const handleRealtimeTowerRowUpdate = (

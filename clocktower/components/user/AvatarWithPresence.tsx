@@ -14,7 +14,7 @@ import {
 import hash from '@/tools/hash'
 import type { ProfileRow } from '@/types/schemas'
 import { AlertDialog, AlertDialogCancel } from '@radix-ui/react-alert-dialog'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 
@@ -29,7 +29,7 @@ const AvatarWithPresence = ({
   isInteractable,
   isOnline,
 }: AvatarWithPresenceProps) => {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const params = useParams()
   const [isDeleted, setIsDeleted] = useState(false)
 
@@ -38,9 +38,11 @@ const AvatarWithPresence = ({
     if (!params.id) return
     setIsDeleted(true)
     // Call supabase to remove user from tower.
+    const towerId = Array.isArray(params.id) ? params.id[0] : params.id
+    if (!towerId) return
     const { error } = await supabase.rpc('remove_user_from_tower', {
       userid: user.id,
-      tower: params.id,
+      tower: towerId,
     })
 
     if (error) {

@@ -4,8 +4,7 @@
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { generatePublicKey } from '@/tools/nameGenerators'
 import { type ServerActionReturn, type UUID, UUIDSchema } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 type ReturnType = {
@@ -28,7 +27,7 @@ export default async function shareTowerPubliclySA({
     z.boolean().parse(setPublic)
 
     // get user that is making this call
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession()
     if (sessionError) throw sessionError

@@ -1,10 +1,7 @@
 'use server'
-import {
-  SupabaseClient,
-  createServerActionClient,
-} from '@supabase/auth-helpers-nextjs'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import { fetchTowerDataSA } from './fetchTowerDataSA'
-import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 import {
   ClockSchema,
@@ -26,7 +23,7 @@ export const fetchCompleteTowerDataSA = async (
     UUIDSchema.parse(towerId)
 
     // Fetch the tower data
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     const { data: towerDataFetchResult, error: towerDataFetchResultError } =
       await fetchTowerDataSA(towerId)
 

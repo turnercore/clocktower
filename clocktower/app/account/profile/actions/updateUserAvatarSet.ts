@@ -1,8 +1,7 @@
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { ServerActionReturn } from '@/types/schemas'
+import { createClient } from '@/lib/supabase/server'
 
 type ReturnType = {
   success: boolean
@@ -10,7 +9,6 @@ type ReturnType = {
 
 export default async function updateUserAvatarSetSA(
   inputAvatarSet: string | number,
-  inputUserId: UUID,
 ): Promise<ServerActionReturn<ReturnType>> {
   try {
     // Get the form data into a javascript object
@@ -25,15 +23,21 @@ export default async function updateUserAvatarSetSA(
       throw new Error('Invalid avatar set.')
     }
 
-    UUIDSchema.parse(inputUserId)
-
     // init supabase
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError) throw userError
+    if (!user)
+      throw new Error('You must be signed in to update your avatar set.')
+
     // Update the user's avatar set in the database
     const { error } = await supabase
       .from('profiles')
       .update({ avatar_set: avatarSet })
-      .eq('id', inputUserId)
+      .eq('id', user.id)
 
     // Handle error
     if (error) throw error

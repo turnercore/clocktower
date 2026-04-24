@@ -1,6 +1,6 @@
 'use server'
 // Fetch Clock Data
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import {
   UUID,
   ClockType,
@@ -9,7 +9,6 @@ import {
   ServerActionReturn,
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { cookies } from 'next/headers'
 
 export const fetchClockData = async (
   inputClockId: UUID,
@@ -19,7 +18,7 @@ export const fetchClockData = async (
     const clockId = UUIDSchema.parse(inputClockId)
 
     // Get the clock data from the database
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     const { data, error } = await supabase
       .from('clocks')
       .select('*')

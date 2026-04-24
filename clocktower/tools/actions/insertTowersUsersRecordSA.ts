@@ -2,8 +2,7 @@
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 const inputSchema = z.object({
@@ -32,7 +31,7 @@ export default async function serverActionSA({
     })
 
     // Create a client object that has the current user's cookies.
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     // Upsert userid/towerid record
     const { error: upsertError } = await supabase
       .from('towers_users')

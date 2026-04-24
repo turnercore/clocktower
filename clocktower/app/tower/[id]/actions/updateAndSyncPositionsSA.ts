@@ -1,6 +1,5 @@
 'use server'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import {
   UpdateAndSyncPositionParamsSchema,
   UpdateAndSyncPositionParams,
@@ -31,7 +30,7 @@ export const updateAndSyncPositions = async (
       )
     }
     const { entityType, entities } = validatedParams.data
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
 
     const sortResult = sortByPosition(entities)
     if ('error' in sortResult) throw new Error(sortResult.error)

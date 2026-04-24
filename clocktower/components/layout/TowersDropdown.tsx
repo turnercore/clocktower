@@ -18,13 +18,10 @@ import { isValidUUID } from '@/tools/isValidUUID'
 import { TowerDatabaseType, UUID } from '@/types/schemas'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { GiWhiteTower } from 'react-icons/gi'
-import {
-  User,
-  createClientComponentClient,
-} from '@supabase/auth-helpers-nextjs'
+import type { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { GoPlusCircle } from 'react-icons/go'
 import insertNewTowerSA from '@/tools/actions/insertNewTowerSA'
-import { Database } from '@/types/supabase'
 import { capitalizeFirstLetterOfEveryWord } from '@/tools/capitalizeFirstLetterOfEveryWord'
 import { Label } from '../ui'
 
@@ -32,7 +29,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
   const router = useRouter()
   const params = useParams()
   const path = usePathname()
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
   const [open, setOpen] = useState(false)
   const [towers, setTowers] = useState<TowerDatabaseType[]>([])
   const [selectedTowerName, setSelectedTowerName] = useState('')

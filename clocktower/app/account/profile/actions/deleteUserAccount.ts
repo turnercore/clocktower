@@ -1,14 +1,8 @@
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ServerActionReturn, UUIDSchema } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { z } from 'zod'
-import { cookies } from 'next/headers'
-import { createClient } from '@supabase/supabase-js'
-
-const inputSchema = z.object({
-  userId: UUIDSchema,
-})
+import { ServerActionReturn } from '@/types/schemas'
+import { createClient as createSupabaseAdminClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 
 type ReturnType = {
   success: boolean
@@ -20,30 +14,26 @@ const supabaseServiceKey =
   process.env.SUPABASE_SERVICE_KEY || 'TODO: Your Supabase Key'
 
 export default async function deleteUserAccount(
-  formData: FormData,
+  _formData: FormData,
 ): Promise<ServerActionReturn<ReturnType>> {
   try {
-    // Get the form data into a javascript object
-    const form = Object.fromEntries(formData.entries())
-
-    // Validate data
-    const result = inputSchema.safeParse(form)
-    if (!result.success) {
-      return {
-        error: extractErrorMessage(result.error),
-        data: { success: false },
-      }
-    }
-    const { userId } = result.data
-
     // Delete the user from auth
-    const supabaseAdmin = createClient(supabaseURL, supabaseServiceKey)
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError) throw userError
+    if (!user) throw new Error('You must be signed in to delete your account.')
+
+    const supabaseAdmin = createSupabaseAdminClient(supabaseURL, supabaseServiceKey)
     const { error: deleteAuthError } =
-      await supabaseAdmin.auth.admin.deleteUser(userId, false)
+      await supabaseAdmin.auth.admin.deleteUser(user.id, false)
+    if (deleteAuthError) throw deleteAuthError
 
     // Sign the user out
-    const supabase = createServerActionClient({ cookies })
     const { error: signOutError } = await supabase.auth.signOut()
+    if (signOutError) throw signOutError
 
     // Clean up the user's data if needed (Delete cascade will take care of this, I believe)
 

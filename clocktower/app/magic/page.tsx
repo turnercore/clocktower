@@ -123,7 +123,7 @@ const MagicPage = () => {
 
         <div className=' pl-28 mt-2'>
           <p ref={paragraph1Ref} className='text-xl'>
-            What's going to happen next?
+            What&apos;s going to happen next?
           </p>
           <div className='flex flex-row items-center'>
             <p ref={hintRef} className='text-lg italic'>
@@ -158,7 +158,7 @@ const MagicPage = () => {
 
       <div className=' pl-28 mt-2'>
         <p ref={paragraph1Ref} className='text-xl'>
-          What's going to happen next?
+          What&apos;s going to happen next?
         </p>
         <div className='flex flex-row items-center'>
           <p ref={hintRef} className='text-lg italic'>

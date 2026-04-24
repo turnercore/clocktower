@@ -1,9 +1,8 @@
 // TowerRow.tsx
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { TowerRowRow, UUID } from '@/types/schemas'
 import RealtimeTowerRow from './RealtimeTowerRow'
 import { Clock } from './Clock'
-import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 import React, { Suspense } from 'react'
 
@@ -12,7 +11,7 @@ interface TowerRowServerProps {
 }
 
 export const TowerRow: React.FC<TowerRowServerProps> = async ({ rowId }) => {
-  const supabase = createServerComponentClient<Database>({ cookies })
+  const supabase = await createClient()
 
   // Fetch the row data
   const { data: rowData, error: rowError } = await supabase

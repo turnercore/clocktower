@@ -3,15 +3,17 @@ import PublicClock from '@/components/homepage/PublicClock'
 import { Button } from '@/components/ui'
 import { Suspense } from 'react'
 import SiteTitle from '@/components/homepage/SiteTitle'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
+import { isSupabaseConfigured } from '@/lib/supabase/config'
 
 const Home = async () => {
   let isLoggedIn = false
-  const supabase = createServerComponentClient({ cookies })
-  const { data, error } = await supabase.auth.getSession()
-  if (data?.session?.user && !error) {
-    isLoggedIn = true
+  if (isSupabaseConfigured()) {
+    const supabase = await createClient()
+    const { data, error } = await supabase.auth.getUser()
+    if (data?.user && !error) {
+      isLoggedIn = true
+    }
   }
 
   return (

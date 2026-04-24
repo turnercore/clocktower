@@ -1,9 +1,8 @@
 'use server'
 // fetchRowIdsSA.ts
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { UUID, UUIDSchema, ServerActionReturn } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { cookies } from 'next/headers'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
 export async function fetchRowIdsSA(
@@ -14,7 +13,7 @@ export async function fetchRowIdsSA(
     const towerId = UUIDSchema.parse(inputTowerId)
 
     // Get the tower data from the database
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
 
     // Get the row ids from the database assoisated with this towerId
 

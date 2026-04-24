@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { type TowerType, type UUID } from '@/types/schemas'
 
 const useEditAccess = (towerId: UUID): boolean => {
   const [hasEditAccess, setHasEditAccess] = useState(false)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   // TODO: This should be aware of changes to the tower if the admin_users, users, owner, or is_locked changes
 

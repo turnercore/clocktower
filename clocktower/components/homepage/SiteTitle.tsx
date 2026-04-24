@@ -1,6 +1,6 @@
 // SiteTitle.tsx
 'use client'
-import React, { useRef, useEffect } from 'react'
+import React, { createRef, useEffect, useMemo } from 'react'
 import anime from 'animejs'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 
@@ -8,10 +8,15 @@ const title = 'Clocktower'
 const animatedLettersIndex = [8, 6, 2, 3]
 
 const SiteTitle = () => {
-  const rotationRefs = title.split('').map(() => useRef<HTMLDivElement>(null))
+  const rotationRefs = useMemo(
+    () => title.split('').map(() => createRef<HTMLDivElement>()),
+    [],
+  )
   const { reduceMotion, screenReaderMode } = useAccessibility()
 
   useEffect(() => {
+    if (reduceMotion || screenReaderMode) return
+
     const timeline = anime.timeline({
       loop: true,
       autoplay: true,
@@ -35,7 +40,7 @@ const SiteTitle = () => {
         count++
       }
     })
-  }, [])
+  }, [reduceMotion, rotationRefs, screenReaderMode])
 
   return (
     <h1 className=' text-9xl mt-4 mb-2 tracking-tighter leading-tight font-extrabold text-center'>

@@ -6,7 +6,7 @@ import {
   PresencePayload,
 } from '@/types/schemas'
 import React, { useState, useEffect, useRef } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { Button, toast } from '@/components/ui'
 import TowerSettingsDialog from './TowerSettingsDialog'
 import { Database } from '@/types/supabase'
@@ -34,7 +34,15 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
   const addedRowsRef = useRef<UUID[]>(addedRows.map((row) => row.id)) // Create a ref for addedRows
   const hasEditAccess = useEditAccess(towerId)
 
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
+
+  const handleNameChange = (newName: string) => {
+    setTowerData((prevData) => ({ ...prevData, name: newName }))
+  }
+
+  const handleUsersChange = (newUsers: string[]) => {
+    setTowerData((prevData) => ({ ...prevData, users: newUsers }))
+  }
 
   // Functions to handle data changes from the server
   const handleInsertRow = (
@@ -140,14 +148,6 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
         return oldAddedRows
       })
     }
-  }
-
-  const handleNameChange = (newName: string) => {
-    setTowerData((prevData) => ({ ...prevData, name: newName }))
-  }
-
-  const handleUsersChange = (newUsers: string[]) => {
-    setTowerData((prevData) => ({ ...prevData, users: newUsers }))
   }
 
   return (

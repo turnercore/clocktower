@@ -1,5 +1,5 @@
 'use server'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import {
   ServerActionReturn,
@@ -8,7 +8,6 @@ import {
   UUID,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 // Define the function's arguments and return types
@@ -27,7 +26,7 @@ export const removeTowerColorSA = async ({
   entityId,
 }: inputType): Promise<ServerActionReturn<ColorPaletteType>> => {
   try {
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     // Extract and validate form data
     inputSchema.parse({ towerId, entityId })
 

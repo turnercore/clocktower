@@ -33,7 +33,7 @@ import { GiSettingsKnobs } from 'react-icons/gi'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 
 type ClockSettingsDialogProps = {
-  configuredPieChart: JSX.Element
+  configuredPieChart: React.ReactElement
   clockData: ClockType
   onStateChange: (key: keyof ClockType, value: any) => void
   onDelete: () => void
@@ -322,7 +322,6 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
                   aria-labelledby='segments-label'
                   aria-label='Clock Segments Slider'
                   name='clock-segments-slider'
-                  aria-
                   defaultValue={[clockData.segments]}
                   min={1}
                   max={18}

@@ -1,10 +1,9 @@
 'use server'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 export default async function isUserAuthenticated() {
   try {
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
     const { data, error } = await supabase.auth.getSession()
     const session = data?.session
     const user = session?.user

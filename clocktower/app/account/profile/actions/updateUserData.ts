@@ -5,14 +5,12 @@ import {
   ProfileRow,
   ServerActionReturn,
 } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { cookies } from 'next/headers'
 import { openaiModeration } from '@/tools/openaiModeration'
 
 // Define the input schema outside the function for reusability
 const inputSchema = z.object({
-  userId: z.string(),
   email: z.string().email().optional(),
   confirmEmail: z.string().email().optional(),
   password: z
@@ -47,10 +45,15 @@ export default async function updateUserDataSA(
     const result = inputSchema.parse(form)
 
     //init supabase
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError) throw userError
+    if (!user) throw new Error('You must be signed in to update your profile.')
 
     const {
-      userId,
       email,
       confirmEmail,
       password,
@@ -108,7 +111,7 @@ export default async function updateUserDataSA(
     const { error: updateProfileError } = await supabase
       .from('profiles')
       .update(userData)
-      .eq('id', userId)
+      .eq('id', user.id)
       .single()
 
     if (updateProfileError) throw updateProfileError

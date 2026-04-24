@@ -1,8 +1,7 @@
 // Clock.tsx
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { ClockRowData, UUID } from '@/types/schemas'
 import RealtimeClock from './RealtimeClock'
-import { cookies } from 'next/headers'
 import type { Database } from '@/types/supabase'
 
 interface ClockServerProps {
@@ -10,7 +9,7 @@ interface ClockServerProps {
 }
 
 export const Clock: React.FC<ClockServerProps> = async ({ clockId }) => {
-  const supabase = createServerComponentClient<Database>({ cookies })
+  const supabase = await createClient()
   const { data: clockData, error: clockError } = await supabase
     .from('clocks')
     .select('*')

@@ -1,6 +1,6 @@
 'use client'
 import { Database } from '@/types/supabase'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { signOutSA } from './actions/signOutSA'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
@@ -8,7 +8,7 @@ import { toast } from '@/components/ui'
 
 const LogoutPage = () => {
   const router = useRouter()
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
   // redirect to home
   useEffect(() => {
     const signOut = async () => {

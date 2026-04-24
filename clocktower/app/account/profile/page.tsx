@@ -1,32 +1,36 @@
 import UpdateAccountForm from './components/UpdateAccountForm'
-import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { Database } from '@/types/supabase'
+import { createClient } from '@/lib/supabase/server'
 import { ProfileRow, ProfileRowSchema } from '@/types/schemas'
+import { isSupabaseConfigured } from '@/lib/supabase/config'
 
 export default async function AccountPage() {
   let profile: ProfileRow | null = null
   let isAnError = false
   let email = ''
   // Get the user profile data
-  const supabase = createServerComponentClient<Database>({ cookies })
+  if (!isSupabaseConfigured()) {
+    isAnError = true
+  }
+
   try {
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.getSession()
-    if (sessionError) throw sessionError
+    if (isSupabaseConfigured()) {
+      const supabase = await createClient()
+      const { data: userData, error: userError } = await supabase.auth.getUser()
+      if (userError) throw userError
 
-    const userId = sessionData.session?.user?.id
-    if (!userId) throw new Error('No user ID found in session data')
-    email = sessionData.session?.user?.email || ''
+      const userId = userData.user?.id
+      if (!userId) throw new Error('No user ID found in auth data')
+      email = userData.user?.email || ''
 
-    const { data: userProfileData, error: fetchProfileError } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
-    if (fetchProfileError) throw fetchProfileError
-    profile = ProfileRowSchema.parse(userProfileData)
-    if (!profile) throw new Error('No profile data found')
+      const { data: userProfileData, error: fetchProfileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+      if (fetchProfileError) throw fetchProfileError
+      profile = ProfileRowSchema.parse(userProfileData)
+      if (!profile) throw new Error('No profile data found')
+    }
   } catch (error) {
     console.error(error)
     isAnError = true

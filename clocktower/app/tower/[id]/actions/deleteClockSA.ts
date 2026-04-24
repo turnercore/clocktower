@@ -3,8 +3,7 @@
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 import { removeTowerColorSA } from './removeTowerColorSA'
 
@@ -28,7 +27,7 @@ export const deleteClockSA = async ({
     // Validate data with zod
     inputSchema.parse({ clockId, towerId })
     // Create a client object that has the current user's cookies.
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     // Delete the clock from the database with supabase.
     const { error } = await supabase.from('clocks').delete().eq('id', clockId)
     // If there was an error deleting the clock, throw the error.

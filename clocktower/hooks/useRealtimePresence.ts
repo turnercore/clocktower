@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react'
 import {
   RealtimePresenceJoinPayload,
   RealtimePresenceLeavePayload,
-  createClient,
 } from '@supabase/supabase-js'
 import { PresencePayload, UUID } from '@/types/schemas'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { set } from 'date-fns'
+import { createClient } from '@/lib/supabase/client'
 
 type UserPresence = {
   presence_ref: string
@@ -21,7 +19,7 @@ type PresenceSyncState = {
 }
 
 function useRealtimePresence(towerId: UUID): UserPresence[] {
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const [presence, setPresence] = useState<UserPresence[]>([])
 
   const handleUserJoin = (

@@ -2,8 +2,7 @@
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { ServerActionReturn, UUIDSchema } from '@/types/schemas'
 import { z } from 'zod'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 const inputSchema = z.object({
   inputUserId: UUIDSchema,
@@ -20,7 +19,7 @@ export default async function serverActionSA({
   inputInvitedUsername,
   inputTowerId,
 }: z.infer<typeof inputSchema>): Promise<ServerActionReturn<ReturnType>> {
-  const supabase = createServerActionClient({ cookies })
+  const supabase = await createClient()
   try {
     // Validate data
     const {

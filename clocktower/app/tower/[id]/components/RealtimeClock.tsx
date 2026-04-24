@@ -1,7 +1,7 @@
 'use client'
-import React, { useState, useEffect, MouseEvent, Suspense } from 'react'
+import React, { useState, useEffect, MouseEvent, Suspense, useId } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import {
   Card,
   CardContent,
@@ -13,6 +13,11 @@ import {
   toast,
 } from '@/components/ui'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
+import {
+  clockFilledDisplayValue,
+  clockFilledFromInput,
+  clockFilledPercentage,
+} from '@/tools/clockFilled'
 import { ClockRowData, ClockSchema, ClockType, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
 import type { Database } from '@/types/supabase'
@@ -24,7 +29,6 @@ import type {
 } from '@supabase/supabase-js'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
-import generateUUID from '@/tools/generateId'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
 
 interface RealtimeClockProps {
@@ -33,6 +37,7 @@ interface RealtimeClockProps {
 
 // Define the React component
 const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
+  const clockInputId = useId()
   const clockId = initialData.id
   const towerId = initialData.tower_id
   const rowId = initialData.row_id
@@ -48,7 +53,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const hasEditAccess = useEditAccess(towerId)
 
   // Init supabase
-  const supabase = createClientComponentClient<Database>()
+  const supabase = createClient()
 
   const handleRealtimeClockUpdate = (
     payload: RealtimePostgresUpdatePayload<ClockRowData>,
@@ -216,12 +221,11 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const handleFilledInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const filledValue = parseInt(event.target.value, 10) - 1
-    if (
-      isNaN(filledValue) ||
-      filledValue < 0 ||
-      filledValue >= clockData.segments
-    ) {
+    const filledValue = clockFilledFromInput(
+      event.target.value,
+      clockData.segments,
+    )
+    if (filledValue === null) {
       return // Guard against invalid input
     }
     updateFilledValue(filledValue)
@@ -384,35 +388,34 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     }
   }
 
-  const randomId = generateUUID()
   const screenReaderChart = (
     <Card>
       <CardHeader>
         <CardTitle>{`Clock ${clockData.name}`}</CardTitle>
       </CardHeader>
       <CardContent>
-        <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
+        <Label htmlFor={`clock-name-${clockInputId}`}>Clock Name</Label>
         <Input
-          id={`clock-name-${randomId}`}
+          id={`clock-name-${clockInputId}`}
           type='text'
-          defaultValue={clockData.name}
+          value={clockData.name}
           readOnly={!hasEditAccess}
           onChange={handleNameInputChange}
         />
 
-        <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
+        <Label htmlFor={`clock-filled-${clockInputId}`}>Filled Segments</Label>
         <Input
-          id={`clock-filled-${randomId}`}
+          id={`clock-filled-${clockInputId}`}
           type='number'
-          defaultValue={clockData.filled !== null ? clockData.filled + 1 : 0}
+          value={clockFilledDisplayValue(clockData.filled)}
           readOnly={!hasEditAccess}
           onChange={handleFilledInputChange}
         />
-        <Label htmlFor={`clock-segments-${randomId}`}>Total Segments</Label>
+        <Label htmlFor={`clock-segments-${clockInputId}`}>Total Segments</Label>
         <Input
-          id={`clock-segments-${randomId}`}
+          id={`clock-segments-${clockInputId}`}
           type='number'
-          defaultValue={clockData.segments}
+          value={clockData.segments}
           readOnly={!hasEditAccess}
           onChange={handleTotalSegmentsInputChange}
         />
@@ -420,9 +423,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       <CardFooter>
         <p>
           Percentage Filled:
-          {clockData.filled !== null
-            ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
-            : 0}
+          {clockFilledPercentage(clockData.filled, clockData.segments)}
         </p>
       </CardFooter>
     </Card>

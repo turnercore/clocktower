@@ -22,8 +22,37 @@ const Footer = () => {
                 <p>Made with {randomEmoji} by Turner Monroe</p>
                 <p className='font-mono tracking-widest'>(turnercore)</p>
               </div>
+              <nav
+                aria-label='Legal'
+                className='mb-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-gray-500'
+              >
+                <Link className='underline' href='/privacy-policy'>
+                  Privacy Policy
+                </Link>
+                <Link className='underline' href='/terms-of-use'>
+                  Terms of Use
+                </Link>
+                <Link
+                  className='underline'
+                  href='/cookie-and-local-storage-policy'
+                >
+                  Cookie & Local Storage Policy
+                </Link>
+                <Link className='underline' href='/fan-project-disclaimer'>
+                  Fan Project Disclaimer
+                </Link>
+              </nav>
             </div>
           )}
+          <div className='text-gray-500 text-center mb-2'>
+            <a
+              href='mailto:me@turnercore.dev'
+              className='hover:underline'
+              aria-label='Send feedback via email'
+            >
+              Feedback
+            </a>
+          </div>
           <div className='flex justify-center items-center vibrating-element'>
             <Link href='https://github.com/turnercore/clocktower'>
               <ThemeAwareSocialIcon

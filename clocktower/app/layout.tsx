@@ -1,13 +1,17 @@
 import '@/styles/globals.css'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
+import AnnouncementBanner from '@/components/layout/AnnouncementBanner'
 import { Metadata, Viewport } from 'next'
 import { Toaster } from '@/components/ui/toaster'
-import { GeistSans } from 'geist/font'
+import { Geist } from 'next/font/google'
 import { Providers } from '@/providers/providers'
 import { Suspense } from 'react'
 
-const url = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
+const geistSans = Geist({
+  subsets: ['latin'],
+  variable: '--font-geist-sans',
+})
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -40,11 +44,11 @@ export default async function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang='en'>
+    <html lang='en' suppressHydrationWarning>
       <head>
         <link rel='stylesheet' href='https://use.typekit.net/ckd1nmz.css' />
       </head>
-      <body className={`${GeistSans.className} min-w-full`}>
+      <body className={`${geistSans.variable} ${geistSans.className} min-w-full`}>
         <Providers>
           <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
             <Suspense
@@ -53,6 +57,9 @@ export default async function RootLayout({
               }
             >
               <Header />
+            </Suspense>
+            <Suspense>
+              <AnnouncementBanner />
             </Suspense>
             <Suspense>
               <main className='w-full flex-1 mt-3'>{children}</main>

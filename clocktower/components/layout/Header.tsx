@@ -16,18 +16,15 @@ import { GoHome } from 'react-icons/go'
 import { useEffect, useState } from 'react'
 import { useParams, usePathname } from 'next/navigation'
 import InvitedUsersList from './InvitedUsersList'
-import {
-  type User,
-  createClientComponentClient,
-} from '@supabase/auth-helpers-nextjs'
-import { Accessibility } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/client'
 import { AccessibilityOptionsDialog } from './AccessiblityOptionsDialog'
 
 // Changing this to a client componenet
 export default function Header() {
   const path = usePathname()
   const params = useParams()
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
   const [towerId, setTowerId] = useState('')
   const [user, setUser] = useState<User | null>(null)

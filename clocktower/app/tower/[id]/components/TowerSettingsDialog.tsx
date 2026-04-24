@@ -26,7 +26,7 @@ import {
 import { GiDemolish } from 'react-icons/gi'
 import { FaPersonWalkingLuggage } from 'react-icons/fa6'
 import { BsGear } from 'react-icons/bs'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { TowerDatabaseType, type TowerType, type UUID } from '@/types/schemas'
 import { useRouter } from 'next/navigation'
 import toggleTowerLockSA from '../actions/toggleTowerLockSA'
@@ -48,7 +48,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   const [isTowerLocked, setIsTowerLocked] = useState(false)
   const hasEditAccess = useEditAccess(towerData.id)
   // Get current user
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -112,17 +112,14 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
           .eq('id', towerData.id)
         if (error) throw error
       } else {
+        if (!currentUserId) throw new Error('No current user id found')
         // Call the remove_user_from_tower function via the rpc method
-        const { data, error } = await supabase.rpc('remove_user_from_tower', {
+        const { error } = await supabase.rpc('remove_user_from_tower', {
           tower: towerData.id,
           userid: currentUserId,
         })
         // Check for errors
         if (error) throw error
-        // Optionally, check the result for any additional information
-        if (data && data.success !== true) {
-          throw new Error('Failed to remove user from tower')
-        }
       }
       // Redirect to the home page
       router.push('/')

@@ -5,6 +5,8 @@ const dotenv = require('dotenv')
 const envConfig = dotenv.config({ path: '.env.local' })
 
 // Merge the loaded variables with process.env.
-for (const k in envConfig.parsed) {
-  process.env[k] = envConfig.parsed[k]
+if (envConfig.parsed) {
+  for (const k in envConfig.parsed) {
+    process.env[k] = envConfig.parsed[k]
+  }
 }

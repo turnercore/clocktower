@@ -10,8 +10,7 @@ import {
   UUIDSchema,
 } from '@/types/schemas'
 import { Database } from '@/types/supabase'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
 export const setupTowerColorsDictSA = async (
@@ -23,7 +22,7 @@ export const setupTowerColorsDictSA = async (
     const towerId = UUIDSchema.parse(inputTowerId)
 
     // Get the user's cookies and create a Supabase client
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
 
     // Get complete tower data
     const { data: towerData, error: towerDataError } =

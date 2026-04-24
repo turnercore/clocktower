@@ -1,6 +1,6 @@
 // updateTowerColorsSA.tsx
 'use server'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import {
   ServerActionReturn,
@@ -11,7 +11,6 @@ import {
   HexColorCode,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { cookies } from 'next/headers'
 import { z } from 'zod'
 
 // Define the function's arguments and return types
@@ -36,7 +35,7 @@ export const updateTowerColorsSA = async ({
   console.log('entityId', entityId)
   console.log('color', color)
   try {
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
     // Extract and validate form data
     inputSchema.parse({ towerId, entityId, color })
 

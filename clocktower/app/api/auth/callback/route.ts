@@ -1,10 +1,8 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
-import { cookies } from 'next/headers'
-import { Database } from '@/types/supabase'
 
 export async function GET(req: NextRequest) {
-  const supabase = createRouteHandlerClient<Database>({ cookies })
+  const supabase = await createClient()
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
   const fromUrl = searchParams.get('from')
@@ -18,7 +16,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(fromUrl)
   } else {
     const url = req.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = '/account/login'
     return NextResponse.redirect(url)
   }
 }

@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
 import { Switch, toast } from '../ui'
@@ -32,7 +32,7 @@ export default function ShareTowerPopover() {
   const [isTowerPublic, setIsTowerPublic] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [publicUrl, setPublicUrl] = useState('')
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
 
   useEffect(() => {
     const fetchUserIdAndDetermineOwner = async () => {
@@ -70,7 +70,7 @@ export default function ShareTowerPopover() {
 
       setIsTowerOwner(towerData.owner === currentUserId)
       // filter out current user
-      const currentInvitedUsers = towerData.users.filter(
+      const currentInvitedUsers = (towerData.users ?? []).filter(
         (user: UUID) => user !== currentUserId,
       )
       setInvitedUsers(currentInvitedUsers || [])
@@ -193,7 +193,7 @@ export default function ShareTowerPopover() {
                   <GoCopy />
                 </Button>
                 <p className='font-medium leading-none p-2'>
-                  Copy Tower's Public URL
+                  Copy Tower&apos;s Public URL
                 </p>
               </div>
             )}

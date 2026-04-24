@@ -9,11 +9,11 @@ const inputSchema = z.object({
 
 type ReturnType = boolean
 
-const openaiKey = process.env.OPENAI_API_KEY
 export const openaiModeration = async (
   formData: FormData,
 ): Promise<ServerActionReturn<ReturnType>> => {
   try {
+    const openaiKey = process.env.OPENAI_API_KEY
     if (!openaiKey) throw new Error('OpenAI API key not set')
     // Get the form data into a javascript object
     const form = Object.fromEntries(formData.entries())

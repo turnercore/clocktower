@@ -1,8 +1,7 @@
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import { ServerActionReturn, UUID, UUIDSchema } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createClient } from '@/lib/supabase/server'
 
 type ReturnType = {
   isLocked: boolean
@@ -18,7 +17,7 @@ export default async function toggleIsLockedSA({
     UUIDSchema.parse(towerId)
 
     // get user that is making this call
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
     const { data: sessionData, error: sessionError } =
       await supabase.auth.getSession()
 

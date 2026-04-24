@@ -43,7 +43,7 @@ import { type ProfileRow } from '@/types/schemas'
 import updateUserDataSA from '../actions/updateUserData'
 import deleteUserAccount from '../actions/deleteUserAccount'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/client'
 import Router from 'next/router'
 import { useEffect, useState } from 'react'
 import { AvatarFallback } from '@radix-ui/react-avatar'
@@ -160,7 +160,7 @@ const UpdateAccountForm = ({
   const [currentUsername, setCurrentUsername] = useState(profile.username)
   const [currentColor, setCurrentColor] = useState(profile.color)
   const [avatarSet, setAvatarSet] = useState(profile.avatar_set || 1)
-  const supabase = createClientComponentClient()
+  const supabase = createClient()
   const { reduceMotion } = useAccessibility()
 
   useEffect(() => {
@@ -296,7 +296,7 @@ const UpdateAccountForm = ({
 
     // If we get here, the server action was successful
     // Sign the user out and redirect them to the homepage
-    const supabase = createClientComponentClient()
+    const supabase = createClient()
     await supabase.auth.signOut()
     Router.push('/')
     setIsSubmitting(false)
@@ -333,7 +333,7 @@ const UpdateAccountForm = ({
     setAvatarSet(avatarSetNumber)
 
     // Update the server
-    const { data, error } = await updateUserAvatarSetSA(avatarSetNumber, userId)
+    const { data, error } = await updateUserAvatarSetSA(avatarSetNumber)
     if (error) {
       console.error(error)
       toast({
@@ -353,7 +353,7 @@ const UpdateAccountForm = ({
         <CardTitle>Account</CardTitle>
         <CardDescription className='items-center flex flex-col text-center'>
           Change your account information here.
-          <br /> You do not need to fill in any information you don't want to
+          <br /> You do not need to fill in any information you do not want to
           update.
         </CardDescription>
       </CardHeader>
@@ -563,7 +563,7 @@ const UpdateAccountForm = ({
                   <AlertDialogHeader>
                     <AlertDialogTitle>Delete Yourself?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      Are you sure? You'll continue existing in the real world,
+                      Are you sure? You will continue existing in the real world,
                       but your account will be deleted along with all your data.
                     </AlertDialogDescription>
                   </AlertDialogHeader>

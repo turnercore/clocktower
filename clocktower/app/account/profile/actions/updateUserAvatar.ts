@@ -1,12 +1,10 @@
 'use server'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { ServerActionReturn, UUIDSchema } from '@/types/schemas'
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { ServerActionReturn } from '@/types/schemas'
+import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
-import { cookies } from 'next/headers'
 
 const inputSchema = z.object({
-  userId: UUIDSchema,
   newAvatarUrl: z.string().url(),
 })
 
@@ -26,16 +24,22 @@ export default async function updateUserAvatarSA(
 
     // If we get here, the data is valid and can be used exactly as you would expect
     // to use it in the rest of your server action.
-    const { userId, newAvatarUrl } = result
+    const { newAvatarUrl } = result
 
     // Init Supabase
-    const supabase = createServerActionClient({ cookies })
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
+    if (userError) throw userError
+    if (!user) throw new Error('You must be signed in to update your avatar.')
 
     // Update the user's avatar in the database
     const { error: updateAvatarError } = await supabase
       .from('profiles')
-      .update({ avatar_url: newAvatarUrl })
-      .match({ id: userId })
+      .update({ avatar_url: newAvatarUrl } as never)
+      .match({ id: user.id })
 
     // Handle error
     if (updateAvatarError) throw updateAvatarError

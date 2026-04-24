@@ -1,6 +1,6 @@
 'use server'
 // updateRowName.ts
-import { createServerActionClient } from '@supabase/auth-helpers-nextjs'
+import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/supabase'
 import {
   UUID,
@@ -9,7 +9,6 @@ import {
   TowerRowRowSchema,
 } from '@/types/schemas'
 import extractErrorMessage from '@/tools/extractErrorMessage'
-import { cookies } from 'next/headers'
 
 // 1. Define the function's arguments and return types
 export const updateRowNameSA = async (
@@ -18,7 +17,7 @@ export const updateRowNameSA = async (
 ): Promise<ServerActionReturn<TowerRowRow>> => {
   try {
     // 2. Get the user's cookies and create a Supabase client
-    const supabase = createServerActionClient<Database>({ cookies })
+    const supabase = await createClient()
 
     // 3. Call the Supabase client and get the response
     const { data, error } = await supabase

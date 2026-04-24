@@ -28,7 +28,7 @@ const WelcomePage = () => {
         <div ref={welcomeRef} className='text-center items-center'>
           <h1 className='text-9xl font-bold'>Welcome!</h1>
           <p className='mt-2 mb-10 text-xl'>
-            Now you're ready to get started, just login with your shiny new
+            Now you&apos;re ready to get started, just login with your shiny new
             account.
           </p>
           <Button className='w-32 h-16 text-2xl transition-colors' asChild>
@@ -44,7 +44,7 @@ const WelcomePage = () => {
       <div ref={welcomeRef} className='text-center items-center'>
         <h1 className='text-9xl font-bold'>Welcome!</h1>
         <p className='mt-2 mb-10 text-xl'>
-          Now you're ready to get started, just login with your shiny new
+          Now you&apos;re ready to get started, just login with your shiny new
           account.
         </p>
         <Button className='w-32 h-16 text-2xl transition-colors' asChild>

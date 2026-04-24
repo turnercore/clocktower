@@ -1,8 +1,13 @@
 //PublicClock.tsx
 'use client'
-import React, { useState, useEffect, MouseEvent } from 'react'
+import React, { useState, useEffect, MouseEvent, useId } from 'react'
 import { PieChart } from 'react-minimal-pie-chart'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
+import {
+  clockFilledDisplayValue,
+  clockFilledFromInput,
+  clockFilledPercentage,
+} from '@/tools/clockFilled'
 import PublicClockSettings from './PublicClockSettings'
 import { type ClockType } from '@/types/schemas'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
@@ -15,7 +20,6 @@ import {
   CardFooter,
   Label,
 } from '../ui'
-import generateUUID from '@/tools/generateId'
 
 export type PublicClockType = Omit<
   ClockType,
@@ -102,6 +106,7 @@ const defaultClockData: PublicClockType = {
 }
 
 const PublicClock: React.FC = () => {
+  const clockInputId = useId()
   // Create state variables
   const [clockData, setClockData] = useState<PublicClockType>(defaultClockData)
   const [hoveredSliceIndex, setHoveredSliceIndex] = useState<number | null>(
@@ -225,8 +230,11 @@ const PublicClock: React.FC = () => {
   const handleFilledInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const newFilled = parseInt(event.target.value, 10) - 1 // Adjust for 0-index
-    if (!isNaN(newFilled) && newFilled >= 0 && newFilled < clockData.segments) {
+    const newFilled = clockFilledFromInput(
+      event.target.value,
+      clockData.segments,
+    )
+    if (newFilled !== null) {
       handleDataChange({ filled: newFilled })
     }
   }
@@ -267,43 +275,39 @@ const PublicClock: React.FC = () => {
     />
   )
 
-  const randomId = generateUUID()
-
   const screenReaderClock = (
     <Card>
       <CardHeader>
         <CardTitle>{`Clock ${clockData.name}`}</CardTitle>
       </CardHeader>
       <CardContent>
-        <Label htmlFor={`clock-name-${randomId}`}>Clock Name</Label>
+        <Label htmlFor={`clock-name-${clockInputId}`}>Clock Name</Label>
         <Input
-          id={`clock-name-${randomId}`}
+          id={`clock-name-${clockInputId}`}
           type='text'
-          defaultValue={clockData.name}
+          value={clockData.name}
           onChange={handleNameInputChange}
         />
 
-        <Label htmlFor={`clock-filled-${randomId}`}>Filled Segments</Label>
+        <Label htmlFor={`clock-filled-${clockInputId}`}>Filled Segments</Label>
         <Input
-          id={`clock-filled-${randomId}`}
+          id={`clock-filled-${clockInputId}`}
           type='number'
-          defaultValue={clockData.filled !== null ? clockData.filled + 1 : 0}
+          value={clockFilledDisplayValue(clockData.filled)}
           onChange={handleFilledInputChange}
         />
-        <Label htmlFor={`clock-segments-${randomId}`}>Total Segments</Label>
+        <Label htmlFor={`clock-segments-${clockInputId}`}>Total Segments</Label>
         <Input
-          id={`clock-segments-${randomId}`}
+          id={`clock-segments-${clockInputId}`}
           type='number'
-          defaultValue={clockData.segments}
+          value={clockData.segments}
           onChange={handleTotalSegmentsInputChange}
         />
       </CardContent>
       <CardFooter>
         <p>
           Percentage Filled:
-          {clockData.filled !== null
-            ? Math.floor(((clockData.filled + 1) / clockData.segments) * 100)
-            : 0}
+          {clockFilledPercentage(clockData.filled, clockData.segments)}
         </p>
       </CardFooter>
     </Card>
