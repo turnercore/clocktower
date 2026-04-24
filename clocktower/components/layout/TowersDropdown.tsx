@@ -6,7 +6,6 @@ import {
   Command,
   CommandGroup,
   CommandInput,
-  CommandItem,
   CommandList,
 } from '@/components/ui/command'
 import {
@@ -77,6 +76,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     const newTowerId = crypto.randomUUID()
     setIsCreating(true)
     setOpen(false)
+    setTowerSearch('')
     const { error } = await insertNewTowerSA(newTowerId)
     if (error) {
       console.error(error)
@@ -177,6 +177,7 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
   const handleSelectTower = (tower: TowerDatabaseType) => {
     setSelectedTowerName(tower.name || '')
     setOpen(false)
+    setTowerSearch('')
     navigateToSelectedTower(tower.id)
   }
 
@@ -188,7 +189,13 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
     : towers
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (!nextOpen) setTowerSearch('')
+      }}
+    >
       <PopoverTrigger asChild>
         <Button
           variant='outline'
@@ -215,30 +222,29 @@ const TowersDropdown = ({ user }: { user: User | null }) => {
                 </div>
               )}
               {filteredTowers.map((tower) => (
-                <CommandItem
+                <button
                   aria-label={`Select ${tower.name}`}
+                  className='relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                   key={tower.id}
-                  value={tower.id}
-                  keywords={[tower.name || '']}
-                  onSelect={() => {
+                  type='button'
+                  onClick={() => {
                     handleSelectTower(tower)
                   }}
                 >
                   <GiWhiteTower className='mr-2 h-4 w-4' />
                   <span>{tower.name}</span>
-                </CommandItem>
+                </button>
               ))}
-              <CommandItem
+              <button
                 key='new'
-                value='new-tower'
-                keywords={['new', 'tower', 'create']}
-                forceMount
                 disabled={isCreating}
-                onSelect={handleCreateNewTower}
+                type='button'
+                className='relative flex w-full cursor-default select-none items-center rounded-sm px-2 py-1.5 text-left text-sm outline-none hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground disabled:pointer-events-none disabled:opacity-50'
+                onClick={handleCreateNewTower}
               >
                 <GoPlusCircle className='mr-2 h-4 w-4' />
                 <span>{isCreating ? 'Creating tower...' : 'New Tower'}</span>
-              </CommandItem>
+              </button>
             </CommandGroup>
           </CommandList>
         </Command>
