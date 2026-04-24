@@ -36,60 +36,63 @@ export default function ShareTowerPopover() {
 
   useEffect(() => {
     const fetchUserIdAndDetermineOwner = async () => {
-      if (path.includes('tower') && towerId) {
-        setIsOnTowerPage(true)
-      } else {
-        return
+      setIsLoading(true)
+      try {
+        if (path.includes('tower') && towerId) {
+          setIsOnTowerPage(true)
+        } else {
+          setIsOnTowerPage(false)
+          return
+        }
+
+        const { data: sessionData, error: sessionError } =
+          await supabase.auth.getSession()
+        if (sessionError) {
+          console.error(sessionError)
+          return
+        }
+
+        if (!sessionData.session?.user) {
+          console.error('No user found in session data')
+          return
+        }
+
+        const currentUserId = sessionData.session.user.id
+        setUserId(currentUserId)
+
+        const { data: towerData, error: towerError } = await supabase
+          .from('towers')
+          .select('owner, users, public_key')
+          .eq('id', towerId)
+          .single()
+
+        if (towerError) {
+          console.error(towerError)
+          return
+        }
+
+        setIsTowerOwner(towerData.owner === currentUserId)
+        // filter out current user
+        const currentInvitedUsers = (towerData.users ?? []).filter(
+          (user: UUID) => user !== currentUserId,
+        )
+        setInvitedUsers(currentInvitedUsers || [])
+        // See if tower is public
+        if (towerData.public_key) {
+          setIsTowerPublic(true)
+          const url = domain + path + `?public_key=${towerData.public_key}`
+          setPublicUrl(url)
+        } else {
+          setIsTowerPublic(false)
+          setPublicUrl('')
+        }
+      } finally {
+        setIsLoading(false)
       }
-
-      const { data: sessionData, error: sessionError } =
-        await supabase.auth.getSession()
-      if (sessionError) {
-        console.error(sessionError)
-        return
-      }
-
-      if (!sessionData.session?.user) {
-        console.error('No user found in session data')
-        return
-      }
-
-      const currentUserId = sessionData.session.user.id
-      setUserId(currentUserId)
-
-      const { data: towerData, error: towerError } = await supabase
-        .from('towers')
-        .select('owner, users, public_key')
-        .eq('id', towerId)
-        .single()
-
-      if (towerError) {
-        console.error(towerError)
-        return
-      }
-
-      setIsTowerOwner(towerData.owner === currentUserId)
-      // filter out current user
-      const currentInvitedUsers = (towerData.users ?? []).filter(
-        (user: UUID) => user !== currentUserId,
-      )
-      setInvitedUsers(currentInvitedUsers || [])
-      // See if tower is public
-      console.log('checking if tower is public')
-      if (towerData.public_key) {
-        console.log('tower is public')
-        setIsTowerPublic(true)
-        const url = domain + path + `?public_key=${towerData.public_key}`
-        setPublicUrl(url)
-      } else {
-        setIsTowerPublic(false)
-        setPublicUrl('')
-      }
-      setIsLoading(false)
     }
 
     fetchUserIdAndDetermineOwner()
-  }, [towerId, path])
+  }, [towerId, path, supabase])
 
   const handleInvite = async () => {
     if (!userId) return
@@ -115,20 +118,21 @@ export default function ShareTowerPopover() {
     })
   }
 
-  const handleTowerPublicSwitch = async () => {
-    console.log('switching')
+  const handleTowerPublicSwitch = async (checked: boolean) => {
     // Set local state
     const oldTowerPublicState = isTowerPublic
-    setIsTowerPublic(!isTowerPublic)
+    const oldPublicUrl = publicUrl
+    setIsTowerPublic(checked)
 
     // Update database
     const { data, error } = await shareTowerPubliclySA({
       towerId,
-      setPublic: !oldTowerPublicState,
+      setPublic: checked,
     })
     if (error) {
       // Switch back local state if error
       setIsTowerPublic(oldTowerPublicState)
+      setPublicUrl(oldPublicUrl)
       toast({
         title: 'Error changing tower public status.',
         description: error,
@@ -141,6 +145,8 @@ export default function ShareTowerPopover() {
     if (publicKey) {
       const url = domain + path + `?public_key=${publicKey}`
       setPublicUrl(url)
+    } else {
+      setPublicUrl('')
     }
   }
 
@@ -151,7 +157,12 @@ export default function ShareTowerPopover() {
     userId && (
       <Popover>
         <PopoverTrigger asChild>
-          <Button title='Share Tower' variant='outline'>
+          <Button
+            title='Share Tower'
+            aria-label='Share Tower'
+            variant='outline'
+            size='icon'
+          >
             <TbUserShare className='h-5 w-5' />
           </Button>
         </PopoverTrigger>
@@ -174,7 +185,7 @@ export default function ShareTowerPopover() {
               <Switch
                 checked={isTowerPublic}
                 id='isTowerPublic'
-                onClick={handleTowerPublicSwitch}
+                onCheckedChange={handleTowerPublicSwitch}
               />
               <Label htmlFor='isTowerPublic'>Share Tower Publicly</Label>
             </div>
