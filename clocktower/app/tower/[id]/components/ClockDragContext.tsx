@@ -112,6 +112,7 @@ export const ClockDragProvider = ({
   const clockElements = useRef(new Map<UUID, HTMLDivElement>())
   const rowClocksRef = useRef<RowClockMap>({})
   const lastDragTarget = useRef<{ rowId: UUID; index: number } | null>(null)
+  const previousBodyUserSelect = useRef<string | null>(null)
 
   const syncRowClocks = useCallback((nextRows: RowClockMap) => {
     rowClocksRef.current = nextRows
@@ -314,6 +315,8 @@ export const ClockDragProvider = ({
     (clock: ClockType, element: HTMLDivElement, event: PointerPosition) => {
       const rect = element.getBoundingClientRect()
       const previousRows = rowClocksRef.current
+      previousBodyUserSelect.current = document.body.style.userSelect
+      document.body.style.userSelect = 'none'
 
       setDragState({ clockId: clock.id })
       setDragPreview({
@@ -364,6 +367,8 @@ export const ClockDragProvider = ({
         setDragState(null)
         setDragPreview(null)
         lastDragTarget.current = null
+        document.body.style.userSelect = previousBodyUserSelect.current || ''
+        previousBodyUserSelect.current = null
 
         await persistAffectedRows(previousRows, nextRows)
       }

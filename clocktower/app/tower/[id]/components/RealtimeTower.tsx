@@ -22,9 +22,11 @@ import { ClockDragProvider } from './ClockDragContext'
 import { Search } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
 import {
-  CLOCK_SCALE_STEP,
-  MAX_CLOCK_SCALE,
-  MIN_CLOCK_SCALE,
+  CLOCK_SCALE_SLIDER_MAX,
+  CLOCK_SCALE_SLIDER_MIN,
+  CLOCK_SCALE_SLIDER_STEP,
+  clockScaleToSliderValue,
+  sliderValueToClockScale,
   TowerClockScaleProvider,
   useTowerClockScale,
 } from './TowerClockScaleContext'
@@ -166,8 +168,8 @@ const RealtimeTower: React.FC<TowerProps> = ({ initialData, children }) => {
         <div className='flex flex-col space-y-4'>
           <div className='flex flex-wrap items-center justify-center gap-4 px-4'>
             <h1 className='text-3xl'>{towerData?.name}</h1>
-            <TowerClockScaleControl />
             <TowerSettingsDialog towerData={towerData} />
+            <TowerClockScaleControl />
           </div>
           {children}
           {addedRows.map((row) => (
@@ -198,11 +200,13 @@ const TowerClockScaleControl = () => {
       </span>
       <Slider
         aria-labelledby='tower-clock-scale-label'
-        value={[clockScale]}
-        min={MIN_CLOCK_SCALE}
-        max={MAX_CLOCK_SCALE}
-        step={CLOCK_SCALE_STEP}
-        onValueChange={(value) => setClockScale(value[0])}
+        value={[clockScaleToSliderValue(clockScale)]}
+        min={CLOCK_SCALE_SLIDER_MIN}
+        max={CLOCK_SCALE_SLIDER_MAX}
+        step={CLOCK_SCALE_SLIDER_STEP}
+        onValueChange={(value) =>
+          setClockScale(sliderValueToClockScale(value[0]))
+        }
       />
       </div>
   )

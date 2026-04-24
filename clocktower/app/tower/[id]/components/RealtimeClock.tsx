@@ -30,13 +30,26 @@ import type {
 import extractErrorMessage from '@/tools/extractErrorMessage'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useAccessibility } from '@/providers/AccessibilityProvider'
-import { GripVertical } from 'lucide-react'
 import { useClockDrag } from './ClockDragContext'
 import { useTowerClockScale } from './TowerClockScaleContext'
 
 interface RealtimeClockProps {
   initialData: ClockType
 }
+
+const isAnyPopupOpen = () =>
+  Boolean(
+    document.querySelector(
+      [
+        '[role="dialog"]',
+        '[role="alertdialog"]',
+        '[role="menu"]',
+        '[role="listbox"]',
+        '[role="tooltip"]',
+        '[data-radix-popper-content-wrapper]',
+      ].join(','),
+    ),
+  )
 
 // Define the React component
 const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
@@ -426,6 +439,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   const handleClockPointerDown = (event: React.PointerEvent) => {
     if (!hasEditAccess || screenReaderMode || !clockRef.current) return
+    if (isAnyPopupOpen()) return
     if (event.button !== 0) return
 
     const target = event.target as HTMLElement
@@ -536,7 +550,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
               : 'scale-100 opacity-100'
           } ${
             hasEditAccess && !screenReaderMode
-              ? 'cursor-grab active:cursor-grabbing'
+              ? 'cursor-grab select-none touch-none active:cursor-grabbing'
               : ''
           }`}
           onClickCapture={(event) => {
@@ -548,21 +562,6 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
           onPointerDown={handleClockPointerDown}
           style={!screenReaderMode ? { width: `${128 * clockScale}px` } : {}}
         >
-          {hasEditAccess && !screenReaderMode && (
-            <button
-              type='button'
-              aria-label={`Move clock ${clockData.name || 'untitled'}`}
-              className='absolute left-0 top-0 z-10 flex h-7 w-7 touch-none items-center justify-center rounded-md border bg-background/90 text-muted-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground active:cursor-grabbing'
-              onPointerDown={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                if (!clockRef.current) return
-                startDrag(clockData, clockRef.current, event)
-              }}
-            >
-              <GripVertical className='h-4 w-4' aria-hidden='true' />
-            </button>
-          )}
           <div className='flex flex-row relative'>
             <div
               className='flex flex-col items-center rounded-full'

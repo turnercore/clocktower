@@ -11,9 +11,12 @@ import React, {
 import { UUID } from '@/types/schemas'
 
 export const DEFAULT_CLOCK_SCALE = 1
-export const MIN_CLOCK_SCALE = 0.7
-export const MAX_CLOCK_SCALE = 1.6
-export const CLOCK_SCALE_STEP = 0.05
+export const MIN_CLOCK_SCALE = 0.5
+export const MAX_CLOCK_SCALE = 2
+export const CLOCK_SCALE_SLIDER_MIN = 0
+export const CLOCK_SCALE_SLIDER_MAX = 100
+export const CLOCK_SCALE_SLIDER_CENTER = 50
+export const CLOCK_SCALE_SLIDER_STEP = 1
 
 type TowerClockScaleContextValue = {
   clockScale: number
@@ -28,6 +31,47 @@ const storageKeyForTower = (towerId: UUID) =>
 
 const clampClockScale = (scale: number) =>
   Math.min(Math.max(scale, MIN_CLOCK_SCALE), MAX_CLOCK_SCALE)
+
+export const clockScaleToSliderValue = (scale: number) => {
+  const clampedScale = clampClockScale(scale)
+
+  if (clampedScale <= DEFAULT_CLOCK_SCALE) {
+    return (
+      ((clampedScale - MIN_CLOCK_SCALE) /
+        (DEFAULT_CLOCK_SCALE - MIN_CLOCK_SCALE)) *
+      CLOCK_SCALE_SLIDER_CENTER
+    )
+  }
+
+  return (
+    CLOCK_SCALE_SLIDER_CENTER +
+    ((clampedScale - DEFAULT_CLOCK_SCALE) /
+      (MAX_CLOCK_SCALE - DEFAULT_CLOCK_SCALE)) *
+      CLOCK_SCALE_SLIDER_CENTER
+  )
+}
+
+export const sliderValueToClockScale = (sliderValue: number) => {
+  const clampedValue = Math.min(
+    Math.max(sliderValue, CLOCK_SCALE_SLIDER_MIN),
+    CLOCK_SCALE_SLIDER_MAX,
+  )
+
+  if (clampedValue <= CLOCK_SCALE_SLIDER_CENTER) {
+    return clampClockScale(
+      MIN_CLOCK_SCALE +
+        (clampedValue / CLOCK_SCALE_SLIDER_CENTER) *
+          (DEFAULT_CLOCK_SCALE - MIN_CLOCK_SCALE),
+    )
+  }
+
+  return clampClockScale(
+    DEFAULT_CLOCK_SCALE +
+      ((clampedValue - CLOCK_SCALE_SLIDER_CENTER) /
+        CLOCK_SCALE_SLIDER_CENTER) *
+        (MAX_CLOCK_SCALE - DEFAULT_CLOCK_SCALE),
+  )
+}
 
 type TowerClockScaleProviderProps = {
   towerId: UUID
