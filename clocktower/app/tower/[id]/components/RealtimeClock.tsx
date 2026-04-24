@@ -51,7 +51,7 @@ const isAnyPopupOpen = () =>
     ),
   )
 
-const CLOCK_DRAG_DEADZONE_PX = 18
+const CLOCK_DRAG_DEADZONE_PX = 10
 
 // Define the React component
 const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
@@ -434,7 +434,10 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
       pendingDragRef.current = { ...pendingDrag, started: true }
       suppressNextClickRef.current = true
-      startDrag(clockData, clockRef.current, moveEvent)
+      startDrag(clockData, clockRef.current, {
+        clientX: pendingDrag.startX,
+        clientY: pendingDrag.startY,
+      })
     }
 
     const handlePointerUp = (upEvent: PointerEvent) => {
