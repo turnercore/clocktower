@@ -178,6 +178,7 @@ export interface Database {
           colors: Json | null
           created_at: string
           id: string
+          clocks_locked: boolean
           is_locked: boolean
           name: string | null
           owner: string | null
@@ -189,6 +190,7 @@ export interface Database {
           colors?: Json | null
           created_at?: string
           id?: string
+          clocks_locked?: boolean
           is_locked?: boolean
           name?: string | null
           owner?: string | null
@@ -200,6 +202,7 @@ export interface Database {
           colors?: Json | null
           created_at?: string
           id?: string
+          clocks_locked?: boolean
           is_locked?: boolean
           name?: string | null
           owner?: string | null

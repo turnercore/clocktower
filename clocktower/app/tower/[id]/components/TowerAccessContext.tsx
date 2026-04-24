@@ -11,6 +11,7 @@ import { createClient } from '@/lib/supabase/client'
 import { TowerDatabaseType, UUID } from '@/types/schemas'
 
 type TowerAccessContextValue = {
+  canUpdateClockSegments: boolean
   currentUserId: UUID | null
   hasEditAccess: boolean
   isOwner: boolean
@@ -24,8 +25,24 @@ const userCanEditTower = (
 ) => {
   if (!userId) return false
   if (userId === towerData.owner) return true
-  if (towerData.admin_users?.includes(userId)) return true
-  return Boolean(towerData.users?.includes(userId) && !towerData.is_locked)
+  return Boolean(
+    (towerData.users?.includes(userId) ||
+      towerData.admin_users?.includes(userId)) &&
+      !towerData.is_locked,
+  )
+}
+
+const userCanUpdateClockSegments = (
+  userId: UUID | null,
+  towerData: TowerDatabaseType,
+) => {
+  if (!userId) return false
+  if (userId === towerData.owner) return true
+  return Boolean(
+    (towerData.users?.includes(userId) ||
+      towerData.admin_users?.includes(userId)) &&
+      !towerData.clocks_locked,
+  )
 }
 
 export const TowerAccessProvider = ({
@@ -61,6 +78,10 @@ export const TowerAccessProvider = ({
 
   const value = useMemo<TowerAccessContextValue>(
     () => ({
+      canUpdateClockSegments: userCanUpdateClockSegments(
+        currentUserId,
+        towerData,
+      ),
       currentUserId,
       hasEditAccess: userCanEditTower(currentUserId, towerData),
       isOwner: currentUserId === towerData.owner,

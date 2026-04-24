@@ -205,7 +205,7 @@ export default function ShareTowerPopover() {
                 <h1 className='mb-2'>
                   Invited Users{isTowerOwner ? ', Click to Remove' : ''}
                 </h1>
-                <InvitedUsersList isInteractable={isTowerOwner} />
+                <InvitedUsersList />
               </div>
             )
           }

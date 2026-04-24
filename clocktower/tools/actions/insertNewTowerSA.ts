@@ -40,6 +40,7 @@ const insertNewTowerSA = async (
       colors: { '#99D5C9': [clockId], '#000000': [rowId] },
       users: [userId],
       owner: userId,
+      clocks_locked: true,
     }
 
     console.log('creating new tower', towerId)

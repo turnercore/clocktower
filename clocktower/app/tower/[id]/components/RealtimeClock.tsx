@@ -27,6 +27,7 @@ import { useAccessibility } from '@/providers/AccessibilityProvider'
 import { useClockDrag } from './ClockDragContext'
 import { useTowerClockScale } from './TowerClockScaleContext'
 import { useRowDrag } from './RowDragContext'
+import { useTowerAccess } from './TowerAccessContext'
 import {
   Tooltip,
   TooltipContent,
@@ -91,6 +92,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const suppressNextClickRef = React.useRef(false)
 
   const hasEditAccess = useEditAccess(towerId)
+  const { canUpdateClockSegments } = useTowerAccess()
 
   useEffect(() => {
     setClockData(initialData)
@@ -162,6 +164,8 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   // Shared function to update the filled state and synchronize with the server
   const updateFilledValue = async (inputFilledValue: number | null) => {
+    if (!canUpdateClockSegments) return
+
     // Guard against invalid input
     let validFilledValue = inputFilledValue
 
@@ -207,6 +211,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   // Function to handle slice click
   const handleSliceClick = async (event: MouseEvent, dataIndex: number) => {
+    if (!canUpdateClockSegments) return
     if (event.detail > 1) return
 
     if (pendingSliceClickTimeoutRef.current) {
@@ -231,6 +236,8 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const handleFilledInputChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
+    if (!canUpdateClockSegments) return
+
     const filledValue = clockFilledFromInput(
       event.target.value,
       clockData.segments,
@@ -330,10 +337,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       } // Padding between arcs
       rounded={clockData.rounded ? true : false}
       startAngle={-90} // Start from the top-right
-      segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
-      segmentsShift={(index: number) =>
-        index === hoveredSliceIndex ? 0.5 : -0.5
-      } // Slight grow on hover
+      segmentsStyle={{ cursor: 'default' }}
       viewBoxSize={[110, 110]} // Increase the viewbox dimensions
       center={[55, 55]} // Move the center of the chart
     />
@@ -504,7 +508,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
           id={`clock-filled-${clockInputId}`}
           type='number'
           value={clockFilledDisplayValue(clockData.filled)}
-          readOnly={!hasEditAccess}
+          readOnly={!canUpdateClockSegments}
           onChange={handleFilledInputChange}
         />
         <Label htmlFor={`clock-segments-${clockInputId}`}>Total Segments</Label>
@@ -529,7 +533,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
 
   if (screenReaderMode) {
     displayedChart = screenReaderChart
-  } else if (hasEditAccess) {
+  } else if (canUpdateClockSegments) {
     displayedChart = configuredPieChart
   } else {
     displayedChart = readOnlyPieChart

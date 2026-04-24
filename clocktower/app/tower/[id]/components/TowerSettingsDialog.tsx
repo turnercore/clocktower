@@ -33,6 +33,7 @@ import { useRouter } from 'next/navigation'
 import toggleTowerLockSA from '../actions/toggleTowerLockSA'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useTowerAccess } from './TowerAccessContext'
+import toggleTowerClockLockSA from '../actions/toggleTowerClockLockSA'
 // Import other required components
 
 interface TowerSettingsDialogProps {
@@ -46,6 +47,9 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   const [towerName, setTowerName] = useState(towerData.name)
   const [isOpen, setIsOpen] = useState(false)
   const [isTowerLocked, setIsTowerLocked] = useState(towerData.is_locked)
+  const [areClocksLocked, setAreClocksLocked] = useState(
+    towerData.clocks_locked,
+  )
   const hasEditAccess = useEditAccess(towerData.id)
   const { currentUserId, isOwner } = useTowerAccess()
   const supabase = createClient()
@@ -53,6 +57,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   useEffect(() => {
     setTowerName(towerData.name)
     setIsTowerLocked(towerData.is_locked || false)
+    setAreClocksLocked(towerData.clocks_locked)
   }, [towerData])
 
   const handleNameChange = async (
@@ -111,6 +116,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   }
 
   const handleTowerLockSwitch = async () => {
+    if (!isOwner) return
     // set the public state
     const oldIsTowerLocked = isTowerLocked
     setIsTowerLocked(!isTowerLocked)
@@ -129,7 +135,25 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
     }
   }
 
-  if (!hasEditAccess) return <></>
+  const handleClockLockSwitch = async () => {
+    if (!isOwner) return
+
+    const oldAreClocksLocked = areClocksLocked
+    setAreClocksLocked(!areClocksLocked)
+
+    const { error } = await toggleTowerClockLockSA({ towerId: towerData.id })
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error changing clock lock status.',
+        description: error,
+        variant: 'destructive',
+      })
+      setAreClocksLocked(oldAreClocksLocked)
+    }
+  }
+
+  if (!isOwner && !hasEditAccess) return <></>
 
   // Change this to be a form with validation!
   return (
@@ -162,14 +186,26 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
             onBlur={handleNameChange}
           />
         </div>
-        <div className='flex flex-row space-x-4 items-center'>
-          <Label htmlFor='toggle-tower-lock'>User Editing</Label>
-          <Switch
-            id='toggle-tower-lock'
-            checked={isTowerLocked}
-            onClick={handleTowerLockSwitch}
-          />
-        </div>
+        {isOwner && (
+          <>
+            <div className='flex flex-row space-x-4 items-center'>
+              <Label htmlFor='toggle-tower-lock'>User Editing</Label>
+              <Switch
+                id='toggle-tower-lock'
+                checked={!isTowerLocked}
+                onClick={handleTowerLockSwitch}
+              />
+            </div>
+            <div className='flex flex-row space-x-4 items-center'>
+              <Label htmlFor='toggle-clock-lock'>Lock Clocks</Label>
+              <Switch
+                id='toggle-clock-lock'
+                checked={areClocksLocked}
+                onClick={handleClockLockSwitch}
+              />
+            </div>
+          </>
+        )}
         <DialogFooter className='items-center gap-2 pt-4'>
           <AlertDialog>
             <AlertDialogTrigger asChild>

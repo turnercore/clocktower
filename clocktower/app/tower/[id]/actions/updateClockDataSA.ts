@@ -18,6 +18,31 @@ const inputSchema = z.object({
   newClockData: ClockDatabaseSchema.partial(),
 })
 
+const userCanUpdateClock = ({
+  isClockFillOnlyUpdate,
+  towerData,
+  userId,
+}: {
+  isClockFillOnlyUpdate: boolean
+  towerData: {
+    admin_users: string[] | null
+    clocks_locked: boolean
+    is_locked: boolean
+    owner: string | null
+    users: string[] | null
+  }
+  userId: string
+}) => {
+  if (towerData.owner === userId) return true
+
+  const isTowerUser =
+    towerData.users?.includes(userId) || towerData.admin_users?.includes(userId)
+  if (!isTowerUser) return false
+
+  if (isClockFillOnlyUpdate) return !towerData.clocks_locked
+  return !towerData.is_locked
+}
+
 export const updateClockDataSA = async ({
   clockId,
   newClockData,
@@ -31,6 +56,38 @@ export const updateClockDataSA = async ({
 
     // 2. Get the user's cookies and create a Supabase client
     const supabase = await createClient()
+    const { data: sessionData, error: sessionError } =
+      await supabase.auth.getSession()
+    if (sessionError) throw sessionError
+    const userId = sessionData.session?.user.id
+    if (!userId) throw new Error('Requesting user not found.')
+
+    const { data: clockAccessData, error: clockAccessError } = await supabase
+      .from('clocks')
+      .select(
+        'tower_id, towers(owner, users, admin_users, is_locked, clocks_locked)',
+      )
+      .eq('id', clockId)
+      .single()
+
+    if (clockAccessError) throw clockAccessError
+    const towerData = Array.isArray(clockAccessData.towers)
+      ? clockAccessData.towers[0]
+      : clockAccessData.towers
+    if (!towerData) throw new Error('Clock tower not found.')
+
+    const updateKeys = Object.keys(newClockData)
+    const isClockFillOnlyUpdate =
+      updateKeys.length === 1 && updateKeys[0] === 'filled'
+    if (
+      !userCanUpdateClock({
+        isClockFillOnlyUpdate,
+        towerData,
+        userId,
+      })
+    ) {
+      throw new Error('You do not have permission to update this clock.')
+    }
 
     // 3. Call the Supabase client and get the response
     const { data, error } = await supabase

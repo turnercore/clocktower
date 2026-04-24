@@ -119,7 +119,7 @@ export default function Header() {
       {/* Right side of header */}
       <div className='flex-1 flex justify-end'>
         <div className='flex flex-row items-center space-x-2'>
-          {isOnTowerPage && <InvitedUsersList isInteractable={false} />}
+          {isOnTowerPage && <InvitedUsersList />}
           <UserAvatar user={user} />
         </div>
       </div>

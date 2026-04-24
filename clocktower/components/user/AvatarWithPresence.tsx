@@ -18,10 +18,10 @@ import {
 import hash from '@/tools/hash'
 import type { ProfileRow } from '@/types/schemas'
 import { AlertDialog, AlertDialogCancel } from '@radix-ui/react-alert-dialog'
-import { createClient } from '@/lib/supabase/client'
 import { useParams } from 'next/navigation'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
+import kickUserFromTowerSA from '@/components/layout/actions/kickUserFromTowerSA'
 
 interface AvatarWithPresenceProps {
   user: ProfileRow
@@ -34,7 +34,6 @@ const AvatarWithPresence = ({
   isInteractable,
   isOnline,
 }: AvatarWithPresenceProps) => {
-  const supabase = createClient()
   const params = useParams()
   const [isDeleted, setIsDeleted] = useState(false)
 
@@ -45,16 +44,13 @@ const AvatarWithPresence = ({
     // Call supabase to remove user from tower.
     const towerId = Array.isArray(params.id) ? params.id[0] : params.id
     if (!towerId) return
-    const { error } = await supabase.rpc('remove_user_from_tower', {
-      userid: user.id,
-      tower: towerId,
-    })
+    const { error } = await kickUserFromTowerSA({ towerId, userId: user.id })
 
     if (error) {
       console.error(error)
       toast({
-        title: 'Error defenestrating user',
-        description: error.message,
+        title: 'Error removing user',
+        description: error,
         variant: 'destructive',
       })
       setIsDeleted(false)
@@ -119,14 +115,14 @@ const AvatarWithPresence = ({
       )}
       <AlertDialogContent>
         <AlertDialogHeader>Are you sure?</AlertDialogHeader>
-        <p>Are you sure you want to defenestrate {username}?</p>
+        <p>Are you sure you want to remove {username} from this tower?</p>
         <AlertDialogFooter>
-          <AlertDialogCancel>🙅‍♀️ Cancel</AlertDialogCancel>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             className='vibrating-element bg-red-500'
             onClick={handleDefenestration}
           >
-            Delete
+            Defenestrate (Kick User)
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

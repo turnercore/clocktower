@@ -16,13 +16,7 @@ import AvatarWithPresence from '@/components/user/AvatarWithPresence'
 import useWindowSize from '@/hooks/useWindowSize'
 import useRealtimePresence from '@/hooks/useRealtimePresence'
 
-interface InvitedUsersListProps {
-  isInteractable: boolean
-}
-
-const InvitedUsersList = ({
-  isInteractable = false,
-}: InvitedUsersListProps) => {
+const InvitedUsersList = () => {
   // Grab invited users from towerId
   const supabase = createClient()
   const params = useParams()
@@ -32,6 +26,7 @@ const InvitedUsersList = ({
   const presences = useRealtimePresence(towerId)
   const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
+  const [isTowerOwner, setIsTowerOwner] = useState(false)
   // State to track expanded state of avatar list
   const [isExpanded, setIsExpanded] = useState(false)
   const [maxAvatars, setMaxAvatars] = useState(3)
@@ -51,7 +46,7 @@ const InvitedUsersList = ({
     const getInvitedUsers = async () => {
       const { data, error } = await supabase
         .from('towers')
-        .select('users')
+        .select('owner, users')
         .eq('id', towerId)
         .single()
 
@@ -68,6 +63,7 @@ const InvitedUsersList = ({
       }
 
       const currentUserId = sessionData.session.user.id
+      setIsTowerOwner(data.owner === currentUserId)
 
       // Filter out current user
       const userIds = data.users.filter((user) => user !== currentUserId)
@@ -109,7 +105,7 @@ const InvitedUsersList = ({
           <AvatarWithPresence
             key={user.id}
             user={user}
-            isInteractable={isInteractable}
+            isInteractable={isTowerOwner}
             isOnline={
               presences.find((presence) => presence.user_id === user.id)
                 ? true
@@ -136,7 +132,7 @@ const InvitedUsersList = ({
               <DropdownMenuItem key={user.id} asChild>
                 <AvatarWithPresence
                   user={user}
-                  isInteractable={isInteractable}
+                  isInteractable={isTowerOwner}
                   isOnline={
                     presences.find((presence) => presence.user_id === user.id)
                       ? true

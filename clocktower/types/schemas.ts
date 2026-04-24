@@ -142,6 +142,7 @@ export const TowerDatabaseSchema = z
     owner: UUIDSchema,
     colors: ColorPaletteSchema.nullable().default({}),
     is_locked: z.coerce.boolean().default(false),
+    clocks_locked: z.coerce.boolean().default(true),
     admin_users: z.array(UUIDSchema).or(z.null()).optional(),
     pubic_key: z.string().or(z.null()).optional(),
   })
@@ -156,6 +157,7 @@ export const TowerSchema = z.object({
   colors: ColorPaletteSchema.nullable().default({}),
   rows: z.array(TowerRowSchema).nullable().default([]),
   is_locked: z.coerce.boolean().default(false),
+  clocks_locked: z.coerce.boolean().default(true),
   admin_users: z.array(UUIDSchema).or(z.null()),
   pubic_key: z.string().or(z.null()),
 })

@@ -50,6 +50,7 @@ const toTowerDatabaseData = (towerData: TowerType): TowerDatabaseType => ({
   owner: towerData.owner,
   colors: towerData.colors,
   is_locked: towerData.is_locked,
+  clocks_locked: towerData.clocks_locked,
   admin_users: towerData.admin_users,
 })
 
