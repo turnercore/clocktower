@@ -157,7 +157,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
 
   // Change this to be a form with validation!
   return (
-    <Dialog open={isOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           id='destroy-tower-button'
