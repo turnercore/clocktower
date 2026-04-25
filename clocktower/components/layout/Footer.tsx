@@ -20,7 +20,12 @@ const Footer = () => {
               </div>
               <div className='text-gray-500 text-center mb-2'>
                 <p>Made with {randomEmoji} by Turner Monroe</p>
-                <p className='font-mono tracking-widest'>(turnercore)</p>
+                <Link
+                  href='https://turnercore.dev'
+                  className='font-mono tracking-widest hover:underline'
+                >
+                  @turnercore (turnercore)
+                </Link>
               </div>
               <nav
                 aria-label='Legal'
