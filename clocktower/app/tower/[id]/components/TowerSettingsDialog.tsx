@@ -170,6 +170,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
         </Button>
       </DialogTrigger>
       <DialogContent
+        className='max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto overflow-x-hidden p-4 sm:max-h-[calc(100vh-2rem)] sm:w-full sm:p-6'
         onEscapeKeyDown={() => setIsOpen(false)}
         onInteractOutside={() => setIsOpen(false)}
         onPointerDownOutside={() => setIsOpen(false)}
@@ -177,8 +178,10 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
         <DialogHeader>
           <DialogTitle>Tower Settings</DialogTitle>
         </DialogHeader>
-        <div className='flex flex-row space-x-4 items-center'>
-          <Label htmlFor='tower-name'>Name</Label>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4'>
+          <Label htmlFor='tower-name' className='shrink-0'>
+            Name
+          </Label>
           <Input
             id='tower-name'
             defaultValue={towerName}
@@ -188,7 +191,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
         </div>
         {isOwner && (
           <>
-            <div className='flex flex-row space-x-4 items-center'>
+            <div className='flex items-center justify-between gap-4 sm:justify-start'>
               <Label htmlFor='toggle-tower-lock'>User Editing</Label>
               <Switch
                 id='toggle-tower-lock'
@@ -196,7 +199,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
                 onClick={handleTowerLockSwitch}
               />
             </div>
-            <div className='flex flex-row space-x-4 items-center'>
+            <div className='flex items-center justify-between gap-4 sm:justify-start'>
               <Label htmlFor='toggle-clock-lock'>Lock Clocks</Label>
               <Switch
                 id='toggle-clock-lock'
@@ -210,11 +213,17 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
           <AlertDialog>
             <AlertDialogTrigger asChild>
               {isOwner ? (
-                <Button variant='destructive'>
-                  <GiDemolish className='w-full h-full' />
+                <Button
+                  variant='destructive'
+                  className='h-10 w-full sm:w-10'
+                  aria-label='Demolish Tower'
+                >
+                  <GiDemolish className='h-5 w-5' />
                 </Button>
               ) : (
-                <Button variant='destructive'>Leave</Button>
+                <Button variant='destructive' className='w-full sm:w-auto'>
+                  Leave
+                </Button>
               )}
             </AlertDialogTrigger>
             <AlertDialogContent>
@@ -235,15 +244,19 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
                   onClick={handleLeaveTower}
                 >
                   {isOwner ? (
-                    <GiDemolish className='w-full h-full' />
+                    <GiDemolish className='h-5 w-5' />
                   ) : (
-                    <FaPersonWalkingLuggage className='w-full h-full' />
+                    <FaPersonWalkingLuggage className='h-5 w-5' />
                   )}
                 </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Button type='submit' onClick={() => setIsOpen(false)}>
+          <Button
+            type='submit'
+            className='w-full sm:w-auto'
+            onClick={() => setIsOpen(false)}
+          >
             Save
           </Button>
         </DialogFooter>

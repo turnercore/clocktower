@@ -7,10 +7,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  Button,
   Input,
   Label,
   toast,
 } from '@/components/ui'
+import { Settings } from 'lucide-react'
 import { lightenHexColor, darkenHexColor } from '@/tools/changeHexColors'
 import {
   clockFilledDisplayValue,
@@ -477,7 +479,11 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
     event.preventDefault()
     event.stopPropagation()
 
-    const clockBounds = clockRef.current?.getBoundingClientRect()
+    openClockSettings()
+  }
+
+  const openClockSettings = (originBounds?: DOMRect) => {
+    const clockBounds = originBounds ?? clockRef.current?.getBoundingClientRect()
     if (clockBounds) {
       setSettingsOrigin({
         x: clockBounds.left + clockBounds.width / 2,
@@ -544,7 +550,7 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
       {!isDeleted && (
         <div
           ref={clockRef}
-          className={`relative flex flex-col items-center transition-transform duration-150 ${
+          className={`group relative flex flex-col items-center transition-transform duration-150 ${
             draggingClockId === clockId
               ? 'scale-95 opacity-30'
               : 'scale-100 opacity-100'
@@ -564,6 +570,24 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
           style={!screenReaderMode ? { width: `${128 * clockScale}px` } : {}}
         >
           <div className='flex flex-row relative'>
+            {hasEditAccess && !screenReaderMode && (
+              <Button
+                type='button'
+                variant='secondary'
+                size='icon'
+                aria-label={`Open settings for ${clockData.name}`}
+                title='Clock Settings'
+                data-clock-drag-ignore
+                className='absolute -right-3 -top-3 z-20 h-9 w-9 rounded-full border bg-background/95 text-foreground shadow-md sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100 sm:focus-visible:opacity-100'
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  openClockSettings(event.currentTarget.getBoundingClientRect())
+                }}
+              >
+                <Settings className='h-4 w-4' aria-hidden='true' />
+              </Button>
+            )}
             <TooltipProvider delayDuration={250}>
               <Tooltip>
                 <TooltipTrigger asChild>

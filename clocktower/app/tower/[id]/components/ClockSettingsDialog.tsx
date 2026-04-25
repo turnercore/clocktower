@@ -261,7 +261,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className='clock-settings-dialog-content'
+        className='clock-settings-dialog-content max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] max-w-lg overflow-y-auto p-4 sm:max-h-[calc(100vh-2rem)] sm:w-full sm:p-6'
         style={
           {
             '--clock-settings-origin-x': `${origin.x}px`,
@@ -274,8 +274,8 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
             Clock Settings
           </DialogTitle>
         </DialogHeader>
-        <div className='flex flex-row space-x-2 items-center w-full'>
-          <Label> Clock Name: </Label>
+        <div className='flex w-full flex-col gap-2 sm:flex-row sm:items-center'>
+          <Label className='shrink-0'> Clock Name: </Label>
           <Input
             type='text'
             placeholder='Clock Name'
@@ -284,17 +284,19 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
             onBlur={handleNameChange}
           />
         </div>
-        <div className='flex flex-row'>
-          <div className='w-2/3 flex flex-col items-center'>
-            {configuredPieChart}
+        <div className='flex flex-col gap-4 sm:flex-row'>
+          <div className='flex w-full flex-col items-center gap-3 sm:w-2/3'>
+            <div className='w-full max-w-48 sm:max-w-none'>
+              {configuredPieChart}
+            </div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   aria-label='Delete Clock'
                   variant='destructive'
-                  className='w-1/2 text-center'
+                  className='h-10 w-full max-w-40 text-center sm:w-1/2'
                 >
-                  <BsTrash3Fill className='w-full h-full' />
+                  <BsTrash3Fill className='h-5 w-5' />
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
@@ -317,7 +319,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               </AlertDialogContent>
             </AlertDialog>
           </div>
-          <div className='w-1/2 flex flex-col space-y-6 mx-5'>
+          <div className='mx-0 flex w-full flex-col space-y-5 sm:mx-5 sm:w-1/2 sm:space-y-6'>
             <div className='flex flex-col space-y-2 w-full'>
               <Label id='segments-label'>{segments} Segments</Label>
               <div className='flex flex-row space-x-2 items-center'>
@@ -357,6 +359,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
               <Input
                 id={`rounded-slider-${clockData.id}`}
                 type='checkbox'
+                className='h-4 w-4'
                 checked={clockData.rounded}
                 onChange={handleIsRoundedChange}
               />
