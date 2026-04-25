@@ -54,7 +54,7 @@ export default async function RootLayout({
           <div className='flex flex-col  w-full min-h-screen min-w-screen bg-main-background-layered-waves-svg bg-cover dark:bg-main-background-layered-waves-dark-svg'>
             <Suspense
               fallback={
-                <div className='relative bg-[#A6D3C9] dark:bg-opacity-20 bg-opacity-50 top-0 w-full flex justify-between items-center p-4 space-x-2'></div>
+                <div className='relative z-30 bg-[#A6D3C9] dark:bg-[#22313a] top-0 w-full flex justify-between items-center p-4 space-x-2'></div>
               }
             >
               <Header />

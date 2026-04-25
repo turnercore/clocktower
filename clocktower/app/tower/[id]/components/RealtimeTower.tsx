@@ -318,7 +318,7 @@ const RealtimeTowerContent: React.FC<RealtimeTowerContentProps> = ({
         enabled={towerData.icon_cursors_enabled}
         towerId={towerId}
       />
-      <div className='relative z-20 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 border-y bg-muted/35 px-6 py-3 shadow-sm'>
+      <div className='relative z-30 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 border-y bg-background px-6 py-3 shadow-sm'>
         <div className='flex min-w-0 justify-start'>
           <TowerClockScaleControl />
         </div>

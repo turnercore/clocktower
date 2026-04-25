@@ -11,7 +11,7 @@ const Footer = () => {
 
   return (
     <>
-      <footer className='relative z-20 bg-gray-800 dark:bg-[#E4ECE5] py-4 bottom-0 w-full'>
+      <footer className='relative z-30 bg-gray-800 dark:bg-[#E4ECE5] py-4 bottom-0 w-full'>
         <div className='container mx-auto px-4 flex flex-col justify-center items-center text-sm'>
           {process.env.NEXT_PUBLIC_DISABLE_ABOUT !== 'true' && (
             <div>
