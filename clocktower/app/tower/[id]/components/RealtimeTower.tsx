@@ -36,6 +36,7 @@ import { RowDragProvider } from './RowDragContext'
 import { TowerAccessProvider } from './TowerAccessContext'
 import { useClockDrag } from './ClockDragContext'
 import { useRowDrag } from './RowDragContext'
+import RealtimeIconCursors from './RealtimeIconCursors'
 
 interface TowerProps {
   initialData: TowerType
@@ -51,6 +52,7 @@ const toTowerDatabaseData = (towerData: TowerType): TowerDatabaseType => ({
   colors: towerData.colors,
   is_locked: towerData.is_locked,
   clocks_locked: towerData.clocks_locked,
+  icon_cursors_enabled: towerData.icon_cursors_enabled,
   admin_users: towerData.admin_users,
 })
 
@@ -312,6 +314,10 @@ const RealtimeTowerContent: React.FC<RealtimeTowerContentProps> = ({
 
   return (
     <div className='flex flex-col space-y-4'>
+      <RealtimeIconCursors
+        enabled={towerData.icon_cursors_enabled}
+        towerId={towerId}
+      />
       <div className='grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4 border-y bg-muted/35 px-6 py-3 shadow-sm'>
         <div className='flex min-w-0 justify-start'>
           <TowerClockScaleControl />

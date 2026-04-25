@@ -34,6 +34,7 @@ import toggleTowerLockSA from '../actions/toggleTowerLockSA'
 import useEditAccess from '@/hooks/useEditAccess'
 import { useTowerAccess } from './TowerAccessContext'
 import toggleTowerClockLockSA from '../actions/toggleTowerClockLockSA'
+import toggleTowerIconCursorsSA from '../actions/toggleTowerIconCursorsSA'
 // Import other required components
 
 interface TowerSettingsDialogProps {
@@ -50,6 +51,9 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
   const [areClocksLocked, setAreClocksLocked] = useState(
     towerData.clocks_locked,
   )
+  const [areIconCursorsEnabled, setAreIconCursorsEnabled] = useState(
+    towerData.icon_cursors_enabled,
+  )
   const hasEditAccess = useEditAccess(towerData.id)
   const { currentUserId, isOwner } = useTowerAccess()
   const supabase = createClient()
@@ -58,6 +62,7 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
     setTowerName(towerData.name)
     setIsTowerLocked(towerData.is_locked || false)
     setAreClocksLocked(towerData.clocks_locked)
+    setAreIconCursorsEnabled(towerData.icon_cursors_enabled)
   }, [towerData])
 
   const handleNameChange = async (
@@ -153,6 +158,24 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
     }
   }
 
+  const handleIconCursorsSwitch = async () => {
+    if (!isOwner) return
+
+    const oldAreIconCursorsEnabled = areIconCursorsEnabled
+    setAreIconCursorsEnabled(!areIconCursorsEnabled)
+
+    const { error } = await toggleTowerIconCursorsSA({ towerId: towerData.id })
+    if (error) {
+      console.error(error)
+      toast({
+        title: 'Error changing icon cursor status.',
+        description: error,
+        variant: 'destructive',
+      })
+      setAreIconCursorsEnabled(oldAreIconCursorsEnabled)
+    }
+  }
+
   if (!isOwner && !hasEditAccess) return <></>
 
   // Change this to be a form with validation!
@@ -205,6 +228,14 @@ const TowerSettingsDialog: React.FC<TowerSettingsDialogProps> = ({
                 id='toggle-clock-lock'
                 checked={areClocksLocked}
                 onClick={handleClockLockSwitch}
+              />
+            </div>
+            <div className='flex items-center justify-between gap-4 sm:justify-start'>
+              <Label htmlFor='toggle-icon-cursors'>Icon Cursors</Label>
+              <Switch
+                id='toggle-icon-cursors'
+                checked={areIconCursorsEnabled}
+                onClick={handleIconCursorsSwitch}
               />
             </div>
           </>

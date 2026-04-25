@@ -143,6 +143,7 @@ export const TowerDatabaseSchema = z
     colors: ColorPaletteSchema.nullable().default({}),
     is_locked: z.coerce.boolean().default(false),
     clocks_locked: z.coerce.boolean().default(true),
+    icon_cursors_enabled: z.coerce.boolean().default(true),
     admin_users: z.array(UUIDSchema).or(z.null()).optional(),
     pubic_key: z.string().or(z.null()).optional(),
   })
@@ -158,6 +159,7 @@ export const TowerSchema = z.object({
   rows: z.array(TowerRowSchema).nullable().default([]),
   is_locked: z.coerce.boolean().default(false),
   clocks_locked: z.coerce.boolean().default(true),
+  icon_cursors_enabled: z.coerce.boolean().default(true),
   admin_users: z.array(UUIDSchema).or(z.null()),
   pubic_key: z.string().or(z.null()),
 })

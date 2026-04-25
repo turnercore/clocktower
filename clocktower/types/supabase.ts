@@ -179,6 +179,7 @@ export interface Database {
           created_at: string
           id: string
           clocks_locked: boolean
+          icon_cursors_enabled: boolean
           is_locked: boolean
           name: string | null
           owner: string | null
@@ -191,6 +192,7 @@ export interface Database {
           created_at?: string
           id?: string
           clocks_locked?: boolean
+          icon_cursors_enabled?: boolean
           is_locked?: boolean
           name?: string | null
           owner?: string | null
@@ -203,6 +205,7 @@ export interface Database {
           created_at?: string
           id?: string
           clocks_locked?: boolean
+          icon_cursors_enabled?: boolean
           is_locked?: boolean
           name?: string | null
           owner?: string | null
