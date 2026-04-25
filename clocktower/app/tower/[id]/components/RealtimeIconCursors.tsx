@@ -10,7 +10,7 @@ const BROADCAST_INTERVAL_MS = 33
 const CURSOR_STALE_MS = 3000
 const POSITION_SMOOTHING = 0.18
 const ANGLE_SMOOTHING = 0.22
-const POINTER_DEFAULT_ANGLE = Math.PI / 4
+const POINTER_DEFAULT_ANGLE = -(3 * Math.PI) / 4
 
 type CursorProfile = {
   color: string
@@ -85,7 +85,6 @@ const MousePointerIcon = ({ color }: { color: string }) => (
   <svg
     aria-hidden='true'
     className='h-7 w-7 drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]'
-    fill='none'
     height='24'
     viewBox='0 0 24 24'
     width='24'
@@ -93,11 +92,11 @@ const MousePointerIcon = ({ color }: { color: string }) => (
   >
     <path
       d='M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z'
-      fill='rgba(255,255,255,0.9)'
-      stroke={color}
+      fill={color}
+      stroke='rgba(255,255,255,0.92)'
       strokeLinecap='round'
       strokeLinejoin='round'
-      strokeWidth='2'
+      strokeWidth='1.75'
     />
   </svg>
 )
@@ -288,7 +287,7 @@ const RealtimeIconCursors = ({
   if (!enabled || remoteCursors.length === 0) return null
 
   return (
-    <div className='pointer-events-none fixed inset-0 z-50 overflow-hidden'>
+    <div className='pointer-events-none fixed inset-0 z-10 overflow-hidden'>
       {remoteCursors.map((cursor) => (
         <div
           aria-label={`${cursor.username}'s cursor`}
