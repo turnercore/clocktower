@@ -19,6 +19,11 @@ import {
   clockFilledFromInput,
   clockFilledPercentage,
 } from '@/tools/clockFilled'
+import {
+  clockChartLineWidth,
+  clockChartPaddingAngle,
+  clockChartRounded,
+} from '@/tools/clockChartGeometry'
 import { ClockSchema, ClockType, UUID } from '@/types/schemas'
 import ClockSettingsDialog from './ClockSettingsDialog'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
@@ -308,13 +313,12 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const configuredPieChart = (
     <PieChart
       data={updatedData}
-      lineWidth={
-        clockData.rounded ? clockData.line_width / 2 : clockData.line_width
-      } // Custom arc's width for the Donut chart
-      paddingAngle={
-        clockData.rounded ? clockData.line_width : clockData.line_width / 4
-      } // Padding between arcs
-      rounded={clockData.rounded ? true : false}
+      lineWidth={clockChartLineWidth(clockData.line_width, clockData.rounded)}
+      paddingAngle={clockChartPaddingAngle(
+        clockData.line_width,
+        clockData.rounded,
+      )}
+      rounded={clockChartRounded(clockData.line_width, clockData.rounded)}
       startAngle={-90} // Start from the top-right
       segmentsStyle={{ transition: 'stroke .3s', cursor: 'pointer' }}
       segmentsShift={(index: number) =>
@@ -331,13 +335,12 @@ const RealtimeClock: React.FC<RealtimeClockProps> = ({ initialData }) => {
   const readOnlyPieChart = (
     <PieChart
       data={updatedData}
-      lineWidth={
-        clockData.rounded ? clockData.line_width / 2 : clockData.line_width
-      } // Custom arc's width for the Donut chart
-      paddingAngle={
-        clockData.rounded ? clockData.line_width : clockData.line_width / 4
-      } // Padding between arcs
-      rounded={clockData.rounded ? true : false}
+      lineWidth={clockChartLineWidth(clockData.line_width, clockData.rounded)}
+      paddingAngle={clockChartPaddingAngle(
+        clockData.line_width,
+        clockData.rounded,
+      )}
+      rounded={clockChartRounded(clockData.line_width, clockData.rounded)}
       startAngle={-90} // Start from the top-right
       segmentsStyle={{ cursor: 'default' }}
       viewBoxSize={[110, 110]} // Increase the viewbox dimensions

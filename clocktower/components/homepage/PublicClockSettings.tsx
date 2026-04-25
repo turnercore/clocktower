@@ -13,6 +13,7 @@ import {
 import { type HexColorCode } from '@/types/schemas'
 import { GiSettingsKnobs } from 'react-icons/gi'
 import { PublicClockType } from './PublicClock'
+import { MAX_CLOCK_LINE_WIDTH } from '@/tools/clockChartGeometry'
 
 type PublicClockSettingsProps = {
   pieChart: React.ReactElement
@@ -100,7 +101,7 @@ const PublicClockSettings: FC<PublicClockSettingsProps> = ({
               <Slider
                 defaultValue={[clockData.line_width]}
                 min={1}
-                max={50}
+                max={MAX_CLOCK_LINE_WIDTH}
                 step={1}
                 onValueChange={(value) => handleLineWidthChange(value[0])}
               />

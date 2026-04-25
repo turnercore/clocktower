@@ -12,6 +12,11 @@ import { toast } from '@/components/ui'
 import { ClockType, UUID } from '@/types/schemas'
 import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { PieChart } from 'react-minimal-pie-chart'
+import {
+  clockChartLineWidth,
+  clockChartPaddingAngle,
+  clockChartRounded,
+} from '@/tools/clockChartGeometry'
 
 type RowClockMap = Record<UUID, ClockType[]>
 
@@ -507,11 +512,12 @@ const ClockDragPreview = ({ clock }: { clock: ClockType }) => {
       <div className='h-[110px] w-[110px]'>
         <PieChart
           data={chartData}
-          lineWidth={clock.rounded ? clock.line_width / 2 : clock.line_width}
-          paddingAngle={
-            clock.rounded ? clock.line_width : clock.line_width / 4
-          }
-          rounded={clock.rounded}
+          lineWidth={clockChartLineWidth(clock.line_width, clock.rounded)}
+          paddingAngle={clockChartPaddingAngle(
+            clock.line_width,
+            clock.rounded,
+          )}
+          rounded={clockChartRounded(clock.line_width, clock.rounded)}
           startAngle={-90}
           viewBoxSize={[110, 110]}
           center={[55, 55]}

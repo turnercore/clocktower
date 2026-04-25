@@ -29,6 +29,7 @@ import { updateClockDataSA } from '../actions/updateClockDataSA'
 import { deleteClockSA } from '../actions/deleteClockSA'
 import RealtimeColorPicker from './RealtimeColorPicker'
 import extractErrorMessage from '@/tools/extractErrorMessage'
+import { MAX_CLOCK_LINE_WIDTH } from '@/tools/clockChartGeometry'
 
 type ClockSettingsDialogProps = {
   configuredPieChart: React.ReactElement
@@ -344,7 +345,7 @@ const ClockSettingsDialog: FC<ClockSettingsDialogProps> = ({
                 aria-describedby='line-width-slider-description'
                 defaultValue={[clockData.line_width]}
                 min={1}
-                max={50}
+                max={MAX_CLOCK_LINE_WIDTH}
                 step={1}
                 onValueCommit={(value) => handleLineWidthChange(value[0])}
               />
