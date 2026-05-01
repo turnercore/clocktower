@@ -43,13 +43,24 @@ export default function Header() {
       const { data, error } = await supabase.auth.getSession()
       if (data.session?.user && !error) {
         setUser(data.session.user)
+      } else {
+        setUser(null)
       }
+      setIsLoading(false)
     }
 
     setIsOnTowerPage(path.includes('tower') && params.id ? true : false)
     setTowerId((params.id as string) || '')
     getUserFromSession()
-    setIsLoading(false)
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+      },
+    )
+
+    return () => {
+      authListener.subscription.unsubscribe()
+    }
   }, [supabase, path, params])
 
   return (

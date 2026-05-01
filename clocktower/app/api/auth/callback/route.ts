@@ -5,15 +5,13 @@ export async function GET(req: NextRequest) {
   const supabase = await createClient()
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
-  const fromUrl = searchParams.get('from')
-    ? new URL(searchParams.get('from')!)
-    : ''
+  const from = searchParams.get('from')
 
   if (code) {
     await supabase.auth.exchangeCodeForSession(code)
   }
-  if (fromUrl) {
-    return NextResponse.redirect(fromUrl)
+  if (from && from.startsWith('/') && !from.startsWith('//')) {
+    return NextResponse.redirect(new URL(from, req.nextUrl.origin))
   } else {
     const url = req.nextUrl.clone()
     url.pathname = '/'

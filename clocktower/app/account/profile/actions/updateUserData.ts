@@ -13,16 +13,6 @@ import { openaiModeration } from '@/tools/openaiModeration'
 const inputSchema = z.object({
   email: z.string().email().optional(),
   confirmEmail: z.string().email().optional(),
-  password: z
-    .string()
-    .min(8, {
-      message: 'Password must be at least 8 characters.',
-    })
-    .optional(),
-  confirmPassword: z
-    .string()
-    .min(8, { message: 'Passwords must match.' })
-    .optional(),
   color: HexColorCodeSchema.optional(),
   username: z
     .string()
@@ -56,8 +46,6 @@ export default async function updateUserDataSA(
     const {
       email,
       confirmEmail,
-      password,
-      confirmPassword,
       color,
       username,
     } = result
@@ -70,17 +58,6 @@ export default async function updateUserDataSA(
         email,
       })
       if (updateEmailError) throw updateEmailError
-    }
-
-    // Update the user's password in the auth database if required
-    if (password && confirmPassword) {
-      if (password !== confirmPassword)
-        throw new Error('Passwords did not match.')
-
-      const { error: updatePasswordError } = await supabase.auth.updateUser({
-        password,
-      })
-      if (updatePasswordError) throw new Error('Error updating password.')
     }
 
     // Update the rest of the user's data in the 'profiles' table

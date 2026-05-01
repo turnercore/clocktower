@@ -1,5 +1,13 @@
 import LoginForm from '@/components/forms/LoginForm'
 
-export default function Login() {
-  return <LoginForm />
+type LoginPageProps = {
+  searchParams?: Promise<{
+    from?: string
+  }>
+}
+
+export default async function Login({ searchParams }: LoginPageProps) {
+  const params = await searchParams
+
+  return <LoginForm redirectTo={params?.from} />
 }

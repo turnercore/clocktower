@@ -78,36 +78,9 @@ const formSchema = z
       .or(z.literal('')) // Accept an empty string as valid
       .transform((str) => str.replace(/\s+/g, '')) // This will remove all whitespace
       .optional(),
-    password: z
-      .string()
-      .trim()
-      .min(8, 'Password must be at least 8 characters.')
-      .or(z.literal('')) // Accept an empty string as valid
-      .optional(),
-    confirmPassword: z
-      .string()
-      .trim()
-      .min(8, 'Password must be at least 8 characters.')
-      .or(z.literal('')) // Accept an empty string as valid
-      .optional(),
   })
   .superRefine(
-    ({ confirmPassword, password, email, confirmEmail, username }, ctx) => {
-      if (password) {
-        if (confirmPassword !== password) {
-          ctx.addIssue({
-            code: 'custom',
-            message: 'The passwords did not match.',
-          })
-        }
-        if (password.length < 8) {
-          ctx.addIssue({
-            code: 'custom',
-            message: 'Password must be at least 8 characters.',
-          })
-        }
-      }
-
+    ({ email, confirmEmail, username }, ctx) => {
       if (email) {
         if (confirmEmail !== email) {
           ctx.addIssue({
@@ -186,8 +159,6 @@ const UpdateAccountForm = ({
     username: '',
     email: '',
     confirmEmail: '',
-    password: '',
-    confirmPassword: '',
     color: '',
   }
   const form = useForm<z.infer<typeof formSchema>>({
@@ -481,51 +452,6 @@ const UpdateAccountForm = ({
                       <Input
                         placeholder='Confirm Email'
                         autoComplete='new-email'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <FormField
-              control={form.control}
-              name='password'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Change Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='New Password'
-                      type='password'
-                      autoComplete='new-password'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Add or change your password. You can still log in with magic
-                    links without one.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Show confirm password if password field is filled out */}
-            {form.watch('password') && (
-              <FormField
-                control={form.control}
-                name='confirmPassword'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Confirm Password</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='Confirm Password'
-                        type='password'
-                        autoComplete='new-password'
                         {...field}
                       />
                     </FormControl>
