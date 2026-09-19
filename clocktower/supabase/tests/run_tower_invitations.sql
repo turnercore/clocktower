@@ -4,5 +4,6 @@
 BEGIN;
 \ir tower_invitations_fixture.sql
 \ir ../migrations/20260919081622_repair_tower_invitations.sql
+\ir ../migrations/20260919114000_email_tower_invitations.sql
 \ir tower_invitations.test.sql
 ROLLBACK;

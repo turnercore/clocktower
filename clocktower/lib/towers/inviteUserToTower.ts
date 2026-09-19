@@ -29,12 +29,11 @@ function parseIdentifier(input: unknown) {
   const identifier = (parsed.data.identifier ?? parsed.data.username ?? '').trim()
   if (!identifier) return { error: 'Enter a username or email address.' } as const
 
-  const isEmail = identifier.includes('@')
-  if (isEmail) {
-    if (identifier.length > 320 || !z.string().email().safeParse(identifier).success) {
-      return { error: 'Enter a valid email address.' } as const
-    }
-  } else if (identifier.length > 30) {
+  const isEmail = z.string().email().safeParse(identifier).success
+  if (isEmail && identifier.length > 320) {
+    return { error: 'Enter a valid email address.' } as const
+  }
+  if (!isEmail && identifier.length > 30) {
     return { error: 'Username must be at most 30 characters.' } as const
   }
   return { ...parsed.data, identifier, isEmail } as const

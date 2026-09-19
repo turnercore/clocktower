@@ -112,9 +112,29 @@ SELECT set_config('request.jwt.claim.sub', '00000000-0000-4000-8000-000000000001
 SELECT pg_temp.expect_sqlstate($q$ SELECT public.add_user_to_tower(NULL, '00000000-0000-4000-8000-000000000007') $q$, '22004', 'null tower ID is rejected') AS test;
 SELECT pg_temp.expect_sqlstate($q$ SELECT public.add_user_to_tower('10000000-0000-4000-8000-000000000001', NULL) $q$, '22004', 'null target ID is rejected') AS test;
 SELECT pg_temp.expect_sqlstate($q$ SELECT public.add_user_to_tower('10000000-0000-4000-8000-000000000099', '00000000-0000-4000-8000-000000000007') $q$, 'P0002', 'missing tower is rejected') AS test;
-SELECT pg_temp.expect_sqlstate($q$ SELECT public.add_user_to_tower('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000010') $q$, 'P0002', 'target without a profile is rejected') AS test;
+SELECT public.add_user_to_tower('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000010');
 SELECT pg_temp.expect_sqlstate($q$ SELECT public.add_user_to_tower('10000000-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000099') $q$, 'P0002', 'nonexistent target is rejected') AS test;
+SELECT pg_temp.assert_true(
+  (SELECT user_id = '00000000-0000-4000-8000-000000000005'::uuid AND email_confirmed
+   FROM public.find_tower_invite_target('10000000-0000-4000-8000-000000000001', 'TEST-USER-05', false)),
+  'username invite lookup is case-insensitive'
+) AS test;
+SELECT pg_temp.assert_true(
+  (SELECT user_id = '00000000-0000-4000-8000-000000000010'::uuid AND NOT email_confirmed
+   FROM public.find_tower_invite_target('10000000-0000-4000-8000-000000000001', 'INVITE-10@EXAMPLE.COM', true)),
+  'email invite lookup finds auth-only unconfirmed users'
+) AS test;
 RESET ROLE;
+SELECT pg_temp.assert_true(
+  (SELECT users @> ARRAY['00000000-0000-4000-8000-000000000010'::uuid]
+   FROM public.towers WHERE id = '10000000-0000-4000-8000-000000000001')
+  AND EXISTS (
+    SELECT 1 FROM public.towers_users
+    WHERE tower_id = '10000000-0000-4000-8000-000000000001'
+      AND user_id = '00000000-0000-4000-8000-000000000010'
+  ),
+  'auth-only invite target receives membership before profile creation'
+) AS test;
 
 -- The reported production inconsistency is not changed by the migration.
 -- A later, authorized explicit invitation may repair that user's own rows.

@@ -2,7 +2,6 @@
 import type { Profile, ServerActionReturn } from '@/types/schemas'
 import { createClient } from '@/lib/supabase/server'
 import extractErrorMessage from '../extractErrorMessage'
-import { generateUsername } from '../nameGenerators'
 
 const fetchSupabaseProfileSA = async (
   userId: string,
@@ -36,7 +35,7 @@ const createNewProfile = async (newProfileId: string): Promise<Profile> => {
 
   const newProfile = {
     id: newProfileId,
-    username: `${generateUsername()}-${newProfileId.slice(0, 8)}`,
+    username: `user-${newProfileId.replace(/-/g, '').slice(0, 16)}`,
     color: '#FFFFFF',
     avatar_set: 1,
   }

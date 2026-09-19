@@ -127,13 +127,14 @@ export default function ShareTowerPopover({
       )
       setInviteIdentifier('')
 
+      setInvitedUsers((users) =>
+        invitedUserId === userId || users.includes(invitedUserId)
+          ? users
+          : [...users, invitedUserId],
+      )
+      setMembersRefreshKey((key) => key + 1)
+
       if (delivery === 'direct') {
-        setInvitedUsers((users) =>
-          invitedUserId === userId || users.includes(invitedUserId)
-            ? users
-            : [...users, invitedUserId],
-        )
-        setMembersRefreshKey((key) => key + 1)
         toast({
           title: 'User added to tower',
           description: `${identifier} now has access to this tower.`,
@@ -141,7 +142,7 @@ export default function ShareTowerPopover({
       } else {
         toast({
           title: 'Invitation sent',
-          description: `We emailed ${identifier} a one-click invitation. They will be signed in and taken to this tower when they accept it.`,
+          description: `We emailed ${identifier} a one-click invitation. They already have tower access and will be signed in when they accept it.`,
         })
       }
     } catch (error) {

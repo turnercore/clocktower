@@ -98,6 +98,17 @@ describe('inviteUserToTower', () => {
     })
   })
 
+  it('treats an @ username as a username unless it is a valid email', async () => {
+    const env = setup()
+    env.setMatches([{ user_id: member, email_confirmed: true }])
+    await inviteUserToTower({ towerId, identifier: 'foo@bar' })
+    expect(env.client.rpc).toHaveBeenCalledWith('find_tower_invite_target', {
+      tower: towerId,
+      identifier: 'foo@bar',
+      lookup_by_email: false,
+    })
+  })
+
   it('tells the inviter to use email when a username is unknown', async () => {
     const env = setup()
     env.setMatches([])
