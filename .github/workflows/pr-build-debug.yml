@@ -24,3 +24,9 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: https://estelamtbxdegwijmyha.supabase.co
           NEXT_PUBLIC_SUPABASE_ANON_KEY: local-build-placeholder
           SUPABASE_SERVICE_KEY: local-build-placeholder
+      - run: npm run tests -- --runInBand
+      - name: Run invitation SQL regression tests
+        run: |
+          runtime="$(mktemp -d)"
+          npm install --prefix "$runtime" --no-audit --no-fund --save-exact @electric-sql/pglite@0.5.8
+          node supabase/tests/run_tower_invitations.mjs "$runtime"
