@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -13,19 +13,23 @@ import { useParams, usePathname } from 'next/navigation'
 import { TbUserShare } from 'react-icons/tb'
 import { Switch, toast } from '../ui'
 import { UUID } from '@/types/schemas'
-import inviteUserToTowerSA from './actions/inviteUserToTowerSA'
+import { inviteUserToTower } from '@/lib/towers/invite-user-request'
 import InvitedUsersList from './InvitedUsersList'
 import shareTowerPubliclySA from './actions/shareTowerPubliclySA'
 import { GoCopy } from 'react-icons/go'
+import type { UserPresence } from '@/hooks/useRealtimePresence'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
-export default function ShareTowerPopover() {
+export default function ShareTowerPopover({ presences }: { presences: UserPresence[] }) {
   const path = usePathname()
   const params = useParams<{ id: string }>()
   const towerId: UUID = params.id as UUID
   const [userId, setUserId] = useState<string | null>(null)
   const [username, setUsername] = useState('')
+  const [isInviting, setIsInviting] = useState(false)
+  const inviteInFlight = useRef(false)
+  const [membersRefreshKey, setMembersRefreshKey] = useState(0)
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
   const [isTowerOwner, setIsTowerOwner] = useState(false)
   const [canShareTower, setCanShareTower] = useState(false)
@@ -106,28 +110,36 @@ export default function ShareTowerPopover() {
     fetchUserIdAndDetermineOwner()
   }, [towerId, path, supabase])
 
-  const handleInvite = async () => {
-    if (!userId) return
+  const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const invitedUsername = username.trim()
+    if (!userId || !invitedUsername || inviteInFlight.current) return
 
-    const { error } = await inviteUserToTowerSA({
-      inputUserId: userId,
-      inputInvitedUsername: username,
-      inputTowerId: towerId,
-    })
-
-    if (error) {
+    inviteInFlight.current = true
+    setIsInviting(true)
+    try {
+      const { userId: invitedUserId } = await inviteUserToTower(towerId, invitedUsername)
+      setUsername('')
+      setInvitedUsers((users) =>
+        invitedUserId === userId || users.includes(invitedUserId)
+          ? users
+          : [...users, invitedUserId],
+      )
+      setMembersRefreshKey((key) => key + 1)
+      toast({
+        title: 'User invited!',
+        description: `User ${invitedUsername} has been invited to the tower.`,
+      })
+    } catch (error) {
       toast({
         title: 'Error inviting user!',
-        description: error,
+        description: error instanceof Error ? error.message : 'Could not invite this user. Please try again.',
         variant: 'destructive',
       })
-      return
+    } finally {
+      inviteInFlight.current = false
+      setIsInviting(false)
     }
-
-    toast({
-      title: 'User invited!',
-      description: `User ${username} has been invited to the tower.`,
-    })
   }
 
   const handleTowerPublicSwitch = async (checked: boolean) => {
@@ -181,20 +193,29 @@ export default function ShareTowerPopover() {
           </Button>
         </PopoverTrigger>
         <PopoverContent className='w-80'>
-          <div className='flex flex-col space-y-6'>
+          <div className='flex flex-col gap-6'>
             <h4 className='font-medium leading-none'>
               Invite a User to this Tower
             </h4>
-            <div className='flex flex-row items-center space-x-2'>
-              <Label htmlFor='username'>Username</Label>
-              <Input
-                id='username'
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className='col-span-2 h-8'
-              />
-              <Button onClick={handleInvite}>Invite</Button>
-            </div>
+            <form onSubmit={handleInvite} className='flex flex-col gap-2' aria-busy={isInviting}>
+              <Label htmlFor='invite-username'>Username</Label>
+              <div className='flex items-center gap-2'>
+                <Input
+                  id='invite-username'
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  autoCapitalize='none'
+                  autoCorrect='off'
+                  maxLength={30}
+                  required
+                  disabled={isInviting}
+                  className='min-w-0'
+                />
+                <Button type='submit' disabled={isInviting || !username.trim()}>
+                  {isInviting ? 'Inviting…' : 'Invite'}
+                </Button>
+              </div>
+            </form>
             <div className='flex flex-row items-center space-x-2'>
               <Switch
                 checked={isTowerPublic}
@@ -230,7 +251,7 @@ export default function ShareTowerPopover() {
                 <h1 className='mb-2'>
                   Invited Users{isTowerOwner ? ', Click to Remove' : ''}
                 </h1>
-                <InvitedUsersList />
+                <InvitedUsersList presences={presences} refreshKey={membersRefreshKey} />
               </div>
             )
           }

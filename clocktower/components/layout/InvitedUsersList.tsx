@@ -8,23 +8,23 @@ import {
   DropdownMenuItem,
 } from '@/components/ui'
 import { ProfileRow, UUID } from '@/types/schemas'
-import { Database } from '@/types/supabase'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import AvatarWithPresence from '@/components/user/AvatarWithPresence'
 import useWindowSize from '@/hooks/useWindowSize'
-import useRealtimePresence from '@/hooks/useRealtimePresence'
+import type { UserPresence } from '@/hooks/useRealtimePresence'
 
-const InvitedUsersList = () => {
+const InvitedUsersList = ({ presences, refreshKey = 0 }: {
+  presences: UserPresence[]
+  refreshKey?: number
+}) => {
   // Grab invited users from towerId
   const supabase = createClient()
   const params = useParams()
   const path = usePathname()
   const windowSize = useWindowSize()
   const [towerId, setTowerId] = useState<UUID>((params.id as UUID) || '')
-  const presences = useRealtimePresence(towerId)
-  const [users, setUsers] = useState<UUID[]>([])
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [isTowerOwner, setIsTowerOwner] = useState(false)
   // State to track expanded state of avatar list
@@ -43,20 +43,26 @@ const InvitedUsersList = () => {
 
   // Get invited users from tower
   useEffect(() => {
+    if (!towerId) return
+    let active = true
+    let requestVersion = 0
     const getInvitedUsers = async () => {
+      const version = ++requestVersion
       const { data, error } = await supabase
         .from('towers')
         .select('owner, users')
         .eq('id', towerId)
         .single()
 
-      if (error || !data.users) {
+      if (!active || version !== requestVersion) return
+      if (error || !data) {
         console.error(error)
         return
       }
       // Get current user's id
       const { data: sessionData, error: sessionError } =
         await supabase.auth.getSession()
+      if (!active || version !== requestVersion) return
       if (sessionError || !sessionData.session?.user?.id) {
         console.error(sessionError)
         return
@@ -66,14 +72,18 @@ const InvitedUsersList = () => {
       setIsTowerOwner(data.owner === currentUserId)
 
       // Filter out current user
-      const userIds = data.users.filter((user) => user !== currentUserId)
-      setUsers(userIds)
+      const userIds = (data.users ?? []).filter((user) => user !== currentUserId)
+      if (!userIds.length) {
+        setProfiles([])
+        return
+      }
       // Now for each userId go to profiles and fetch the profile
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('*')
         .in('id', userIds)
 
+      if (!active || version !== requestVersion) return
       if (userError || !userData) {
         console.error(userError)
         return
@@ -84,8 +94,26 @@ const InvitedUsersList = () => {
       setProfiles(users)
     }
 
-    getInvitedUsers()
-  }, [towerId])
+    const channel = supabase
+      // These channels receive database changes, so each subscription can use
+      // its own name. Avoid reusing a channel while cleanup is still pending.
+      .channel(`tower-members:${towerId}:${crypto.randomUUID()}`)
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'towers',
+        filter: `id=eq.${towerId}`,
+      }, () => {
+        void getInvitedUsers()
+      })
+      .subscribe()
+
+    void getInvitedUsers()
+    return () => {
+      active = false
+      void supabase.removeChannel(channel)
+    }
+  }, [towerId, supabase, refreshKey])
 
   // Determine max number of avatars to show
   useEffect(() => {
