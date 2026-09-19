@@ -261,12 +261,21 @@ const clocktowerNouns = [
 ]
 
 export const generateUsername = () => {
+  const secureRandomIndex = (maxExclusive: number) => {
+    const maxUint32 = 0x100000000
+    const limit = maxUint32 - (maxUint32 % maxExclusive)
+    const randomValue = new Uint32Array(1)
+
+    do {
+      crypto.getRandomValues(randomValue)
+    } while (randomValue[0] >= limit)
+
+    return randomValue[0] % maxExclusive
+  }
+
   const adjective =
-    clocktowerAdjectives[
-      Math.floor(Math.random() * clocktowerAdjectives.length)
-    ]
-  const noun =
-    clocktowerNouns[Math.floor(Math.random() * clocktowerNouns.length)]
+    clocktowerAdjectives[secureRandomIndex(clocktowerAdjectives.length)]
+  const noun = clocktowerNouns[secureRandomIndex(clocktowerNouns.length)]
   return `${adjective}-${noun}`
 }
 
