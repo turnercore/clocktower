@@ -260,6 +260,13 @@ export interface Database {
       [_ in never]: never
     }
     Functions: {
+      accept_tower_email_invitation: {
+        Args: {
+          tower: string
+          new_user_id: string
+        }
+        Returns: undefined
+      }
       add_user_to_tower: {
         Args: {
           tower: string

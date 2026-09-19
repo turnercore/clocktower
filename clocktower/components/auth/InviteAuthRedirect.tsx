@@ -5,10 +5,6 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from '@/components/ui'
 
-const inviteMetadataKey = 'clocktower_invite_tower_id'
-const uuidPattern =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-
 export default function InviteAuthRedirect() {
   const router = useRouter()
   const supabase = createClient()
@@ -17,6 +13,9 @@ export default function InviteAuthRedirect() {
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
     const accessToken = hash.get('access_token')
     const refreshToken = hash.get('refresh_token')
+    const inviteToken = new URLSearchParams(window.location.search).get(
+      'tower_invite_token',
+    )
 
     if (!accessToken || !refreshToken) return
 
@@ -43,26 +42,40 @@ export default function InviteAuthRedirect() {
         return
       }
 
-      const queryTowerId = new URLSearchParams(window.location.search).get(
-        'tower_invite',
-      )
-      const metadataTowerId = data.user.user_metadata?.[inviteMetadataKey]
-      const towerId = uuidPattern.test(queryTowerId || '')
-        ? queryTowerId
-        : uuidPattern.test(metadataTowerId || '')
-          ? metadataTowerId
-          : null
-
-      if (!towerId) {
+      if (!inviteToken) {
         router.refresh()
         return
       }
 
-      const { error: metadataError } = await supabase.auth.updateUser({
-        data: { [inviteMetadataKey]: null },
-      })
-      if (metadataError) {
-        console.warn('Unable to clear tower invitation metadata.', metadataError)
+      let response: Response
+      try {
+        response = await fetch('/api/tower-invitations/accept', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: inviteToken }),
+        })
+      } catch {
+        toast({
+          title: 'Could not join tower',
+          description: 'Check your connection and reopen the invitation link.',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      const result = await response.json().catch(() => null)
+      const towerId = result?.data?.towerId
+      if (!response.ok || typeof towerId !== 'string') {
+        toast({
+          title: 'Could not join tower',
+          description:
+            typeof result?.error === 'string'
+              ? result.error
+              : 'Ask the tower owner to send another invitation.',
+          variant: 'destructive',
+        })
+        return
       }
 
       router.replace(`/tower/${towerId}`)

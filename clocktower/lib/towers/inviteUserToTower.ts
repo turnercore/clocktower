@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { createTowerInviteToken } from './towerInviteToken'
 
 const rawInputSchema = z.object({
   towerId: z.string().uuid('Invalid tower ID.'),
@@ -69,11 +70,13 @@ function duplicateMessage(isSelf: boolean, isEmail: boolean, emailConfirmed: boo
   return 'This user is already in the tower.'
 }
 
-function inviteRedirect(appOrigin?: string) {
+function inviteRedirect(token: string, appOrigin?: string) {
   const configuredOrigin = process.env.NEXT_PUBLIC_DOMAIN || appOrigin
   if (!configuredOrigin) return null
   try {
-    return new URL('/', configuredOrigin).toString()
+    const url = new URL('/', configuredOrigin)
+    url.searchParams.set('tower_invite_token', token)
+    return url.toString()
   } catch {
     return null
   }
@@ -174,7 +177,14 @@ export async function inviteUserToTower(input: unknown): Promise<InvitationResul
       return failure(404, 'No user found with that username. Enter their email address to send an invitation.')
     }
 
-    const redirectTo = inviteRedirect(appOrigin)
+    let inviteToken: string
+    try {
+      inviteToken = createTowerInviteToken(towerId, identifier)
+    } catch {
+      return failure(503, 'Email invitations are not configured correctly.')
+    }
+
+    const redirectTo = inviteRedirect(inviteToken, appOrigin)
     if (!redirectTo) return failure(503, 'Email invitations are not configured correctly.')
 
     let admin
@@ -185,10 +195,7 @@ export async function inviteUserToTower(input: unknown): Promise<InvitationResul
     }
 
     const { data: invited, error: inviteError } =
-      await admin.auth.admin.inviteUserByEmail(identifier, {
-        redirectTo,
-        data: { clocktower_invite_tower_id: towerId },
-      })
+      await admin.auth.admin.inviteUserByEmail(identifier, { redirectTo })
 
     if (inviteError) {
       const raced = await resolveTarget()
@@ -209,10 +216,22 @@ export async function inviteUserToTower(input: unknown): Promise<InvitationResul
       'email',
     )
     if (result.status !== 200) {
-      const { error: cleanupError } = await admin.auth.admin.deleteUser(invitedUserId, false)
-      if (cleanupError) console.warn('Unable to clean up failed invited auth user.', cleanupError)
+      console.warn(
+        'Invitation email sent before membership committed; acceptance will repair membership.',
+        result.body,
+      )
     }
-    return result
+
+    return {
+      status: 200,
+      body: {
+        data: {
+          success: true,
+          userId: invitedUserId,
+          delivery: 'email',
+        },
+      },
+    }
   } catch (error) {
     console.error('Tower invitation failed.', error)
     return failure(500, 'Unable to invite the user. Please try again.')

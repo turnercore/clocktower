@@ -188,3 +188,41 @@ SELECT pg_temp.assert_true(
   AND NOT ('a%_\*(b)|c.dsuffix' ~* '^a%_\\\*\(b\)\|c\.d$'),
   'anchored username regex treats wildcard and regex characters literally'
 ) AS test;
+
+SELECT pg_temp.assert_true(
+  has_function_privilege(
+    'service_role',
+    'public.accept_tower_email_invitation(uuid,uuid)',
+    'EXECUTE'
+  )
+  AND NOT has_function_privilege(
+    'authenticated',
+    'public.accept_tower_email_invitation(uuid,uuid)',
+    'EXECUTE'
+  )
+  AND NOT has_function_privilege(
+    'anon',
+    'public.accept_tower_email_invitation(uuid,uuid)',
+    'EXECUTE'
+  ),
+  'email acceptance repair RPC is service-role only'
+) AS test;
+
+SET LOCAL ROLE service_role;
+SELECT public.accept_tower_email_invitation(
+  '10000000-0000-4000-8000-000000000004',
+  '00000000-0000-4000-8000-000000000010'
+);
+RESET ROLE;
+SELECT pg_temp.assert_true(
+  (SELECT users @> ARRAY['00000000-0000-4000-8000-000000000010'::uuid]
+   FROM public.towers
+   WHERE id = '10000000-0000-4000-8000-000000000004')
+  AND EXISTS (
+    SELECT 1
+    FROM public.towers_users
+    WHERE tower_id = '10000000-0000-4000-8000-000000000004'
+      AND user_id = '00000000-0000-4000-8000-000000000010'
+  ),
+  'email acceptance repair grants auth-only target membership idempotently'
+) AS test;

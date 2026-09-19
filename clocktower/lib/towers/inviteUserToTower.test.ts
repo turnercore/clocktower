@@ -1,9 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { inviteUserToTower } from './inviteUserToTower'
+import { createTowerInviteToken } from './towerInviteToken'
 
 jest.mock('@/lib/supabase/server', () => ({ createClient: jest.fn() }))
 jest.mock('@/lib/supabase/admin', () => ({ createAdminClient: jest.fn() }))
+jest.mock('./towerInviteToken', () => ({ createTowerInviteToken: jest.fn() }))
 
 const owner = '11111111-1111-4111-8111-111111111111'
 const member = '22222222-2222-4222-8222-222222222222'
@@ -46,6 +48,7 @@ describe('inviteUserToTower', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     process.env.NEXT_PUBLIC_DOMAIN = 'https://www.clocktower.monster'
+    jest.mocked(createTowerInviteToken).mockReturnValue('signed-token')
     jest.spyOn(console, 'warn').mockImplementation(() => {})
     jest.spyOn(console, 'error').mockImplementation(() => {})
   })
@@ -84,10 +87,14 @@ describe('inviteUserToTower', () => {
     const env = setup()
     env.setMatches([])
     const result = await inviteUserToTower({ towerId, identifier: 'new@example.com' })
-    expect(env.admin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith('new@example.com', {
-      redirectTo: 'https://www.clocktower.monster/',
-      data: { clocktower_invite_tower_id: towerId },
-    })
+    expect(createTowerInviteToken).toHaveBeenCalledWith(towerId, 'new@example.com')
+    expect(env.admin.auth.admin.inviteUserByEmail).toHaveBeenCalledWith(
+      'new@example.com',
+      {
+        redirectTo:
+          'https://www.clocktower.monster/?tower_invite_token=signed-token',
+      },
+    )
     expect(env.client.rpc).toHaveBeenCalledWith('add_user_to_tower', {
       tower: towerId,
       new_user_id: newUser,
