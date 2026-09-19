@@ -304,9 +304,9 @@ test.each(['resolved', 'rejected'])(
     else removal.reject(new Error('Connection closed during removal'))
     await flushAsyncWork()
 
-    expect(client.channel.mock.calls.map(([topic]) => topic)).toEqual([
-      `tower_presence:${TOWER_ID}`, `tower_presence:${TOWER_ID}`,
-    ])
+    expect(client.channel.mock.calls.map(([topic]) => topic)).toEqual(outcome === 'resolved'
+      ? [`tower_presence:${TOWER_ID}`, `tower_presence:${TOWER_ID}`]
+      : [`tower_presence:${TOWER_ID}`])
     if (outcome === 'resolved') {
       expect(client.rooms).toHaveLength(2)
       expect(client.rooms[1]).not.toBe(client.rooms[0])

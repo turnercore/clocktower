@@ -13,7 +13,7 @@ type PresenceClient = ReturnType<typeof createClient>
 
 // removeChannel is asynchronous. A new subscription must not reuse the old
 // channel while it is leaving, including when navigating back to the same tower.
-const pendingRemovals = new WeakMap<PresenceClient, Map<string, Promise<void>>>()
+const pendingRemovals = new WeakMap<PresenceClient, Map<string, Promise<boolean>>>()
 
 export function subscribeToTowerPresence(
   supabase: PresenceClient,
@@ -35,7 +35,7 @@ export function subscribeToTowerPresence(
       return
     }
 
-    await pendingRemovals.get(supabase)?.get(topic)
+    if ((await pendingRemovals.get(supabase)?.get(topic)) === false) return
     if (!active) return
 
     const userId = data.session.user.id
@@ -77,19 +77,22 @@ export function subscribeToTowerPresence(
     const removal = (async () => {
       try {
         const result = await supabase.removeChannel(channel)
-        if (result !== 'ok') console.warn('Unable to remove tower presence channel.', result)
+        if (result === 'ok' || result === 'timed out') return true
+        console.warn('Unable to remove tower presence channel.', result)
       } catch (error) {
         console.error('Unable to remove tower presence channel.', error)
       }
+      return false
     })()
     removals.set(topic, removal)
-    void removal.then(() => {
+    void removal.finally(() => {
       if (removals.get(topic) === removal) removals.delete(topic)
     })
   }
 }
 
 function useRealtimePresence(towerId: UUID): UserPresence[] {
+  const [supabase] = useState(() => createClient())
   const [presence, setPresence] = useState<{ towerId: UUID; users: UserPresence[] }>({
     towerId: '',
     users: [],
@@ -97,10 +100,10 @@ function useRealtimePresence(towerId: UUID): UserPresence[] {
 
   useEffect(() => {
     if (!towerId) return
-    return subscribeToTowerPresence(createClient(), towerId, (users) => {
+    return subscribeToTowerPresence(supabase, towerId, (users) => {
       setPresence({ towerId, users })
     })
-  }, [towerId])
+  }, [supabase, towerId])
 
   return presence.towerId === towerId ? presence.users : []
 }
