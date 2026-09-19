@@ -10,20 +10,21 @@ import {
 import { ProfileRow, UUID } from '@/types/schemas'
 import { createClient } from '@/lib/supabase/client'
 import { useParams, usePathname } from 'next/navigation'
-import { useEffect, useId, useState } from 'react'
+import { useEffect, useState } from 'react'
 import AvatarWithPresence from '@/components/user/AvatarWithPresence'
 import useWindowSize from '@/hooks/useWindowSize'
-import useRealtimePresence from '@/hooks/useRealtimePresence'
+import type { UserPresence } from '@/hooks/useRealtimePresence'
 
-const InvitedUsersList = ({ refreshKey = 0 }: { refreshKey?: number }) => {
+const InvitedUsersList = ({ presences, refreshKey = 0 }: {
+  presences: UserPresence[]
+  refreshKey?: number
+}) => {
   // Grab invited users from towerId
   const supabase = createClient()
-  const subscriptionId = useId()
   const params = useParams()
   const path = usePathname()
   const windowSize = useWindowSize()
   const [towerId, setTowerId] = useState<UUID>((params.id as UUID) || '')
-  const presences = useRealtimePresence(towerId)
   const [profiles, setProfiles] = useState<ProfileRow[]>([])
   const [isTowerOwner, setIsTowerOwner] = useState(false)
   // State to track expanded state of avatar list
@@ -94,7 +95,9 @@ const InvitedUsersList = ({ refreshKey = 0 }: { refreshKey?: number }) => {
     }
 
     const channel = supabase
-      .channel(`tower-members:${towerId}:${subscriptionId}`)
+      // These channels receive database changes, so each subscription can use
+      // its own name. Avoid reusing a channel while cleanup is still pending.
+      .channel(`tower-members:${towerId}:${crypto.randomUUID()}`)
       .on('postgres_changes', {
         event: 'UPDATE',
         schema: 'public',
@@ -110,7 +113,7 @@ const InvitedUsersList = ({ refreshKey = 0 }: { refreshKey?: number }) => {
       active = false
       void supabase.removeChannel(channel)
     }
-  }, [towerId, supabase, subscriptionId, refreshKey])
+  }, [towerId, supabase, refreshKey])
 
   // Determine max number of avatars to show
   useEffect(() => {

@@ -8,10 +8,19 @@ const towerId = '33333333-3333-4333-8333-333333333333'
 const invitedId = '22222222-2222-4222-8222-222222222222'
 const context = () => ({ params: Promise.resolve({ id: towerId }) })
 
-function request(body = JSON.stringify({ username: 'Daisy' }), headers: Record<string, string> = {}) {
-  return new Request(`${origin}/api/towers/${towerId}/invitations`, {
+function request(
+  body = JSON.stringify({ username: 'Daisy' }),
+  headers: Record<string, string> = {},
+  internalOrigin = origin,
+) {
+  return new Request(`${internalOrigin}/api/towers/${towerId}/invitations`, {
     method: 'POST',
-    headers: { origin, 'content-type': 'application/json', ...headers },
+    headers: {
+      origin,
+      host: new URL(origin).host,
+      'content-type': 'application/json',
+      ...headers,
+    },
     body,
   })
 }
@@ -41,12 +50,40 @@ describe('POST tower invitations', () => {
     expect(response.status).toBe(200)
   })
 
+  it('accepts the browser Host when Next normalizes request.url to localhost', async () => {
+    const req = request(undefined, {
+      origin: 'http://127.0.0.1:48930',
+      host: '127.0.0.1:48930',
+    }, 'http://localhost:48930')
+    const response = await POST(req, context())
+    expect(response.status).toBe(200)
+    expect(inviteUserToTower).toHaveBeenCalledTimes(1)
+  })
+
+  it('accepts HTTPS browser requests when an internal proxy URL uses HTTP', async () => {
+    const response = await POST(request(undefined, {}, 'http://localhost:3000'), context())
+    expect(response.status).toBe(200)
+    expect(inviteUserToTower).toHaveBeenCalledTimes(1)
+  })
+
   it('does not accept a caller ID or tower ID from the request body', async () => {
     await POST(request(JSON.stringify({ username: 'Daisy', expectedUserId: invitedId, towerId: invitedId })), context())
     expect(inviteUserToTower).toHaveBeenCalledWith({ towerId, username: 'Daisy' })
   })
 
-  it.each(['https://other.example', 'null', 'https://clocktower.monster', ''])('rejects origin %s before calling the service', async (requestOrigin) => {
+  it.each([
+    'https://other.example',
+    'null',
+    'https://clocktower.monster',
+    '',
+    'not a URL',
+    'https://www.clocktower.monster/',
+    'https://www.clocktower.monster/path',
+    'https://www.clocktower.monster?query=1',
+    'https://user@www.clocktower.monster',
+    'ftp://www.clocktower.monster',
+    'file://www.clocktower.monster',
+  ])('rejects origin %s before calling the service', async (requestOrigin) => {
     const response = await POST(request(undefined, { origin: requestOrigin }), context())
     expect(response.status).toBe(403)
     expect(await response.json()).toEqual({ error: 'Request origin is not allowed.' })
@@ -57,6 +94,22 @@ describe('POST tower invitations', () => {
     const req = request()
     req.headers.delete('origin')
     expect((await POST(req, context())).status).toBe(403)
+    expect(inviteUserToTower).not.toHaveBeenCalled()
+  })
+
+  it('rejects a missing Host even when request.url matches the Origin', async () => {
+    const req = request()
+    req.headers.delete('host')
+    expect((await POST(req, context())).status).toBe(403)
+    expect(inviteUserToTower).not.toHaveBeenCalled()
+  })
+
+  it.each(['localhost:48930', '127.0.0.1:48931', 'other.example:48930'])('rejects external Host %s that differs from the browser Origin', async (host) => {
+    const response = await POST(request(undefined, {
+      origin: 'http://127.0.0.1:48930',
+      host,
+    }, 'http://127.0.0.1:48930'), context())
+    expect(response.status).toBe(403)
     expect(inviteUserToTower).not.toHaveBeenCalled()
   })
 

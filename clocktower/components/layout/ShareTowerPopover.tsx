@@ -17,10 +17,11 @@ import { inviteUserToTower } from '@/lib/towers/invite-user-request'
 import InvitedUsersList from './InvitedUsersList'
 import shareTowerPubliclySA from './actions/shareTowerPubliclySA'
 import { GoCopy } from 'react-icons/go'
+import type { UserPresence } from '@/hooks/useRealtimePresence'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
-export default function ShareTowerPopover() {
+export default function ShareTowerPopover({ presences }: { presences: UserPresence[] }) {
   const path = usePathname()
   const params = useParams<{ id: string }>()
   const towerId: UUID = params.id as UUID
@@ -250,7 +251,7 @@ export default function ShareTowerPopover() {
                 <h1 className='mb-2'>
                   Invited Users{isTowerOwner ? ', Click to Remove' : ''}
                 </h1>
-                <InvitedUsersList refreshKey={membersRefreshKey} />
+                <InvitedUsersList presences={presences} refreshKey={membersRefreshKey} />
               </div>
             )
           }

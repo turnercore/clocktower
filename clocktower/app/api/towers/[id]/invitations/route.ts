@@ -1,12 +1,31 @@
 import { NextResponse } from 'next/server'
 import { inviteUserToTower } from '@/lib/towers/inviteUserToTower'
 
+function isAllowedOrigin(request: Request) {
+  const originHeader = request.headers.get('origin')
+  const host = request.headers.get('host')
+  if (!originHeader || !host) return false
+
+  try {
+    const origin = new URL(originHeader)
+    // Next can normalize request.url to an internal hostname. Compare against
+    // the actual request Host, never an arbitrary forwarded-host header.
+    return (
+      (origin.protocol === 'https:' || origin.protocol === 'http:') &&
+      origin.origin === originHeader &&
+      origin.host === host
+    )
+  } catch {
+    return false
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    if (request.headers.get('origin') !== new URL(request.url).origin) {
+    if (!isAllowedOrigin(request)) {
       return NextResponse.json({ error: 'Request origin is not allowed.' }, { status: 403 })
     }
     const contentType = request.headers.get('content-type')?.split(';')[0].trim().toLowerCase()

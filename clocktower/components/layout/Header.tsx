@@ -20,6 +20,7 @@ import type { User } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/client'
 import { AccessibilityOptionsDialog } from './AccessiblityOptionsDialog'
 import CreateNewTowerButton from '../homepage/CreateNewTowerButton'
+import useRealtimePresence from '@/hooks/useRealtimePresence'
 
 // Changing this to a client componenet
 export default function Header() {
@@ -27,10 +28,12 @@ export default function Header() {
   const params = useParams()
   const supabase = createClient()
   const [isOnTowerPage, setIsOnTowerPage] = useState(false)
-  const [towerId, setTowerId] = useState('')
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isLoginPopoverOpen, setIsLoginPopoverOpen] = useState(false)
+  const presences = useRealtimePresence(
+    user && path.includes('tower') && typeof params.id === 'string' ? params.id : '',
+  )
 
   useEffect(() => {
     if (path.includes('logout')) {
@@ -50,7 +53,6 @@ export default function Header() {
     }
 
     setIsOnTowerPage(path.includes('tower') && params.id ? true : false)
-    setTowerId((params.id as string) || '')
     getUserFromSession()
     const { data: authListener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
@@ -92,7 +94,7 @@ export default function Header() {
               // If on tower page, show share tower button
               isOnTowerPage && (
                 <>
-                  <ShareTowerPopover />
+                  <ShareTowerPopover presences={presences} />
                 </>
               )
             }
@@ -130,7 +132,7 @@ export default function Header() {
       {/* Right side of header */}
       <div className='flex-1 flex justify-end'>
         <div className='flex flex-row items-center space-x-2'>
-          {isOnTowerPage && <InvitedUsersList />}
+          {isOnTowerPage && <InvitedUsersList presences={presences} />}
           <UserAvatar user={user} />
         </div>
       </div>
