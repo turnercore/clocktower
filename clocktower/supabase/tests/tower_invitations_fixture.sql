@@ -19,7 +19,11 @@ END;
 $fixture$;
 
 CREATE SCHEMA auth;
-CREATE TABLE auth.users (id uuid PRIMARY KEY);
+CREATE TABLE auth.users (
+  id uuid PRIMARY KEY,
+  email text,
+  email_confirmed_at timestamptz
+);
 CREATE FUNCTION auth.uid() RETURNS uuid
 LANGUAGE sql STABLE
 AS $uid$ SELECT nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $uid$;
@@ -81,8 +85,11 @@ CREATE POLICY memberships_delete ON public.towers_users FOR DELETE TO authentica
 
 -- IDs ending 1=owner, 2=admin, 3=ordinary member, 4=outsider,
 -- 5/6/7/8/9=invite targets, 10=auth account with no profile.
-INSERT INTO auth.users (id)
-SELECT ('00000000-0000-4000-8000-' || lpad(n::text, 12, '0'))::uuid
+INSERT INTO auth.users (id, email, email_confirmed_at)
+SELECT
+  ('00000000-0000-4000-8000-' || lpad(n::text, 12, '0'))::uuid,
+  'invite-' || n || '@example.com',
+  CASE WHEN n = 10 THEN NULL ELSE now() END
 FROM generate_series(1, 10) n;
 INSERT INTO public.profiles (id, username)
 SELECT id, 'test-user-' || right(id::text, 2)

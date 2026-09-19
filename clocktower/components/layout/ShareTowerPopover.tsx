@@ -21,12 +21,16 @@ import type { UserPresence } from '@/hooks/useRealtimePresence'
 
 const domain = process.env.NEXT_PUBLIC_DOMAIN || 'http://localhost:3000'
 
-export default function ShareTowerPopover({ presences }: { presences: UserPresence[] }) {
+export default function ShareTowerPopover({
+  presences,
+}: {
+  presences: UserPresence[]
+}) {
   const path = usePathname()
   const params = useParams<{ id: string }>()
   const towerId: UUID = params.id as UUID
   const [userId, setUserId] = useState<string | null>(null)
-  const [username, setUsername] = useState('')
+  const [inviteIdentifier, setInviteIdentifier] = useState('')
   const [isInviting, setIsInviting] = useState(false)
   const inviteInFlight = useRef(false)
   const [membersRefreshKey, setMembersRefreshKey] = useState(0)
@@ -88,12 +92,11 @@ export default function ShareTowerPopover({ presences }: { presences: UserPresen
         setCanShareTower(
           currentUserIsOwner || (currentUserIsAdmin && !towerData.is_locked),
         )
-        // filter out current user
         const currentInvitedUsers = (towerData.users ?? []).filter(
           (user: UUID) => user !== currentUserId,
         )
         setInvitedUsers(currentInvitedUsers || [])
-        // See if tower is public
+
         if (towerData.public_key) {
           setIsTowerPublic(true)
           const url = domain + path + `?public_key=${towerData.public_key}`
@@ -107,33 +110,48 @@ export default function ShareTowerPopover({ presences }: { presences: UserPresen
       }
     }
 
-    fetchUserIdAndDetermineOwner()
+    void fetchUserIdAndDetermineOwner()
   }, [towerId, path, supabase])
 
   const handleInvite = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    const invitedUsername = username.trim()
-    if (!userId || !invitedUsername || inviteInFlight.current) return
+    const identifier = inviteIdentifier.trim()
+    if (!userId || !identifier || inviteInFlight.current) return
 
     inviteInFlight.current = true
     setIsInviting(true)
     try {
-      const { userId: invitedUserId } = await inviteUserToTower(towerId, invitedUsername)
-      setUsername('')
+      const { userId: invitedUserId, delivery } = await inviteUserToTower(
+        towerId,
+        identifier,
+      )
+      setInviteIdentifier('')
+
       setInvitedUsers((users) =>
         invitedUserId === userId || users.includes(invitedUserId)
           ? users
           : [...users, invitedUserId],
       )
       setMembersRefreshKey((key) => key + 1)
-      toast({
-        title: 'User invited!',
-        description: `User ${invitedUsername} has been invited to the tower.`,
-      })
+
+      if (delivery === 'direct') {
+        toast({
+          title: 'User added to tower',
+          description: `${identifier} now has access to this tower.`,
+        })
+      } else {
+        toast({
+          title: 'Invitation sent',
+          description: `We emailed ${identifier} a one-click invitation. They already have tower access and will be signed in when they accept it.`,
+        })
+      }
     } catch (error) {
       toast({
-        title: 'Error inviting user!',
-        description: error instanceof Error ? error.message : 'Could not invite this user. Please try again.',
+        title: 'Could not invite user',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'Could not invite this user. Please try again.',
         variant: 'destructive',
       })
     } finally {
@@ -143,18 +161,15 @@ export default function ShareTowerPopover({ presences }: { presences: UserPresen
   }
 
   const handleTowerPublicSwitch = async (checked: boolean) => {
-    // Set local state
     const oldTowerPublicState = isTowerPublic
     const oldPublicUrl = publicUrl
     setIsTowerPublic(checked)
 
-    // Update database
     const { data, error } = await shareTowerPubliclySA({
       towerId,
       setPublic: checked,
     })
     if (error) {
-      // Switch back local state if error
       setIsTowerPublic(oldTowerPublicState)
       setPublicUrl(oldPublicUrl)
       toast({
@@ -195,23 +210,31 @@ export default function ShareTowerPopover({ presences }: { presences: UserPresen
         <PopoverContent className='w-80'>
           <div className='flex flex-col gap-6'>
             <h4 className='font-medium leading-none'>
-              Invite a User to this Tower
+              Invite someone to this tower
             </h4>
-            <form onSubmit={handleInvite} className='flex flex-col gap-2' aria-busy={isInviting}>
-              <Label htmlFor='invite-username'>Username</Label>
+            <form
+              onSubmit={handleInvite}
+              className='flex flex-col gap-2'
+              aria-busy={isInviting}
+            >
+              <Label htmlFor='invite-identifier'>Username or email</Label>
               <div className='flex items-center gap-2'>
                 <Input
-                  id='invite-username'
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id='invite-identifier'
+                  value={inviteIdentifier}
+                  onChange={(e) => setInviteIdentifier(e.target.value)}
                   autoCapitalize='none'
                   autoCorrect='off'
-                  maxLength={30}
+                  maxLength={320}
                   required
                   disabled={isInviting}
                   className='min-w-0'
+                  placeholder='username or email@example.com'
                 />
-                <Button type='submit' disabled={isInviting || !username.trim()}>
+                <Button
+                  type='submit'
+                  disabled={isInviting || !inviteIdentifier.trim()}
+                >
                   {isInviting ? 'Inviting…' : 'Invite'}
                 </Button>
               </div>
@@ -244,17 +267,17 @@ export default function ShareTowerPopover({ presences }: { presences: UserPresen
               </div>
             )}
           </div>
-          {
-            // If users are invited, show them
-            invitedUsers.length > 0 && (
-              <div className='mt-8'>
-                <h1 className='mb-2'>
-                  Invited Users{isTowerOwner ? ', Click to Remove' : ''}
-                </h1>
-                <InvitedUsersList presences={presences} refreshKey={membersRefreshKey} />
-              </div>
-            )
-          }
+          {invitedUsers.length > 0 && (
+            <div className='mt-8'>
+              <h1 className='mb-2'>
+                Invited Users{isTowerOwner ? ', Click to Remove' : ''}
+              </h1>
+              <InvitedUsersList
+                presences={presences}
+                refreshKey={membersRefreshKey}
+              />
+            </div>
+          )}
         </PopoverContent>
       </Popover>
     )

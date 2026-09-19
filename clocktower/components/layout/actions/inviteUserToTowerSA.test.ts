@@ -20,7 +20,7 @@ describe('legacy inviteUserToTowerSA', () => {
   it('preserves the caller ID verification and legacy success response', async () => {
     jest.mocked(inviteUserToTower).mockResolvedValue({
       status: 200,
-      body: { data: { success: true, userId: '22222222-2222-4222-8222-222222222222' } },
+      body: { data: { success: true, userId: '22222222-2222-4222-8222-222222222222', delivery: 'direct' } },
     })
     expect(await inviteUserToTowerSA(input)).toEqual({ data: { success: true } })
     expect(inviteUserToTower).toHaveBeenCalledWith({
