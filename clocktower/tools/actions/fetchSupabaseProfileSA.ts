@@ -16,13 +16,8 @@ const fetchSupabaseProfileSA = async (
 
     if (profileError) throw profileError
 
-    // If there is no profile data, then create a new profile
-    if (
-      !profileData ||
-      profileData.length === 0 ||
-      profileData[0] === undefined
-    ) {
-      createNewProfile(userId)
+    if (!profileData?.length) {
+      return { data: await createNewProfile(userId) }
     }
 
     return { data: profileData[0] as Profile }
@@ -36,19 +31,24 @@ const fetchSupabaseProfileSA = async (
   }
 }
 
-const createNewProfile = async (newProfileId: string) => {
+const createNewProfile = async (newProfileId: string): Promise<Profile> => {
   const supabase = await createClient()
 
   const newProfile = {
     id: newProfileId,
-    username: generateUsername(),
+    username: `${generateUsername()}-${newProfileId.slice(0, 8)}`,
     color: '#FFFFFF',
     avatar_set: 1,
   }
 
-  const { error } = await supabase.from('profiles').upsert(newProfile)
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert(newProfile)
+    .select('*')
+    .single()
 
   if (error) throw error
+  return data as Profile
 }
 
 export default fetchSupabaseProfileSA

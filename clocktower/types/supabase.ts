@@ -267,6 +267,17 @@ export interface Database {
         }
         Returns: undefined
       }
+      find_tower_invite_target: {
+        Args: {
+          tower: string
+          identifier: string
+          lookup_by_email: boolean
+        }
+        Returns: {
+          user_id: string
+          email_confirmed: boolean
+        }[]
+      }
       remove_user_from_tower: {
         Args: {
           tower: string

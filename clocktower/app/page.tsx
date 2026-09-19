@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/server'
 import { isSupabaseConfigured } from '@/lib/supabase/config'
 import CreateNewTowerButton from '@/components/homepage/CreateNewTowerButton'
 import LoginSuccessToast from '@/components/homepage/LoginSuccessToast'
+import InviteAuthRedirect from '@/components/auth/InviteAuthRedirect'
 
 const Home = async () => {
   let isLoggedIn = false
@@ -20,6 +21,7 @@ const Home = async () => {
 
   return (
     <div className='relative flex flex-col text-center items-center mb-[100px]'>
+      <InviteAuthRedirect />
       <LoginSuccessToast />
       <SiteTitle />
       <div className='mb-8 flex flex-col items-center gap-5'>
