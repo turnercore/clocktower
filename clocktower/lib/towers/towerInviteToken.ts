@@ -58,8 +58,8 @@ export function verifyTowerInviteToken(
 
   const [encoded, receivedSignature] = parts
   const expectedSignature = signature(encoded)
-  const received = Buffer.from(receivedSignature)
-  const expected = Buffer.from(expectedSignature)
+  const received = Uint8Array.from(Buffer.from(receivedSignature))
+  const expected = Uint8Array.from(Buffer.from(expectedSignature))
   if (
     received.length !== expected.length ||
     !timingSafeEqual(received, expected)
@@ -86,8 +86,8 @@ export function verifyTowerInviteToken(
     return null
   }
 
-  const receivedEmail = Buffer.from(payload.e)
-  const expectedEmail = Buffer.from(emailDigest(email))
+  const receivedEmail = Uint8Array.from(Buffer.from(payload.e))
+  const expectedEmail = Uint8Array.from(Buffer.from(emailDigest(email)))
   if (
     receivedEmail.length !== expectedEmail.length ||
     !timingSafeEqual(receivedEmail, expectedEmail)
