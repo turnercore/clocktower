@@ -23,20 +23,44 @@ function failure(status: number, error: string): InvitationResult {
   return { status, body: { error } }
 }
 
-function parseIdentifier(input: unknown) {
+type ParsedIdentifier =
+  | { ok: false; error: string }
+  | {
+      ok: true
+      towerId: string
+      identifier: string
+      isEmail: boolean
+      expectedUserId?: string
+      appOrigin?: string
+    }
+
+function parseIdentifier(input: unknown): ParsedIdentifier {
   const parsed = rawInputSchema.safeParse(input)
-  if (!parsed.success) return { error: parsed.error.issues[0].message } as const
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0].message }
+  }
+
   const identifier = (parsed.data.identifier ?? parsed.data.username ?? '').trim()
-  if (!identifier) return { error: 'Enter a username or email address.' } as const
+  if (!identifier) {
+    return { ok: false, error: 'Enter a username or email address.' }
+  }
 
   const isEmail = z.string().email().safeParse(identifier).success
   if (isEmail && identifier.length > 320) {
-    return { error: 'Enter a valid email address.' } as const
+    return { ok: false, error: 'Enter a valid email address.' }
   }
   if (!isEmail && identifier.length > 30) {
-    return { error: 'Username must be at most 30 characters.' } as const
+    return { ok: false, error: 'Username must be at most 30 characters.' }
   }
-  return { ...parsed.data, identifier, isEmail } as const
+
+  return {
+    ok: true,
+    towerId: parsed.data.towerId,
+    identifier,
+    isEmail,
+    expectedUserId: parsed.data.expectedUserId,
+    appOrigin: parsed.data.appOrigin,
+  }
 }
 
 function duplicateMessage(isSelf: boolean, isEmail: boolean, emailConfirmed: boolean) {
@@ -67,7 +91,7 @@ function mapMembershipError(error: { code?: string; message?: string }) {
 
 export async function inviteUserToTower(input: unknown): Promise<InvitationResult> {
   const parsed = parseIdentifier(input)
-  if ('error' in parsed) return failure(400, parsed.error)
+  if (!parsed.ok) return failure(400, parsed.error)
   const { towerId, identifier, isEmail, expectedUserId, appOrigin } = parsed
 
   try {
